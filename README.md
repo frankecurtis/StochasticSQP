@@ -8,10 +8,12 @@ Overview
 
 StochasticSQP is a software package for solving optimization problems involving a stochastic objective and deterministic constraint functions.  (Problems with deterministic objective functions can also be solved.)  It is designed to locate a minimizer of
 
-min     f(x) subject to c<sub>E</sub>(x) = 0 and c<sub>I</sub>(x) <= 0, where f(x) = E[F(x,$\omega$)]
+```
+min     f(x) subject to cE(x) = 0 and cI(x) <= 0, where f(x) = E[F(x,ω)]
 x ∈ Rⁿ
+```
 
-where ```f : Rⁿ -> R```, ```c<sub>E</sub> : Rⁿ -> R<sup>m<sub>E</sub></sup>```, and ```c<sub>I</sub> : Rⁿ -> R<sup>m<sub>I</sub></sup>``` are continuously differentiable.
+where ```f```, ```cE```, and ```cI``` are continuously differentiable.  Note that the expectation could be in the form of an average of a finite number of terms.
 
 StochasticSQP is written in Matlab.  The main author is [Frank E. Curtis](http://coral.ise.lehigh.edu/frankecurtis/).  For a list of all contributors, please see the [AUTHORS file](StochasticSQP/AUTHORS).
 
