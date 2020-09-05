@@ -20,4 +20,7 @@ S.scale_factor_gradient_limit = S.options.getOption('scale_factor_gradient_limit
 % Add string options
 % (if any)
 
+% Get quantities options
+S.quantities.getOptions(S.options);
+
 end

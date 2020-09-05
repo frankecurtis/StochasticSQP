@@ -20,6 +20,9 @@ S.options.addDoubleOption('scale_factor_gradient_limit',1e+02,0,inf);
 % Add string options
 % (if any)
 
+% Add options from quantities
+S.quantities.addOptions(S.options);
+
 % Add options from strategies
 % (TO DO)
 

@@ -7,41 +7,49 @@
 % Stochastic SQP: optimize
 function optimize(S,problem)
 
+% Get global variables
+global R_SOLVER R_PER_ITERATION
+
 % Set problem
 S.problem = problem;
 
 % Get options
 S.getOptions;
 
-% Set iterate
-S.iterate = Point(S.problem);
+% Initialize quantities
+S.quantities.initialize(S.problem);
 
 % Determine scale factors
-S.iterate.determineScaleFactors(S.problem,S.scale_factor_gradient_limit);
+S.quantities.currentIterate.determineScaleFactors(S.scale_factor_gradient_limit);
+
+% Print header
+S.printHeader;
 
 % Main loop
-for k = 1:5
+while true
   
-  % Evaluate iterate values
-  S.iterate.primalPoint
-  S.iterate.objectiveFunction(S.problem)
-  S.iterate.objectiveGradient(S.problem)
-  S.iterate.constraintFunction(S.problem)
-  S.iterate.constraintJacobian(S.problem)
+  % Print iterate information
+  S.reporter.printf(R_SOLVER,R_PER_ITERATION,'%6d %+e %+e %+e\n',...
+                    S.quantities.iterationCounter,...
+                    S.quantities.currentIterate.objectiveFunction,...
+                    S.quantities.currentIterate.objectiveGradientNormInf,...
+                    S.quantities.currentIterate.constraintNormInf);
   
-  % Compute trial iterate
-  trial_iterate = S.iterate.makeLinearCombination(1.0,-S.iterate.objectiveGradient(S.problem));
+  % Check for termination
+  if S.quantities.iterationCounter >= S.iteration_limit, break; end
   
-  % Evaluate trial iterate values
-  trial_iterate.primalPoint
-  trial_iterate.objectiveFunction(S.problem)
-  trial_iterate.objectiveGradient(S.problem)
-  trial_iterate.constraintFunction(S.problem)
-  trial_iterate.constraintJacobian(S.problem)
+  % Compute search direction
+  S.quantities.setTrialIterate(S.quantities.currentIterate.makeLinearCombination(10.0/(S.quantities.iterationCounter+1),-S.quantities.currentIterate.objectiveGradient));
   
-  % Update iterate
-  S.iterate = trial_iterate;
+  % Set current iterate to trial iterate
+  S.quantities.updateIterate;
+
+  % Increment iteration counter
+  S.quantities.incrementIterationCounter;
     
 end
+
+% Print footer
+S.printFooter;
 
 end

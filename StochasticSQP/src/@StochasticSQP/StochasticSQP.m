@@ -34,8 +34,9 @@ classdef StochasticSQP < handle
     % Members %
     %%%%%%%%%%%
     options
-    iterate
     problem
+    quantities
+    reporter
     strategies
     
     %%%%%%%%%%%
@@ -57,6 +58,12 @@ classdef StochasticSQP < handle
       % Set options
       S.options = Options;
       
+      % Set quantities
+      S.quantities = Quantities;
+      
+      % Set reporter
+      S.reporter = Reporter;
+      
       % Add options
       S.addOptions;
       
@@ -75,6 +82,12 @@ classdef StochasticSQP < handle
     
     % Get options
     getOptions(S)
+    
+    % Print footer
+    printFooter(S)
+    
+    % Print header
+    printHeader(S)
         
   end
   
