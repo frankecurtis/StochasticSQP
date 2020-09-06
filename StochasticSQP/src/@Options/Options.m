@@ -10,9 +10,9 @@ classdef Options < handle
   % Properties (private access)
   properties (SetAccess = private, GetAccess = private)
     
-    %%%%%%%%%%%%%%
-    % QUANTITIES %
-    %%%%%%%%%%%%%%
+    %%%%%%%%%%%
+    % MEMBERS %
+    %%%%%%%%%%%
     list = {}
             
   end
@@ -20,19 +20,58 @@ classdef Options < handle
   % Methods (public access)
   methods (Access = public)
     
-    % Constructor (problem input)
-    function O = Options(varargin)
+    %%%%%%%%%%%%%%%
+    % CONSTRUCTOR %
+    %%%%%%%%%%%%%%%
+    
+    % Constructor
+    function O = Options
       
-      % Do nothing
+      % DO NOTHING
       
     end % Constructor
     
+    %%%%%%%%%%%%%%%%%
+    % PRINT METHODS %
+    %%%%%%%%%%%%%%%%%
+    
+    % Print
+    function print(O,reporter)
+      
+      % Loop through list
+      for i = 1:length(O.list)
+        reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'Option %d:\n',i);
+        reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  name...: %s\n',O.list{i}.name);
+        reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  type...: %s\n',O.list{i}.type);
+        if strcmp(O.list{i}.type,'bool') || strcmp(O.list{i}.type,'string')
+          reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  value..: %s\n',mat2str(O.list{i}.value));
+        elseif strcmp(O.list{i}.type,'integer')
+          reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  value..: %d\n',O.list{i}.value);
+        else
+          reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  value..: %e\n',O.list{i}.value);
+        end
+        if strcmp(O.list{i}.type,'integer')
+          reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  lower..: %d\n',O.list{i}.lower);
+          reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  upper..: %d\n',O.list{i}.upper);          
+        elseif strcmp(O.list{i}.type,'double')
+          reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  lower..: %e\n',O.list{i}.lower);
+          reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  upper..: %e\n',O.list{i}.upper);          
+        end
+      end
+      
+    end % print
+    
+    %%%%%%%%%%%%%%%
+    % ADD METHODS %
+    %%%%%%%%%%%%%%%
+    
     % Add bool option
-    function addBoolOption(O,name,value)
+    function addBoolOption(O,reporter,name,value)
       
       % Check if name already taken
       if O.nameTaken(name)
-        warning('Options: Duplicate name of option (%s)! Refusing to add this one.',name);
+        reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                        'Options: Duplicate name of option (%s)! Refusing to add this one.\n',name);
         return;
       end
       
@@ -46,14 +85,19 @@ classdef Options < handle
       % Add option to list
       O.list(length(O.list)+1) = {option};
       
-    end
+      % Print message
+      reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                      'Options: Bool option %s added with value %d.\n',option.name,mat2str(option.value));
+      
+    end % addBoolOption
 
     % Add bool option
-    function addDoubleOption(O,name,value,lower,upper)
+    function addDoubleOption(O,reporter,name,value,lower,upper)
       
       % Check if name already taken
       if O.nameTaken(name)
-        warning('Options: Duplicate name of option (%s)! Refusing to add this one.',name);
+        reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                        'Options: Duplicate name of option (%s)! Refusing to add this one.\n',name);
         return;
       end
       
@@ -66,15 +110,20 @@ classdef Options < handle
       
       % Add option to list
       O.list(length(O.list)+1) = {option};
+
+      % Print message
+      reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                      'Options: Double option %s added with value %+e.\n',option.name,option.value);
       
-    end
+    end % addDoubleOption
     
     % Add bool option
-    function addIntegerOption(O,name,value,lower,upper)
+    function addIntegerOption(O,reporter,name,value,lower,upper)
       
       % Check if name already taken
       if O.nameTaken(name)
-        warning('Options: Duplicate name of option (%s)! Refusing to add this one.',name);
+        reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                        'Options: Duplicate name of option (%s)! Refusing to add this one.\n',name);
         return;
       end
       
@@ -88,14 +137,19 @@ classdef Options < handle
       % Add option to list
       O.list(length(O.list)+1) = {option};
       
-    end
+      % Print message
+      reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                      'Options: Integer option %s added with value %d.\n',option.name,option.value);
+
+    end % addIntegerOption
     
     % Add bool option
-    function addStringOption(O,name,value)
+    function addStringOption(O,reporter,name,value)
       
       % Check if name already taken
       if O.nameTaken(name)
-        warning('Options: Duplicate name of option (%s)! Refusing to add this one.',name);
+        reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                        'Options: Duplicate name of option (%s)! Refusing to add this one.\n',name);
         return;
       end
       
@@ -108,21 +162,43 @@ classdef Options < handle
       
       % Add option to list
       O.list(length(O.list)+1) = {option};
-      
-    end
+
+      % Print message
+      reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                      'Options: String option %s added with value %s.\n',option.name,option.value);
+
+    end % addStringOption
+    
+    %%%%%%%%%%%%%%%
+    % GET METHODS %
+    %%%%%%%%%%%%%%%
     
     % Get option
-    function v = getOption(O,name)
+    function v = getOption(O,reporter,name)
+      
+      % Initialize boolean
+      name_found = false;
       
       % Loop through list
       for i = 1:length(O.list)
         if strcmp(O.list{i}.name,name)
           v = O.list{i}.value;
+          name_found = true;
           break;
         end
       end
       
-    end
+      % Check if name found
+      if ~name_found
+        reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                        'Options: Attempted to fine option (%s), but name not found.\n',option.name,option.value);
+      end
+      
+    end % getOption
+    
+    %%%%%%%%%%%%%%%%%
+    % CHECK METHODS %
+    %%%%%%%%%%%%%%%%%
 
     % Name taken(?)
     function b = nameTaken(O,name)
@@ -137,34 +213,8 @@ classdef Options < handle
         end
       end
       
-    end
-    
-    % Print
-    function print(O)
-      
-      % Loop through list
-      for i = 1:length(O.list)
-        fprintf('Option %d:\n',i);
-        fprintf('  name...: %s\n',O.list{i}.name);
-        fprintf('  type...: %s\n',O.list{i}.type);
-        if strcmp(O.list{i}.type,'bool') || strcmp(O.list{i}.type,'string')
-          fprintf('  value..: %s\n',mat2str(O.list{i}.value));
-        elseif strcmp(O.list{i}.type,'integer')
-          fprintf('  value..: %d\n',O.list{i}.value);
-        else
-          fprintf('  value..: %e\n',O.list{i}.value);
-        end
-        if strcmp(O.list{i}.type,'integer')
-          fprintf('  lower..: %d\n',O.list{i}.lower);
-          fprintf('  upper..: %d\n',O.list{i}.upper);          
-        elseif strcmp(O.list{i}.type,'double')
-          fprintf('  lower..: %e\n',O.list{i}.lower);
-          fprintf('  upper..: %e\n',O.list{i}.upper);          
-        end
-      end
-      
-    end
-    
-  end
+    end % nameTaken
+        
+  end % methods (public access)
   
-end
+end % Options

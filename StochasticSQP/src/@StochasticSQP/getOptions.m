@@ -4,23 +4,13 @@
 %
 % Authors: Frank E. Curtis
 
-% Stochastic SQP: getOptions
+% StochasticSQP: getOptions
 function getOptions(S)
 
-% Get bool options
-S.scale_problem = S.options.getOption('scale_problem');
+% Get options for quantities
+S.quantities_.getOptions(S.options_,S.reporter_);
 
-% Get integer options
-S.iteration_limit = S.options.getOption('iteration_limit');
+% Get options for strategies
+S.strategies_.getOptions(S.options_,S.reporter_);
 
-% Get double options
-S.stationarity_tolerance = S.options.getOption('stationarity_tolerance');
-S.scale_factor_gradient_limit = S.options.getOption('scale_factor_gradient_limit');
-
-% Add string options
-% (if any)
-
-% Get quantities options
-S.quantities.getOptions(S.options);
-
-end
+end % getOptions

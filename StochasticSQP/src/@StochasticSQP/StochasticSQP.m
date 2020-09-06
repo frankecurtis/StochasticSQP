@@ -14,17 +14,17 @@
 %
 % Constructors:
 %
-%   S = StochasticSQP()
+%   S = StochasticSQP
 %
 % Public methods:
 %
-%   [x,y] = S.solution()
-%       Returns solution estimate.
-%
-%   S.optimize()
+%   S.optimize(problem)
 %       Runs optimization algorithm.
+%
+%   [x,y] = S.solution
+%       Returns solution estimate.
 
-% Stochastic SQP class
+% StochasticSQP class
 classdef StochasticSQP < handle
   
   % Properties (private access)
@@ -33,67 +33,83 @@ classdef StochasticSQP < handle
     %%%%%%%%%%%
     % Members %
     %%%%%%%%%%%
-    options
-    problem
-    quantities
-    reporter
-    strategies
-    
-    %%%%%%%%%%%
-    % Options %
-    %%%%%%%%%%%
-    scale_problem
-    iteration_limit
-    stationarity_tolerance
-    scale_factor_gradient_limit
+    options_
+    quantities_
+    reporter_
+    status_
+    strategies_
     
   end
   
   % Methods (public access)
   methods (Access = public)
     
+    %%%%%%%%%%%%%%%
+    % CONSTRUCTOR %
+    %%%%%%%%%%%%%%%
+    
     % Constructor
-    function S = StochasticSQP(varargin)
+    function S = StochasticSQP
       
       % Set options
-      S.options = Options;
+      S.options_ = Options;
       
       % Set quantities
-      S.quantities = Quantities;
+      S.quantities_ = Quantities;
       
       % Set reporter
-      S.reporter = Reporter;
+      S.reporter_ = Reporter;
+      
+      % Set strategies
+      S.strategies_ = Strategies;
       
       % Add options
       S.addOptions;
       
-    end
+    end % Constructor
+    
+    %%%%%%%%%%%%
+    % OPTIMIZE %
+    %%%%%%%%%%%%
     
     % Optimize
     optimize(S,problem)
     
-  end
+    %%%%%%%%%%%%%%%
+    % GET METHODS %
+    %%%%%%%%%%%%%%%
+    
+    % Solution
+    [x,y] = solution(S)
+    
+  end % methods (public access)
   
   % Methods (private access)
   methods (Access = private)
-
-    % Add options
-    addOptions(S)
     
-    % Get options
-    getOptions(S)
+    %%%%%%%%%%%%%%%%%
+    % PRINT METHODS %
+    %%%%%%%%%%%%%%%%%
     
     % Print footer
     printFooter(S)
     
     % Print header
     printHeader(S)
-        
-  end
-  
-  % Methods (static)
-  methods (Static)
     
-  end
+    % Print iteration header
+    printIterationHeader(S)
+    
+    %%%%%%%%%%%%%%%%%%%
+    % OPTIONS METHODS %
+    %%%%%%%%%%%%%%%%%%%
+    
+    % Add options
+    addOptions(S)
+    
+    % Get options
+    getOptions(S)
+    
+  end % methods (private access)
   
-end
+end % StochasticSQP

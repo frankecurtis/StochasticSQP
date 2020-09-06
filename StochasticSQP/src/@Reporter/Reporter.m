@@ -10,42 +10,34 @@ classdef Reporter < handle
   % Properties (private access)
   properties (SetAccess = private, GetAccess = private)
     
-    %%%%%%%%%%%%%%
-    % QUANTITIES %
-    %%%%%%%%%%%%%%
+    %%%%%%%%%%%
+    % MEMBERS %
+    %%%%%%%%%%%
     list = {}
             
-  end
+  end % properties (private access)
   
   % Methods (public access)
   methods (Access = public)
     
+    %%%%%%%%%%%%%%%
+    % CONSTRUCTOR %
+    %%%%%%%%%%%%%%%
+    
     % Constructor
-    function R = Reporter(varargin)
-      
-      % Declare global enumerations
-      global R_SOLVER R_SUBSOLVER
-      global R_PER_ITERATION R_PER_INNER_ITERATION
-      
-      % Set global type enumerations
-      R_SOLVER = 0;
-      R_SUBSOLVER = 1;
-      
-      % Set global level enumerations
-      R_PER_ITERATION = 0;
-      R_PER_INNER_ITERATION = 1;
+    function R = Reporter
       
       % Add standard output by default
-      R.addStandardOutputReport(R_SOLVER,R_PER_ITERATION);
+      R.addStandardOutputReport(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION);
       
     end % Constructor
     
+    %%%%%%%%%%%%%%
+    % DESTRUCTOR %
+    %%%%%%%%%%%%%%
+    
     % Destructor
     function delete(R)
-      
-      % Clear global variables
-      clear global R_SOLVER R_SUBSOLVER
-      clear global R_PER_ITERATION R_PER_INNER_ITERATION
       
       % Close file reports
       for i = 1:length(R.list)
@@ -62,6 +54,10 @@ classdef Reporter < handle
       
     end % Destructor
     
+    %%%%%%%%%%%%%%%
+    % ADD METHODS %
+    %%%%%%%%%%%%%%%
+    
     % Add standard output report
     function addStandardOutputReport(R,type,level)
       
@@ -73,7 +69,7 @@ classdef Reporter < handle
       % Add report to list
       R.list(length(R.list)+1) = {report};
       
-    end
+    end % addStandardOutputReport
     
     % Add standard error report
     function addStandardErrorReport(R,type,level)
@@ -86,7 +82,7 @@ classdef Reporter < handle
       % Add report to list
       R.list(length(R.list)+1) = {report};
       
-    end
+    end % addStandardErrorReport
     
     % Add file report
     function addFileReport(R,type,level,file_name)
@@ -96,7 +92,7 @@ classdef Reporter < handle
       
       % Check for success
       if fileID == -1
-        warning('StochasticSQP: Could not open file (%s).\n',file_name);
+        warning('Reporter: Could not open file (%s).\n',file_name);
       else
         
         % Create report
@@ -109,7 +105,11 @@ classdef Reporter < handle
         
       end
       
-    end
+    end % addFileReport
+    
+    %%%%%%%%%%%%%%%%%
+    % PRINT METHODS %
+    %%%%%%%%%%%%%%%%%
     
     % Print, formatted
     function printf(R,type,level,format,varargin)
@@ -127,8 +127,8 @@ classdef Reporter < handle
         
       end
       
-    end
+    end % printf
     
-  end
+  end % methods (public access)
   
-end
+end % Reporter

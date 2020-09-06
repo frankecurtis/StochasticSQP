@@ -5,79 +5,35 @@
 % Authors: Frank E. Curtis
 
 % Problem class
-classdef Problem < handle
-    
-  % Methods (public access)
-  methods (Access = public)
-    
-    % Constructor
-    function P = Problem
-      
-      % Initialize here
-      
-    end
-        
-  end
+classdef (Abstract) Problem < handle
   
-  % Methods (static)
-  methods (Static)
+  % Methods (abstract)
+  methods (Abstract)
     
     % Objective function
-    function f = evaluateObjectiveFunction(x)
+    [f,err] = evaluateObjectiveFunction(P,x)
       
-      % Evaluate objective function
-      f = x(1)^2 + x(2)^2;
-      
-    end % evaluateObjectiveFunction
-
     % Objective gradient
-    function g = evaluateObjectiveGradient(x)
+    [g,err] = evaluateObjectiveGradient(P,x)
       
-      % Evaluate objective gradient
-      g = 2*[x(1); x(2)];
-      
-    end % evaluateObjectiveGradient
-
     % Constraint function
-    function c = evaluateConstraintFunction(x)
+    [c,err] = evaluateConstraintFunction(P,x)
       
-      % Evaluate constraint function
-      c = x(1) + x(2) - 1;
-      
-    end % evaluateConstraintFunction
-
     % Constraint Jacobian
-    function J = evaluateConstraintJacobian(~)
-      
-      % Evaluate constraint Jacobian
-      J = [1 1];
-      
-    end % evaluateConstraintJacobian
+    [J,err] = evaluateConstraintJacobian(P,x)
+    
+    % Hessian of the Lagrangian
+    [H,err] = evaluateHessianOfLagrangian(P,x,y)
     
     % Initial point
-    function x = initialPoint
-      
-      % Set initial point
-      x = [4; 2];
-      
-    end % initialPoint
+    x = initialPoint(P)
     
     % Number of constraints
-    function m = numberOfConstraints
-      
-      % Set number of constraints
-      m = 1;
-      
-    end % numberOfConstraints
+    m = numberOfConstraints(P)
     
     % Number of variables
-    function n = numberOfVariables
-      
-      % Set number of variables
-      n = 2;
-      
-    end % numberOfVariables
+    n = numberOfVariables(P)
     
-  end
+  end % methods (abstract)
   
-end
+end % Problem
