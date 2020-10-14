@@ -79,8 +79,43 @@ classdef StochasticSQP < handle
     % GET METHODS %
     %%%%%%%%%%%%%%%
     
-    % Solution
-    [x,y] = solution(S)
+    % Final iterate
+    function [x,yE,yI,infeasibility,stationarity] = finalIterate(S)
+      
+      % Set return values
+      x = S.quantities_.currentIterate.primalPoint;
+      [yE,yI] = S.quantities_.currentIterate.multipliers;
+      infeasibility = S.quantities_.currentIterate.constraintNormInf(S.quantities_);
+      stationarity = S.quantities_.currentIterate.stationarityMeasure(S.quantities_);
+      
+    end % finalIterate
+    
+    % Options
+    function o = options(S)
+      
+      % Set return value
+      o = S.options_;
+      
+    end % options
+    
+    % Reporter
+    function r = reporter(S)
+      
+      % Set return value
+      r = S.reporter_;
+      
+    end % reporter
+    
+    % Solution (best)
+    function [x,yE,yI,infeasibility,stationarity] = solution(S)
+      
+      % Set return values
+      x = S.quantities_.bestIterate.primalPoint;
+      [yE,yI] = S.quantities_.bestIterate.multipliers;
+      infeasibility = S.quantities_.bestIterate.constraintNormInf(S.quantities_);
+      stationarity = S.quantities_.bestIterate.stationarityMeasure(S.quantities_);
+
+    end % solution
     
   end % methods (public access)
   
@@ -95,7 +130,7 @@ classdef StochasticSQP < handle
     printFooter(S)
     
     % Print header
-    printHeader(S)
+    printHeader(S,P)
     
     % Print iteration header
     printIterationHeader(S)
@@ -109,7 +144,7 @@ classdef StochasticSQP < handle
     
     % Get options
     getOptions(S)
-    
+        
   end % methods (private access)
   
 end % StochasticSQP

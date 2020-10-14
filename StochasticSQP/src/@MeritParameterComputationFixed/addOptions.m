@@ -4,10 +4,10 @@
 %
 % Authors: Frank E. Curtis
 
-% DirectionComputationEQP: addOptions
+% MeritParameterComputationModelReduction: addOptions
 function addOptions(options,reporter)
 
 % Add options
-options.addBoolOption(reporter,'DCEQP_use_hessian_of_lagrangian',true);
+% DO NOTHING
 
 end % addOptions

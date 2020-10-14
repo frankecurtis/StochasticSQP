@@ -4,10 +4,10 @@
 %
 % Authors: Frank E. Curtis
 
-% DirectionComputationEQP: getOptions
+% DirectionComputationSubgradient: getOptions
 function getOptions(D,options,reporter)
 
 % Get options
-D.use_hessian_of_lagrangian_ = options.getOption(reporter,'DCEQP_use_hessian_of_lagrangian');
+D.compute_least_squares_multipliers_ = options.getOption(reporter,'DCS_compute_least_squares_multipliers');
 
 end % getOptions

@@ -13,24 +13,27 @@ classdef Quantities < handle
     %%%%%%%%%%%%%%%%%%%%%%%%
     % ALGORITHM QUANTITIES %
     %%%%%%%%%%%%%%%%%%%%%%%%
+    best_iterate_
     current_iterate_
-    direction_
+    direction_primal_
+    direction_dual_
     merit_parameter_
     model_reduction_
-    multiplier_
+    ratio_parameter_
     stepsize_
     trial_iterate_
     
     %%%%%%%%%%%%
     % COUNTERS %
     %%%%%%%%%%%%
-    constraint_function_evaluation_counter_ = 0
-    constraint_Jacobian_evaluation_counter_ = 0
+    constraint_function_equalities_evaluation_counter_ = 0
+    constraint_function_inequalities_evaluation_counter_ = 0
+    constraint_Jacobian_equalities_evaluation_counter_ = 0
+    constraint_Jacobian_inequalities_evaluation_counter_ = 0
+    hessian_of_lagrangian_evaluation_counter_ = 0
     iteration_counter_ = 0
-    inner_iteration_counter_ = 0
     objective_function_evaluation_counter_ = 0
     objective_gradient_evaluation_counter_ = 0
-    total_inner_iteration_counter_ = 0
     
     %%%%%%%%%%%%%%
     % INDICATORS %
@@ -43,10 +46,12 @@ classdef Quantities < handle
     cpu_time_limit_
     constraint_function_evaluation_limit_
     constraint_Jacobian_evaluation_limit_
+    hessian_of_lagrangian_evaluation_limit_
     iteration_limit_
     objective_function_evaluation_limit_
     objective_gradient_evaluation_limit_
     scale_factor_gradient_limit_
+    size_limit_;
     stationarity_tolerance_
     
   end
@@ -117,13 +122,29 @@ classdef Quantities < handle
     % GET METHODS %
     %%%%%%%%%%%%%%%
     
-    % Constraint function evaluation counter
-    function c = constraintFunctionEvaluationCounter(Q)
+    % Best iterate
+    function iterate = bestIterate(Q)
       
       % Set return value
-      c = Q.constraint_function_evaluation_counter_;
+      iterate = Q.best_iterate_;
       
-    end % constraintFunctionEvaluationCounter
+    end % bestIterate
+    
+    % Constraint function, equalities, evaluation counter
+    function c = constraintFunctionEqualitiesEvaluationCounter(Q)
+      
+      % Set return value
+      c = Q.constraint_function_equalities_evaluation_counter_;
+      
+    end % constraintFunctionEqualitiesEvaluationCounter
+    
+    % Constraint function, inequalities, evaluation counter
+    function c = constraintFunctionInequalitiesEvaluationCounter(Q)
+      
+      % Set return value
+      c = Q.constraint_function_inequalities_evaluation_counter_;
+      
+    end % constraintFunctionInequalitiesEvaluationCounter
     
     % Constraint function evaluation limit
     function c_max = constraintFunctionEvaluationLimit(Q)
@@ -133,13 +154,21 @@ classdef Quantities < handle
       
     end % constraintFunctionEvaluationLimit
     
-    % Constraint Jacobian evaluation counter
-    function J = constraintJacobianEvaluationCounter(Q)
+    % Constraint Jacobian, equalities, evaluation counter
+    function J = constraintJacobianEqualitiesEvaluationCounter(Q)
       
       % Set return value
-      J = Q.constraint_Jacobian_evaluation_counter_;
+      J = Q.constraint_Jacobian_equalities_evaluation_counter_;
       
-    end % constraintJacobianEvaluationCounter
+    end % constraintJacobianEqualitiesEvaluationCounter
+    
+    % Constraint Jacobian, inequalities, evaluation counter
+    function J = constraintJacobianInequalitiesEvaluationCounter(Q)
+      
+      % Set return value
+      J = Q.constraint_Jacobian_inequalities_evaluation_counter_;
+      
+    end % constraintJacobianInequalitiesEvaluationCounter
     
     % ConstraintJacobian evaluation limit
     function J_max = constraintJacobianEvaluationLimit(Q)
@@ -165,21 +194,21 @@ classdef Quantities < handle
       
     end % currentIterate
     
-    % Direction
-    function d = direction(Q)
+    % Direction, primal
+    function d = directionPrimal(Q)
       
       % Set return value
-      d = Q.direction_;
+      d = Q.direction_primal_;
       
-    end % direction
+    end % directionPrimal
     
-    % Inner iteration counter
-    function k = innerIterationCounter(Q)
+    % Direction, dual
+    function d = directionDual(Q)
       
       % Set return value
-      k = Q.inner_iteration_counter_;
+      d = Q.direction_dual_;
       
-    end % innerIterationCounter
+    end % directionDual
     
     % Iteration counter
     function k = iterationCounter(Q)
@@ -213,14 +242,6 @@ classdef Quantities < handle
       
     end % modelReduction
     
-    % Multiplier
-    function y = multiplier(Q)
-      
-      % Set return value
-      y = Q.multiplier_;
-      
-    end % multiplier
-    
     % Objective function evaluation counter
     function f = objectiveFunctionEvaluationCounter(Q)
       
@@ -253,6 +274,14 @@ classdef Quantities < handle
       
     end % objectiveGradientEvaluationLimit
     
+    % Ratio parameter
+    function t = ratioParameter(Q)
+      
+      % Set return value
+      t = Q.ratio_parameter_;
+      
+    end % ratioParameter
+    
     % Scale factor gradient limit
     function s_max = scaleFactorGradientLimit(Q)
       
@@ -269,6 +298,14 @@ classdef Quantities < handle
       
     end % scaleProblem
     
+    % Size limit
+    function s_max = sizeLimit(Q)
+      
+      % Set return value
+      s_max = Q.size_limit_;
+      
+    end % sizeLimit
+
     % Stationarity tolerance
     function t = stationarityTolerance(Q)
       
@@ -285,14 +322,6 @@ classdef Quantities < handle
       
     end % stepsize
     
-    % Total inner iteration counter
-    function k = totalInnerIterationCounter(Q)
-      
-      % Set return value
-      k = Q.total_inner_iteration_counter_;
-      
-    end % totalInnerIterationCounter
-    
     % Trial iterate
     function iterate = trialIterate(Q)
       
@@ -305,13 +334,21 @@ classdef Quantities < handle
     % SET METHODS %
     %%%%%%%%%%%%%%%
     
-    % Set direction
-    function setDirection(Q,direction)
+    % Set direction, primal
+    function setDirectionPrimal(Q,direction)
       
       % Set direction
-      Q.direction_ = direction;
+      Q.direction_primal_ = direction;
       
-    end % setDirection
+    end % setDirectionPrimal
+    
+    % Set direction, dual
+    function setDirectionDual(Q,direction)
+      
+      % Set direction
+      Q.direction_dual_ = direction;
+      
+    end % setDirectionDual
     
     % Set merit parameter
     function setMeritParameter(Q,merit_parameter)
@@ -329,13 +366,13 @@ classdef Quantities < handle
       
     end % setModelReduction
     
-    % Set multiplier
-    function setMultiplier(Q,multiplier)
+    % Set ratio parameter
+    function setRatioParameter(Q,ratio_parameter)
       
-      % Set multiplier
-      Q.multiplier_ = multiplier;
+      % Set ratio parameter
+      Q.ratio_parameter_ = ratio_parameter;
       
-    end % setMultiplier
+    end % setRatioParameter
     
     % Set stepsize
     function setStepsize(Q,stepsize)
@@ -356,6 +393,14 @@ classdef Quantities < handle
     % Update iterate
     function updateIterate(Q)
       
+      % Update best iterate
+      if (Q.best_iterate_.constraintNormInf(Q) > Q.stationarityTolerance && ...
+          Q.current_iterate_.constraintNormInf(Q) < Q.best_iterate_.constraintNormInf(Q)) || ...
+         (Q.best_iterate_.constraintNormInf(Q) <= Q.stationarityTolerance && ...
+          Q.current_iterate_.stationarityMeasure(Q) <= Q.best_iterate_.stationarityMeasure(Q))
+        Q.best_iterate_ = Q.current_iterate_;
+      end
+      
       % Set current iterate to trial iterate
       Q.current_iterate_ = Q.trial_iterate_;
       
@@ -365,21 +410,45 @@ classdef Quantities < handle
     % INCREMENT METHODS %
     %%%%%%%%%%%%%%%%%%%%%
     
-    % Increment constraint function evaluation counter
-    function incrementConstraintFunctionEvaluationCounter(Q)
+    % Increment constraint function, equalities, evaluation counter
+    function incrementConstraintFunctionEqualitiesEvaluationCounter(Q)
       
-      % Increment constraint function evaluation counter
-      Q.constraint_function_evaluation_counter_ = Q.constraint_function_evaluation_counter_ + 1;
+      % Increment constraint function, equalities, evaluation counter
+      Q.constraint_function_equalities_evaluation_counter_ = Q.constraint_function_equalities_evaluation_counter_ + 1;
       
-    end % incrementConstraintFunctionEvaluationCounter
+    end % incrementConstraintFunctionEqualitiesEvaluationCounter
     
-    % Increment constraint Jacobian evaluation counter
-    function incrementConstraintJacobianEvaluationCounter(Q)
+    % Increment constraint function, inequalities, evaluation counter
+    function incrementConstraintFunctionInequalitiesEvaluationCounter(Q)
       
-      % Increment constraint Jacobian evaluation counter
-      Q.constraint_Jacobian_evaluation_counter_ = Q.constraint_Jacobian_evaluation_counter_ + 1;
+      % Increment constraint function, inequalities, evaluation counter
+      Q.constraint_function_inequalities_evaluation_counter_ = Q.constraint_function_inequalities_evaluation_counter_ + 1;
       
-    end % incrementConstraintJacobianEvaluationCounter
+    end % incrementConstraintFunctionEqualitiesEvaluationCounter
+    
+    % Increment constraint Jacobian, equalities, evaluation counter
+    function incrementConstraintJacobianEqualitiesEvaluationCounter(Q)
+      
+      % Increment constraint Jacobian, equalities, evaluation counter
+      Q.constraint_Jacobian_equalities_evaluation_counter_ = Q.constraint_Jacobian_equalities_evaluation_counter_ + 1;
+      
+    end % incrementConstraintJacobianEqualitiesEvaluationCounter
+    
+    % Increment constraint Jacobian, inequalities, evaluation counter
+    function incrementConstraintJacobianInequalitiesEvaluationCounter(Q)
+      
+      % Increment constraint Jacobian, inequalities, evaluation counter
+      Q.constraint_Jacobian_inequalities_evaluation_counter_ = Q.constraint_Jacobian_inequalities_evaluation_counter_ + 1;
+      
+    end % incrementConstraintJacobianInequalitiesEvaluationCounter
+    
+    % Increment Hessian of Lagrangian evaluation counter
+    function incrementHessianOfLagrangianEvaluationCounter(Q)
+      
+      % Increment Hessian of Lagrangian evaluation counter
+      Q.hessian_of_lagrangian_evaluation_counter_ = Q.hessian_of_lagrangian_evaluation_counter_ + 1;
+      
+    end % incrementHessianOfLagrangianEvaluationCounter
     
     % Increment iteration counter
     function incrementIterationCounter(Q)
@@ -388,14 +457,6 @@ classdef Quantities < handle
       Q.iteration_counter_ = Q.iteration_counter_ + 1;
       
     end % incrementIterationCounter
-    
-    % Increment inner iteration counter
-    function incrementInnerIterationCounter(Q)
-      
-      % Increment inner iteration counter
-      Q.inner_iteration_counter_ = Q.inner_iteration_counter_ + 1;
-      
-    end % incrementInnerIterationCounter
     
     % Increment objective function evaluation counter
     function incrementObjectiveFunctionEvaluationCounter(Q)
@@ -412,22 +473,6 @@ classdef Quantities < handle
       Q.objective_gradient_evaluation_counter_ = Q.objective_gradient_evaluation_counter_ + 1;
       
     end % incrementObjectiveGradientEvaluationCounter
-    
-    % Increment total inner iteration counter
-    function incrementTotalInnerIterationCounter(Q)
-      
-      % Increment total inner iteration counter
-      Q.total_inner_iteration_counter_ = Q.total_inner_iteration_counter_ + Q.inner_iteration_counter_;
-      
-    end % incrementTotalInnerIterationCounter
-    
-    % Reset inner iteration counter
-    function resetInnerIterationCounter(Q)
-      
-      % Reset inner iteration counter
-      Q.inner_iteration_counter_ = 0;
-      
-    end % resetInnerIterationCounter
     
   end % methods (public access)
   

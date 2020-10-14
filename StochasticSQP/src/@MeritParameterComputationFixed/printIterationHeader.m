@@ -9,6 +9,6 @@ function printIterationHeader(M,reporter)
 
 % Print iteration header
 reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...
-  '  Merit Param.   Model Red.   Ratio Param.');
+  '  Merit Param.  Ratio Param.');
 
 end % printIterationHeader

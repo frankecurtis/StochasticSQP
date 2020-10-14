@@ -20,6 +20,9 @@ classdef StepsizeComputationAdaptive < StepsizeComputation
     %%%%%%%%%%%
     objective_Lipschitz_
     constraint_Lipschitz_
+    projection_width_
+    stepsize_diminishing_
+    stepsize_scaling_
     sufficient_decrease_
     
   end % properties (private access)

@@ -34,7 +34,7 @@ classdef (Abstract) DirectionComputation < Strategy
     n = name(S)
     
     % Compute direction
-    computeDirection(S,options,quantities,reporter,strategies)
+    err = computeDirection(S,options,quantities,reporter,strategies)
     
   end % methods (abstract)
   

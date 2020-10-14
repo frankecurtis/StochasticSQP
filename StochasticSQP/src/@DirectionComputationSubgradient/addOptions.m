@@ -4,10 +4,10 @@
 %
 % Authors: Frank E. Curtis
 
-% DirectionComputationEQP: addOptions
+% DirectionComputationSubgradient: addOptions
 function addOptions(options,reporter)
 
 % Add options
-options.addBoolOption(reporter,'DCEQP_use_hessian_of_lagrangian',true);
+options.addBoolOption(reporter,'DCS_compute_least_squares_multipliers',true);
 
 end % addOptions

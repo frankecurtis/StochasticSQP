@@ -20,7 +20,7 @@ S.quantities_.currentIterate.determineScaleFactors(S.quantities_);
 S.strategies_.initialize(S.options_,S.quantities_,S.reporter_);
 
 % Print header
-S.printHeader;
+S.printHeader(problem);
 
 % Main loop
 while true
@@ -32,19 +32,32 @@ while true
   S.quantities_.printIterationValues(S.reporter_);
   
   % Check for termination
+  if S.quantities_.currentIterate.numberOfVariables + ...
+      S.quantities_.currentIterate.numberOfConstraintsEqualities + ...
+      S.quantities_.currentIterate.numberOfConstraintsInequalities >= ...
+      S.quantities_.sizeLimit
+    S.status_ = Enumerations.S_SIZE_LIMIT;
+    break;
+  end
   if S.quantities_.iterationCounter >= S.quantities_.iterationLimit
     S.status_ = Enumerations.S_ITERATION_LIMIT;
     break;
   end
   
   % Compute search direction (sets direction)
-  S.strategies_.directionComputation.computeDirection(S.options_,S.quantities_,S.reporter_,S.strategies_);
+  err = S.strategies_.directionComputation.computeDirection(S.options_,S.quantities_,S.reporter_,S.strategies_);
+  
+  % Check for error
+  if err == true
+    S.status_ = Enumerations.S_DIRECTION_COMPUTATION_FAILURE;
+    break;
+  end
   
   % Print direction computation values
   S.strategies_.directionComputation.printIterationValues(S.quantities_,S.reporter_);
   
   % Check for termination
-  if S.quantities_.currentIterate.stationarityMeasure(S.quantities_,S.quantities_.multiplier) <= S.quantities_.stationarityTolerance
+  if S.quantities_.currentIterate.stationarityMeasure(S.quantities_) <= S.quantities_.stationarityTolerance
     S.status_ = Enumerations.S_SUCCESS;
     break;
   end

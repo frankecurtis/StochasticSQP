@@ -4,11 +4,11 @@
 %
 % Authors: Frank E. Curtis
 
-% Strategies: printIterationHeader
-function printIterationHeader(M,reporter)
+% StepsizeComputationConservative: printIterationHeader
+function printIterationHeader(S,reporter)
 
 % Print iteration header
 reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...
-  '  Merit Param.   Model Red.   Ratio Param.');
+  '    Stepsize  ');
 
 end % printIterationHeader

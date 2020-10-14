@@ -14,7 +14,7 @@ classdef Options < handle
     % MEMBERS %
     %%%%%%%%%%%
     list = {}
-            
+    
   end
   
   % Methods (public access)
@@ -52,10 +52,10 @@ classdef Options < handle
         end
         if strcmp(O.list{i}.type,'integer')
           reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  lower..: %d\n',O.list{i}.lower);
-          reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  upper..: %d\n',O.list{i}.upper);          
+          reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  upper..: %d\n',O.list{i}.upper);
         elseif strcmp(O.list{i}.type,'double')
           reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  lower..: %e\n',O.list{i}.lower);
-          reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  upper..: %e\n',O.list{i}.upper);          
+          reporter.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,'  upper..: %e\n',O.list{i}.upper);
         end
       end
       
@@ -71,7 +71,7 @@ classdef Options < handle
       % Check if name already taken
       if O.nameTaken(name)
         reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
-                        'Options: Duplicate name of option (%s)! Refusing to add this one.\n',name);
+          'Options: Duplicate name (%s) of option! Refusing to add this one.\n',name);
         return;
       end
       
@@ -87,17 +87,17 @@ classdef Options < handle
       
       % Print message
       reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
-                      'Options: Bool option %s added with value %d.\n',option.name,mat2str(option.value));
+        'Options: Bool option %s added with value %d.\n',option.name,mat2str(option.value));
       
     end % addBoolOption
-
-    % Add bool option
+    
+    % Add double option
     function addDoubleOption(O,reporter,name,value,lower,upper)
       
       % Check if name already taken
       if O.nameTaken(name)
         reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
-                        'Options: Duplicate name of option (%s)! Refusing to add this one.\n',name);
+          'Options: Duplicate name (%s) of option! Refusing to add this one.\n',name);
         return;
       end
       
@@ -110,20 +110,20 @@ classdef Options < handle
       
       % Add option to list
       O.list(length(O.list)+1) = {option};
-
+      
       % Print message
       reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
-                      'Options: Double option %s added with value %+e.\n',option.name,option.value);
+        'Options: Double option %s added with value %+e.\n',option.name,option.value);
       
     end % addDoubleOption
     
-    % Add bool option
+    % Add integer option
     function addIntegerOption(O,reporter,name,value,lower,upper)
       
       % Check if name already taken
       if O.nameTaken(name)
         reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
-                        'Options: Duplicate name of option (%s)! Refusing to add this one.\n',name);
+          'Options: Duplicate name (%s) of option! Refusing to add this one.\n',name);
         return;
       end
       
@@ -139,34 +139,34 @@ classdef Options < handle
       
       % Print message
       reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
-                      'Options: Integer option %s added with value %d.\n',option.name,option.value);
-
+        'Options: Integer option %s added with value %d.\n',option.name,option.value);
+      
     end % addIntegerOption
     
-    % Add bool option
+    % Add string option
     function addStringOption(O,reporter,name,value)
       
       % Check if name already taken
       if O.nameTaken(name)
         reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
-                        'Options: Duplicate name of option (%s)! Refusing to add this one.\n',name);
+          'Options: Duplicate name (%s) of option! Refusing to add this one.\n',name);
         return;
       end
       
       % Create option
       option.name = name;
-      option.type = 'integer';
+      option.type = 'string';
       option.value = value;
       option.lower = [];
       option.upper = [];
       
       % Add option to list
       O.list(length(O.list)+1) = {option};
-
+      
       % Print message
       reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
-                      'Options: String option %s added with value %s.\n',option.name,option.value);
-
+        'Options: String option %s added with value %s.\n',option.name,option.value);
+      
     end % addStringOption
     
     %%%%%%%%%%%%%%%
@@ -191,21 +191,94 @@ classdef Options < handle
       % Check if name found
       if ~name_found
         reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
-                        'Options: Attempted to fine option (%s), but name not found.\n',option.name,option.value);
+          'Options: Attempted to find option, but name (%s) not found.\n',name);
       end
       
     end % getOption
     
+    %%%%%%%%%%%%%%%%%%
+    % MODIFY METHODS %
+    %%%%%%%%%%%%%%%%%%
+    
+    % Modify option
+    function modifyOption(O,reporter,name,value)
+      
+      % Initialize boolean
+      name_found = false;
+      
+      % Loop through list
+      for i = 1:length(O.list)
+        if strcmp(O.list{i}.name,name)
+          name_found = true;
+          if strcmp(O.list{i}.type,'bool')
+            if length(size(value)) == 2 && size(value,1) == 1 && size(value,2) == 1 && isbool(value)
+              O.list{i}.value = value;
+              reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                'Options: Modified option %s with new value %d.\n',name,mat2str(value));
+            else
+              reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                'Options: Attempted to modify bool option (%s), but value has wrong type.\n',name);
+            end
+          elseif strcmp(O.list{i}.type,'double')
+            if length(size(value)) == 2 && size(value,1) == 1 && size(value,2) == 1 && isfloat(value)
+              if O.list{i}.lower <= value && value <= O.list{i}.upper
+                O.list{i}.value = value;
+                reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                  'Options: Modified option %s with new value %e.\n',name,value);
+              else
+                reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                  'Options: Attempted to modify double option (%s), but value is out of bounds.\n',name);
+              end
+            else
+              reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                'Options: Attempted to modify double option (%s), but value has wrong type.\n',name);
+            end
+          elseif strcmp(O.list{i}.type,'integer')
+            if length(size(value)) == 2 && size(value,1) == 1 && size(value,2) == 1 && isinteger(value)
+              if O.list{i}.lower <= value && value <= O.list{i}.upper
+                O.list{i}.value = value;
+                reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                  'Options: Modified option %s with new value %d.\n',name,value);
+              else
+                reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                  'Options: Attempted to modify integer option (%s), but value is out of bounds.\n',name);
+              end
+            else
+              reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                'Options: Attempted to modify integer option (%s), but value has wrong type.\n',name);
+            end
+          elseif strcmp(O.list{i}.type,'string')
+            if length(size(value)) == 2 && size(value,1) == 1 && ischar(value)
+              O.list{i}.value = value;
+              reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                'Options: Modified option %s with new value %s.\n',name,value);
+            else
+              reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+                'Options: Attempted to modify string option (%s), but value has wrong type.\n',name);
+            end
+          end
+          break;
+        end
+      end
+            
+      % Check if name found
+      if ~name_found
+        reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
+          'Options: Attempted to modify option, but name (%s) not found.\n',name);
+      end
+      
+    end % modifyOption
+    
     %%%%%%%%%%%%%%%%%
     % CHECK METHODS %
     %%%%%%%%%%%%%%%%%
-
+    
     % Name taken(?)
     function b = nameTaken(O,name)
       
       % Initialize boolean
       b = false;
-            
+      
       % Loop through list to check if name has been taken
       for i = 1:length(O.list)
         if strcmp(O.list{i}.name,name)
@@ -214,7 +287,7 @@ classdef Options < handle
       end
       
     end % nameTaken
-        
+    
   end % methods (public access)
   
 end % Options

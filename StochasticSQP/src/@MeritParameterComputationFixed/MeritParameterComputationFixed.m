@@ -4,8 +4,8 @@
 %
 % Authors: Frank E. Curtis
 
-% DirectionComputationEQP class
-classdef DirectionComputationEQP < DirectionComputation
+% MeritParameterComputationFixed class
+classdef MeritParameterComputationFixed < MeritParameterComputation
   
   % Properties (private access)
   properties (SetAccess = private, GetAccess = private)
@@ -13,12 +13,7 @@ classdef DirectionComputationEQP < DirectionComputation
     %%%%%%%%
     % NAME %
     %%%%%%%%
-    n = 'EQP'
-    
-    %%%%%%%%%%%
-    % OPTIONS %
-    %%%%%%%%%%%
-    use_hessian_of_lagrangian_
+    n = 'Fixed'
     
   end % properties (private access)
   
@@ -42,7 +37,7 @@ classdef DirectionComputationEQP < DirectionComputation
     %%%%%%%%%%%%%%%
     
     % Constructor
-    function D = DirectionComputationEQP
+    function M = MeritParameterComputationFixed
       
       % DO NOTHING
       
@@ -53,44 +48,44 @@ classdef DirectionComputationEQP < DirectionComputation
     %%%%%%%%%%%%%%%%%
     
     % Print iteration header
-    printIterationHeader(D,reporter)
+    printIterationHeader(M,reporter)
     
     % Print iteration values
-    printIterationValues(D,quantities,reporter)
+    printIterationValues(M,quantities,reporter)
     
     %%%%%%%%%%%%%%%%%%%
     % OPTIONS METHODS %
     %%%%%%%%%%%%%%%%%%%
     
     % Get options
-    getOptions(D,options,reporter)
+    getOptions(M,options,reporter)
     
     %%%%%%%%%%%%%%%%%%%%%%
     % INITIALIZE METHODS %
     %%%%%%%%%%%%%%%%%%%%%%
     
     % Initialize
-    initialize(D,options,quantities,reporter)
+    initialize(M,options,quantities,reporter)
     
     %%%%%%%%%%%%%%%
     % GET METHODS %
     %%%%%%%%%%%%%%%
-    
+
     % Name
-    function n = name(D)
+    function n = name(M)
       
       % Set return value
-      n = D.n;
+      n = M.n;
       
     end % name
     
     %%%%%%%%%%%%%%%%%%%
     % COMPUTE METHODS %
     %%%%%%%%%%%%%%%%%%%
-    
-    % Compute direction
-    err = computeDirection(D,options,quantities,reporter,strategies)
-    
+
+    % Compute stepsize
+    computeMeritParameter(M,options,quantities,reporter,strategies)
+        
   end % methods (public access)
   
-end % DirectionComputationEQP
+end % Options

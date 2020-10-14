@@ -4,8 +4,8 @@
 %
 % Authors: Frank E. Curtis
 
-% DirectionComputationEQP class
-classdef DirectionComputationEQP < DirectionComputation
+% StepsizeComputationConservative class
+classdef StepsizeComputationConservative < StepsizeComputation
   
   % Properties (private access)
   properties (SetAccess = private, GetAccess = private)
@@ -13,12 +13,15 @@ classdef DirectionComputationEQP < DirectionComputation
     %%%%%%%%
     % NAME %
     %%%%%%%%
-    n = 'EQP'
+    n = 'Conservative'
     
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    use_hessian_of_lagrangian_
+    objective_Lipschitz_
+    constraint_Lipschitz_
+    stepsize_diminishing_
+    stepsize_scaling_
     
   end % properties (private access)
   
@@ -42,7 +45,7 @@ classdef DirectionComputationEQP < DirectionComputation
     %%%%%%%%%%%%%%%
     
     % Constructor
-    function D = DirectionComputationEQP
+    function S = StepsizeComputationConservative
       
       % DO NOTHING
       
@@ -53,10 +56,10 @@ classdef DirectionComputationEQP < DirectionComputation
     %%%%%%%%%%%%%%%%%
     
     % Print iteration header
-    printIterationHeader(D,reporter)
+    printIterationHeader(S,reporter)
     
     % Print iteration values
-    printIterationValues(D,quantities,reporter)
+    printIterationValues(S,quantities,reporter)
     
     %%%%%%%%%%%%%%%%%%%
     % OPTIONS METHODS %
@@ -88,9 +91,9 @@ classdef DirectionComputationEQP < DirectionComputation
     % COMPUTE METHODS %
     %%%%%%%%%%%%%%%%%%%
     
-    % Compute direction
-    err = computeDirection(D,options,quantities,reporter,strategies)
+    % Compute stepsize
+    computeStepsize(D,options,quantities,reporter,strategies)
     
   end % methods (public access)
   
-end % DirectionComputationEQP
+end % StepsizeComputationConservative

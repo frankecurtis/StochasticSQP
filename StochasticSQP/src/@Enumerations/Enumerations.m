@@ -28,7 +28,9 @@ classdef Enumerations < uint8
     %%%%%%%%%%%%%%%%%%%
     S_UNSET (0)
     S_SUCCESS (1)
-    S_ITERATION_LIMIT (2)
+    S_SIZE_LIMIT (2)
+    S_ITERATION_LIMIT (3)
+    S_DIRECTION_COMPUTATION_FAILURE (4)
 
   end % enumeration
   

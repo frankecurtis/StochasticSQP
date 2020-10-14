@@ -16,12 +16,16 @@ stepsize_computation_name = options.getOption(reporter,'stepsize_computation');
 switch direction_computation_name
   case 'EQP'
     S.direction_computation_ = DirectionComputationEQP;
+  case 'Subgradient'
+    S.direction_computation_ = DirectionComputationSubgradient;
   otherwise
     S.direction_computation_ = DirectionComputationEQP;
 end
 
 % Switch on merit parameter computation names
 switch merit_parameter_computation_name
+  case 'Fixed'
+    S.merit_parameter_computation_ = MeritParameterComputationFixed;
   case 'ModelReduction'
     S.merit_parameter_computation_ = MeritParameterComputationModelReduction;
   otherwise
@@ -32,6 +36,8 @@ end
 switch stepsize_computation_name
   case 'Adaptive'
     S.stepsize_computation_ = StepsizeComputationAdaptive;
+  case 'Conservative'
+    S.stepsize_computation_ = StepsizeComputationConservative;
   otherwise
     S.stepsize_computation_ = StepsizeComputationAdaptive;
 end

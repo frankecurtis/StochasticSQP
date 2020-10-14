@@ -4,7 +4,7 @@
 %
 % Authors: Frank E. Curtis
 
-% DirectionComputationEQP: printIterationValues
+% DirectionComputationSubgradient: printIterationValues
 function printIterationValues(S,quantities,reporter)
 
 % Get multipliers

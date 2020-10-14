@@ -4,8 +4,8 @@
 %
 % Authors: Frank E. Curtis
 
-% DirectionComputationEQP class
-classdef DirectionComputationEQP < DirectionComputation
+% DirectionComputationSubgradient class
+classdef DirectionComputationSubgradient < DirectionComputation
   
   % Properties (private access)
   properties (SetAccess = private, GetAccess = private)
@@ -13,12 +13,12 @@ classdef DirectionComputationEQP < DirectionComputation
     %%%%%%%%
     % NAME %
     %%%%%%%%
-    n = 'EQP'
+    n = 'Subgradient'
     
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    use_hessian_of_lagrangian_
+    compute_least_squares_multipliers_
     
   end % properties (private access)
   
@@ -42,7 +42,7 @@ classdef DirectionComputationEQP < DirectionComputation
     %%%%%%%%%%%%%%%
     
     % Constructor
-    function D = DirectionComputationEQP
+    function D = DirectionComputationSubgradient
       
       % DO NOTHING
       
@@ -93,4 +93,4 @@ classdef DirectionComputationEQP < DirectionComputation
     
   end % methods (public access)
   
-end % DirectionComputationEQP
+end % DirectionComputationSubgradient
