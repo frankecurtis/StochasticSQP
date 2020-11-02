@@ -31,6 +31,7 @@ classdef ProblemCUTEst < Problem
     mcl % number of constraints, inequalities, lower bounded
     mcu % number of constraints, inequalities, upper bounded
     s % name
+    noise_level % noise level
     
   end % properties (private access)
   
@@ -42,7 +43,7 @@ classdef ProblemCUTEst < Problem
     %%%%%%%%%%%%%%%
     
     % Constructor
-    function P = ProblemCUTEst
+    function P = ProblemCUTEst(noise_level)
       
       % Initialize CUTEst
       prob = cutest_setup();
@@ -91,6 +92,9 @@ classdef ProblemCUTEst < Problem
             
       % Set name
       P.s = prob.name;
+
+      % Set noise level
+      P.noise_level = noise_level;
             
     end % Constructor
     
@@ -231,7 +235,7 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate objective gradient
       try
-        g = cutest_grad(x);
+        g = cutest_grad(x) + randn(P.n,1)*noise_level;
       catch
         g = [];
         err = true;
