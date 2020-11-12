@@ -50,6 +50,14 @@ else
   % Add iterative solver minres here...
   %%%%%%%%%%%%%%
   
+  % Check whether LICQ holds
+  if min(svd(quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.currentIterate.constraintJacobianEqualities(quantities)')) < 1e-8
+      err = true;
+      fprintf('LICQ does not hold!!! \n');
+      return
+  end
+  
+  
   [current_multipliers , ~] = quantities.currentIterate.multipliers;
   previousIterateMeasure = norm([quantities.previousIterate.objectiveGradient(quantities) + quantities.previousIterate.constraintJacobianEqualities(quantities)' * current_multipliers ; quantities.previousIterate.constraintFunctionEqualities(quantities)],1);
   currentIterateInfo = [quantities.currentIterate.objectiveGradient(quantities) + quantities.currentIterate.constraintJacobianEqualities(quantities)' * current_multipliers; quantities.currentIterate.constraintFunctionEqualities(quantities)];
@@ -68,7 +76,8 @@ else
   quantities.setTerminationTestNumber(TTnum);
   
   if TTnum < 0
-      err('No termination test is satisfied!!! \n');
+      err = true;
+      fprintf('No termination test is satisfied!!! \n');
       return;
   end
   

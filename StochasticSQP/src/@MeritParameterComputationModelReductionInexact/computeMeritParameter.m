@@ -16,7 +16,7 @@ if quantities.terminationTestNumber == 2
     
     % Compute objective model value
     objective_model_value = quantities.currentIterate.objectiveGradient'*quantities.directionPrimal + ...
-        ((1 + M.model_reduction_factor_)/2)*max(quantities.directionPrimal' * quantities.directionPrimal,...
+        max(quantities.directionPrimal' * quantities.directionPrimal,...
         M.curvature_threshold_ * norm(quantities.directionPrimal)^2);
     
     % Evaluate constraint violation norm
@@ -29,7 +29,7 @@ if quantities.terminationTestNumber == 2
         if objective_model_value > 0.0
             
             % Update trial value
-            merit_parameter_trial = (1 - (M.model_reduction_factor_ /(1 - M.dual_residual_norm_factor_))) * (quantities.currentIterate.constraintNorm1 - quantities.residualDualNorm1) / objective_model_value;
+            merit_parameter_trial = ((1 - M.model_reduction_factor_) * quantities.currentIterate.constraintNorm1 - quantities.residualDualNorm1) / objective_model_value;
             
         end
         
