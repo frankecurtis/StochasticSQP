@@ -178,7 +178,6 @@ classdef Options < handle
       
       % Initialize boolean
       name_found = false;
-      
       % Loop through list
       for i = 1:length(O.list)
         if strcmp(O.list{i}.name,name)

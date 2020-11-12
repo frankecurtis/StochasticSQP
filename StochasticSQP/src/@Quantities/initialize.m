@@ -10,6 +10,9 @@ function initialize(Q,problem)
 % Set current iterate
 Q.current_iterate_ = Point(problem);
 
+% Set previous iterate
+Q.previous_iterate_ = Q.current_iterate_;
+
 % Set best iterate
 Q.best_iterate_ = Q.current_iterate_;
 

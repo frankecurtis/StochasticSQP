@@ -18,6 +18,8 @@ switch direction_computation_name
     S.direction_computation_ = DirectionComputationEQP;
   case 'Subgradient'
     S.direction_computation_ = DirectionComputationSubgradient;
+  case 'IEQP'
+    S.direction_computation_ = DirectionComputationIEQP;
   otherwise
     S.direction_computation_ = DirectionComputationEQP;
 end
@@ -28,6 +30,8 @@ switch merit_parameter_computation_name
     S.merit_parameter_computation_ = MeritParameterComputationFixed;
   case 'ModelReduction'
     S.merit_parameter_computation_ = MeritParameterComputationModelReduction;
+  case 'ModelReductionInexact'
+    S.merit_parameter_computation_ = MeritParameterComputationModelReductionInexact;
   otherwise
     S.merit_parameter_computation_ = MeritParameterComputationModelReduction;
 end
@@ -38,6 +42,8 @@ switch stepsize_computation_name
     S.stepsize_computation_ = StepsizeComputationAdaptive;
   case 'Conservative'
     S.stepsize_computation_ = StepsizeComputationConservative;
+  case 'IAdaptive'
+    S.stepsize_computation_ = StepsizeComputationIAdaptive;
   otherwise
     S.stepsize_computation_ = StepsizeComputationAdaptive;
 end

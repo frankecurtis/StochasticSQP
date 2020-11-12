@@ -19,9 +19,14 @@ classdef Quantities < handle
     direction_dual_
     merit_parameter_
     model_reduction_
+    previous_iterate_
     ratio_parameter_
     stepsize_
     trial_iterate_
+    primal_residual_
+    dual_residual_
+    dual_residual_norm1_
+    termination_test_number_
     
     %%%%%%%%%%%%
     % COUNTERS %
@@ -194,6 +199,14 @@ classdef Quantities < handle
       
     end % currentIterate
     
+    % Previous iterate
+    function iterate = previousIterate(Q)
+        
+        % Set return value
+        iterate = Q.previous_iterate_;
+        
+    end % previousIterate
+    
     % Direction, primal
     function d = directionPrimal(Q)
       
@@ -209,6 +222,38 @@ classdef Quantities < handle
       d = Q.direction_dual_;
       
     end % directionDual
+    
+    % Residual, primal
+    function rho = residualPrimal(Q)
+        
+        % Set return value
+        rho = Q.primal_residual_;
+        
+    end % residualPrimal
+    
+    % Residual, dual
+    function r = residualDual(Q)
+        
+        % Set return value
+        r = Q.dual_residual_;
+        
+    end % residualDual
+    
+    % Residual, dual, norm1
+    function r_norm1 = residualDualNorm1(Q)
+       
+        % Set return value
+        r_norm1 = Q.dual_residual_norm1_;
+        
+    end % residualDuanNorm1
+    
+    % Termination test number
+    function termination_test_number = terminationTestNumber(Q)
+        
+        % Set return value
+        termination_test_number = Q.termination_test_number_;
+        
+    end % terminationTestNumber
     
     % Iteration counter
     function k = iterationCounter(Q)
@@ -350,6 +395,38 @@ classdef Quantities < handle
       
     end % setDirectionDual
     
+    % Set residal, primal
+    function setPrimalResidual(Q,primal_residual)
+       
+        % Set primal residual
+        Q.primal_residual_ = primal_residual;
+        
+    end %setPrimalResidual
+    
+    % Set residal, dual
+    function setDualResidual(Q,dual_residual)
+       
+        % Set primal residual
+        Q.dual_residual_ = dual_residual;
+        
+    end %setDualResidual
+    
+    % Set residal, dual with 1-norm
+    function setDualResidualNorm1(Q,dual_residual_norm1)
+       
+        % Set primal residual
+        Q.dual_residual_norm1_ = dual_residual_norm1;
+        
+    end %setDualResidualNorm1
+    
+    % Set termination test number
+    function setTerminationTestNumber(Q,TTnum)
+        
+        % Set termination test number
+        Q.termination_test_number_ = TTnum;
+        
+    end %setTerminationTestNumber
+    
     % Set merit parameter
     function setMeritParameter(Q,merit_parameter)
       
@@ -400,6 +477,9 @@ classdef Quantities < handle
           Q.current_iterate_.stationarityMeasure(Q) <= Q.best_iterate_.stationarityMeasure(Q))
         Q.best_iterate_ = Q.current_iterate_;
       end
+      
+      % Set previous iterate to current iterate
+      Q.previous_iterate_ = Q.current_iterate_;
       
       % Set current iterate to trial iterate
       Q.current_iterate_ = Q.trial_iterate_;
