@@ -59,15 +59,16 @@ else
   
   
   [current_multipliers , ~] = quantities.currentIterate.multipliers;
-  previousIterateMeasure = norm([quantities.previousIterate.objectiveGradient(quantities) + quantities.previousIterate.constraintJacobianEqualities(quantities)' * current_multipliers ; quantities.previousIterate.constraintFunctionEqualities(quantities)],1);
+  previousIterateMeasure = norm([quantities.previousIterate.objectiveGradient(quantities) + quantities.previousIterate.constraintJacobianEqualities(quantities)' * current_multipliers ; quantities.previousIterate.constraintFunctionEqualities(quantities)]);
   currentIterateInfo = [quantities.currentIterate.objectiveGradient(quantities) + quantities.currentIterate.constraintJacobianEqualities(quantities)' * current_multipliers; quantities.currentIterate.constraintFunctionEqualities(quantities)];
-  currentIterateMeasure = norm(currentIterateInfo,1);
+  currentIterateMeasure = norm(currentIterateInfo);
   c_norm1 = norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1);
+  c_norm2 = norm(quantities.currentIterate.constraintFunctionEqualities(quantities));
   
-  addpath('/Users/baoyuzhou/Desktop/StochasticSQP-master/StochasticSQP/external');
+  addpath('/Users/baoyuzhou/Desktop/Software/StochasticSQP/StochasticSQP/external');
   
   % Inexact solve by iterative solver
-  [v,TTnum,residual] = minres_stanford(matrix, -currentIterateInfo, quantities.currentIterate.numberOfVariables, currentIterateMeasure, previousIterateMeasure, c_norm1, ...
+  [v,TTnum,residual] = minres_stanford(matrix, -currentIterateInfo, quantities.currentIterate.numberOfVariables, currentIterateMeasure, previousIterateMeasure, c_norm1, c_norm2, ...
       D.full_residual_norm_factor_, D.primal_residual_norm_factor_, D.dual_residual_norm_factor_, D.constraint_norm_factor_, D.lagrangian_primal_norm_factor_, ...
       D.curvature_threshold_, D.model_reduction_factor_, quantities.currentIterate.objectiveGradient(quantities), quantities.meritParameter, ...
       quantities.currentIterate.constraintJacobianEqualities(quantities),[],0,false,true,size(matrix,1)*5,1e-10);

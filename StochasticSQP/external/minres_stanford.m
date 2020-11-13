@@ -1,5 +1,5 @@
 function [ x, TTnum, residual ] = ...
-           minres_stanford( A, b, size_primal, CIM, PIM, c_norm1, kappa, mu_2, mu_1, theta_1, theta_2, ...
+           minres_stanford( A, b, size_primal, CIM, PIM, c_norm1, c_norm2, kappa, mu_2, mu_1, theta_1, theta_2, ...
            kappa_u, sigma, obj_grad, tau, Jacobian, M, shift, show, check, itnlim, rtol )
 
 
@@ -284,10 +284,10 @@ if ~done                              % k = itn = 1 first time through
     
     % Set initial norm of residual
     if itn == 1
-        initialResidualNorm1 = norm(residual,1);
+        initialResidualNormInf = norm(residual,inf);
     end
     
-    if norm(residual,1) < 0.5 * initialResidualNorm1/size(b,1)
+    if norm(residual,inf) < 0.5 * initialResidualNormInf
         
         % Set updates
         primal_update = x(1:size_primal);
@@ -299,7 +299,7 @@ if ~done                              % k = itn = 1 first time through
         Delta_q = -tau*(obj_grad'*primal_update + 0.5*max(primal_update'*primal_update,kappa_u*norm(primal_update)^2)) + c_norm1 - norm(dual_residual,1); 
         
         if Delta_q >= 0.5*tau*sigma*max(primal_update'*primal_update,kappa_u*norm(primal_update)^2) + sigma*max(c_norm1 , norm(dual_residual,1) - c_norm1)
-            if norm(residual,1) <= kappa*min(CIM,PIM)
+            if norm(residual) <= kappa*min(CIM,PIM)
                 TTnum = 1;
                 return;
             end
@@ -310,8 +310,8 @@ if ~done                              % k = itn = 1 first time through
             return;
         end
         
-        if c_norm1 <= theta_1 * norm(-b(1:size_primal) + Jacobian'*dual_update , 1)
-            if norm(-b(1:size_primal) + Jacobian'*dual_update , 1) <= min(theta_2*norm(b(1:size_primal),1) , kappa*PIM)
+        if c_norm2 <= theta_1 * norm(-b(1:size_primal) + Jacobian'*dual_update)
+            if norm(-b(1:size_primal) + Jacobian'*dual_update) <= min(theta_2*norm(b(1:size_primal)) , kappa*PIM)
                 TTnum = 3;
                 x(1:size_primal) = zeros(size_primal,1);
                 residual = A*x - b;
