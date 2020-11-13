@@ -95,7 +95,7 @@ else
   quantities.setDirectionPrimal(v(1:quantities.currentIterate.numberOfVariables));
   
   % Set multiplier
-  quantities.currentIterate.setMultipliers(v(quantities.currentIterate.numberOfVariables+1:end),[]);
+  quantities.currentIterate.setMultipliers(current_multipliers + v(quantities.currentIterate.numberOfVariables+1:end),[]);
   
 end
 
