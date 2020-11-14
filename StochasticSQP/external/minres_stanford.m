@@ -287,7 +287,7 @@ if ~done                              % k = itn = 1 first time through
         initialResidualNormInf = norm(residual,inf);
     end
     
-    if norm(residual,inf) < 0.5 * initialResidualNormInf
+    if norm(residual,inf) < 0.1 * initialResidualNormInf
         
         % Set updates
         primal_update = x(1:size_primal);
@@ -401,7 +401,7 @@ if ~done                              % k = itn = 1 first time through
       end
     end % show & prnt
 
-    if istop ~= 0, break; end
+    % if istop ~= 0, break; end
 
   end % main loop
 end % if ~done early

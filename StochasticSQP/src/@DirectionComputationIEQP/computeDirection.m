@@ -36,6 +36,7 @@ if sum(sum(isnan(matrix))) > 0 || sum(sum(isinf(matrix))) > 0 || ...
     sum(abs(eig(matrix)) >= 1e-08) < quantities.currentIterate.numberOfVariables + quantities.currentIterate.numberOfConstraintsEqualities
   
   % Indicate error (violation of LICQ or second-order sufficiency)
+  fprintf('Violation of LICQ or second-order sufficiency!!! \n');
   err = true;
   
   % Set null direction
@@ -71,15 +72,26 @@ else
   [v,TTnum,residual] = minres_stanford(matrix, -currentIterateInfo, quantities.currentIterate.numberOfVariables, currentIterateMeasure, previousIterateMeasure, c_norm1, c_norm2, ...
       D.full_residual_norm_factor_, D.primal_residual_norm_factor_, D.dual_residual_norm_factor_, D.constraint_norm_factor_, D.lagrangian_primal_norm_factor_, ...
       D.curvature_threshold_, D.model_reduction_factor_, quantities.currentIterate.objectiveGradient(quantities), quantities.meritParameter, ...
-      quantities.currentIterate.constraintJacobianEqualities(quantities),[],0,false,true,size(matrix,1)*5,1e-10);
+      quantities.currentIterate.constraintJacobianEqualities(quantities),[],0,false,true,max(size(matrix,1)*5,100),1e-10);
   
   % Set Termination Test Number
   quantities.setTerminationTestNumber(TTnum);
   
   if TTnum < 0
-      err = true;
-      fprintf('No termination test is satisfied!!! \n');
-      return;
+      TTnum = checkTerminationAgain(TTnum, v, residual, quantities.currentIterate.numberOfVariables, quantities.meritParameter, ...
+          D.model_reduction_factor_, quantities.currentIterate.objectiveGradient(quantities), D.curvature_threshold_, c_norm1, ...
+          D.full_residual_norm_factor_, currentIterateMeasure, previousIterateMeasure, D.dual_residual_norm_factor_, ...
+          D.primal_residual_norm_factor_, c_norm2, D.constraint_norm_factor_, -currentIterateInfo, ...
+          quantities.currentIterate.constraintJacobianEqualities(quantities), D.lagrangian_primal_norm_factor_, matrix);
+      
+      % Set Termination Test Number
+      quantities.setTerminationTestNumber(TTnum);
+  
+      if TTnum < 0
+        err = true;
+        fprintf('No termination test is satisfied!!! \n');
+        return;
+      end
   end
   
   % Set residual
