@@ -8,7 +8,7 @@
 function addOptions(options,reporter)
 
 % Add options
-options.addBoolOption(reporter,'DCIEQP_use_hessian_of_lagrangian',true);
+options.addBoolOption(reporter,'DCIEQP_use_hessian_of_lagrangian',false);
 options.addDoubleOption(reporter,'DCIEQP_full_residual_norm_factor',1e-01,0,1);
 options.addDoubleOption(reporter,'DCIEQP_primal_residual_norm_factor',1e-01,0,Inf);
 options.addDoubleOption(reporter,'DCIEQP_dual_residual_norm_factor',1e-01,0,1); % should also depend on model_reduction_factor... % Have another copy in MCMRI class...
