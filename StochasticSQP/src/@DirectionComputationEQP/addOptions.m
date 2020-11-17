@@ -8,6 +8,6 @@
 function addOptions(options,reporter)
 
 % Add options
-options.addBoolOption(reporter,'DCEQP_use_hessian_of_lagrangian',true);
+options.addBoolOption(reporter,'DCEQP_use_hessian_of_lagrangian',false);
 
 end % addOptions
