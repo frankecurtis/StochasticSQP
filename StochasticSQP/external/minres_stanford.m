@@ -296,11 +296,6 @@ if ~done                              % k = itn = 1 first time through
         dual_residual = residual(size_primal+1:end);
         
         % Check whether model reduction condition holds...
-        if norm(dual_residual,1) <= mu_1 * c_norm1 && norm(primal_residual,1) <= mu_2 * c_norm1
-            TTnum = 2;
-            return;
-        end
-        
         Delta_q = -tau*(obj_grad'*primal_update + 0.5*max(primal_update'*primal_update,kappa_u*norm(primal_update)^2)) + c_norm1 - norm(dual_residual,1); 
         
         if Delta_q >= 0.5*tau*sigma*max(primal_update'*primal_update,kappa_u*norm(primal_update)^2) + sigma*max(c_norm1 , norm(dual_residual,1) - c_norm1)
@@ -308,7 +303,12 @@ if ~done                              % k = itn = 1 first time through
                 TTnum = 1;
                 return;
             end
-        end   
+        end 
+        
+        if norm(dual_residual,1) <= mu_1 * c_norm1 && norm(primal_residual,1) <= mu_2 * c_norm1
+            TTnum = 2;
+            return;
+        end
         
         if c_norm2 <= theta_1 * norm(-b(1:size_primal) + Jacobian'*dual_update)
             if norm(-b(1:size_primal) + Jacobian'*dual_update) <= min(theta_2*norm(b(1:size_primal)) , kappa*PIM)
