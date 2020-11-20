@@ -16,34 +16,41 @@ S.quantities_.initialize(problem);
 % Scale problem
 S.quantities_.currentIterate.determineScaleFactors(S.quantities_);
 
-% Estimate Lipschitz Constants
-currentIterate = S.quantities_.currentIterate.primalPoint;
-currentObjectiveGradient = S.quantities_.currentIterate.objectiveGradient(S.quantities_);
-currentJacobian = S.quantities_.currentIterate.constraintJacobianEqualities(S.quantities_);
-n = S.quantities_.currentIterate.numberOfVariables;
-m = S.quantities_.currentIterate.numberOfConstraintsEqualities;
-objectiveLipschitz = 1;
-constraintsLipschitz = zeros(m,1);
-for i = 1:n
+% if S.quantities_.currentIterate.numberOfVariables + ...
+%         S.quantities_.currentIterate.numberOfConstraintsEqualities + ...
+%         S.quantities_.currentIterate.numberOfConstraintsInequalities <= ...
+%         S.quantities_.sizeLimit
     
-    sampleIterate = currentIterate;
-    sampleIterate(i) = sampleIterate(i) + 1e-4;
-    [f_scale,cE_scale,~] = S.quantities_.currentIterate.scaleFactors;
-    sampleObjectiveGradient = f_scale * problem.evaluateObjectiveGradient(sampleIterate);
-    sampleJacobian = cE_scale .* problem.evaluateConstraintJacobianEqualities(sampleIterate);
-    
-    % Update Lipschitz estimates
-    objectiveLipschitz = max(objectiveLipschitz , 1e+4 * norm(currentObjectiveGradient - sampleObjectiveGradient));
-    for j = 1:m
-        constraintsLipschitz(j) = max(constraintsLipschitz(j) , 1e+4 * norm(currentJacobian(j,:) - sampleJacobian(j,:)));
+    % Estimate Lipschitz Constants
+    currentIterate = S.quantities_.currentIterate.primalPoint;
+    currentObjectiveGradient = S.quantities_.currentIterate.objectiveGradient(S.quantities_);
+    currentJacobian = S.quantities_.currentIterate.constraintJacobianEqualities(S.quantities_);
+    n = S.quantities_.currentIterate.numberOfVariables;
+    m = S.quantities_.currentIterate.numberOfConstraintsEqualities;
+    objectiveLipschitz = 1;
+    constraintsLipschitz = zeros(m,1);
+    for i = 1:n
+        
+        sampleIterate = currentIterate;
+        sampleIterate(i) = sampleIterate(i) + 1e-4;
+        [f_scale,cE_scale,~] = S.quantities_.currentIterate.scaleFactors;
+        sampleObjectiveGradient = f_scale * problem.evaluateObjectiveGradient(sampleIterate);
+        sampleJacobian = cE_scale .* problem.evaluateConstraintJacobianEqualities(sampleIterate);
+        
+        % Update Lipschitz estimates
+        objectiveLipschitz = max(objectiveLipschitz , 1e+4 * norm(currentObjectiveGradient - sampleObjectiveGradient));
+        for j = 1:m
+            constraintsLipschitz(j) = max(constraintsLipschitz(j) , 1e+4 * norm(currentJacobian(j,:) - sampleJacobian(j,:)));
+        end
+        
     end
     
-end
-
-constraintsLipschitz = sum(constraintsLipschitz);
-
-% Set Lipschitz Constants
-S.quantities_.setLipschitzConstants(objectiveLipschitz,constraintsLipschitz);
+    constraintsLipschitz = sum(constraintsLipschitz);
+    
+    % Set Lipschitz Constants
+    S.quantities_.setLipschitzConstants(objectiveLipschitz,constraintsLipschitz);
+    
+% end
 
 % Initialize strategies
 S.strategies_.initialize(S.options_,S.quantities_,S.reporter_);
@@ -63,7 +70,7 @@ while true
   % Check for termination
   if S.quantities_.currentIterate.numberOfVariables + ...
       S.quantities_.currentIterate.numberOfConstraintsEqualities + ...
-      S.quantities_.currentIterate.numberOfConstraintsInequalities >= ...
+      S.quantities_.currentIterate.numberOfConstraintsInequalities > ...
       S.quantities_.sizeLimit
     S.status_ = Enumerations.S_SIZE_LIMIT;
     break;
