@@ -22,7 +22,7 @@ currentObjectiveGradient = S.quantities_.currentIterate.objectiveGradient(S.quan
 currentJacobian = S.quantities_.currentIterate.constraintJacobianEqualities(S.quantities_);
 n = S.quantities_.currentIterate.numberOfVariables;
 m = S.quantities_.currentIterate.numberOfConstraintsEqualities;
-objectiveLipschitz = 0;
+objectiveLipschitz = 1;
 constraintsLipschitz = zeros(m,1);
 for i = 1:n
     
