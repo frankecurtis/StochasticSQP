@@ -13,7 +13,7 @@ function computeMeritParameter(M,options,quantities,reporter,strategies)
 
 % Compute objective model value
 objective_model_value = quantities.currentIterate.objectiveGradient'*quantities.directionPrimal + ...
-  (1/2)*max(quantities.directionPrimal' * quantities.directionPrimal,...
+  max(quantities.directionPrimal' * quantities.directionPrimal,...
   M.curvature_threshold_ * norm(quantities.directionPrimal)^2);
 
 % Evaluate constraint violation norm
@@ -45,7 +45,9 @@ end % quantities.constraintNorm1 > 0.0
 %%%%%%%%%%%%%%%%%%%
 
 % Set model reduction
-quantities.setModelReduction(-quantities.meritParameter * objective_model_value + quantities.currentIterate.constraintNorm1);
+quantities.setModelReduction(-quantities.meritParameter * (objective_model_value - ...
+    (1/2)*max(quantities.directionPrimal' * quantities.directionPrimal,...
+    M.curvature_threshold_ * norm(quantities.directionPrimal)^2)) + quantities.currentIterate.constraintNorm1);
 
 %%%%%%%%%%%%%%%%%%%
 % RATIO PARAMETER %

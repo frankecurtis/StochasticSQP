@@ -44,6 +44,8 @@ classdef Quantities < handle
     % INDICATORS %
     %%%%%%%%%%%%%%
     scale_problem_
+    objective_Lipschitz_
+    constraint_Lipschitz_
     
     %%%%%%%%%%%%%%
     % TOLERANCES %
@@ -375,9 +377,34 @@ classdef Quantities < handle
       
     end % trialIterate
     
+    % Objective Lipschitz constants
+    function objectiveLipschitz = objectiveLipschitzConstants(Q)
+        
+        % Set objective Lipschitz constants
+        objectiveLipschitz = Q.objective_Lipschitz_;
+        
+    end % objectiveLipschitzConstants
+    
+    % Constraint Lipschitz constants
+    function constraintLipschitz = constraintLipschitzConstants(Q)
+        
+        % Set constraint Lipschitz constants
+        constraintLipschitz = Q.constraint_Lipschitz_;
+        
+    end % constraintLipschitzConstants
+    
     %%%%%%%%%%%%%%%
     % SET METHODS %
     %%%%%%%%%%%%%%%
+    
+    % Set Lipschitz constants
+    function setLipschitzConstants(Q,objectiveLipschitz,constraintLipschitz)
+        
+        % Set Lipschitz constants
+        Q.objective_Lipschitz_ = objectiveLipschitz;
+        Q.constraint_Lipschitz_ = constraintLipschitz;
+        
+    end % setLipschitzConstants
     
     % Set direction, primal
     function setDirectionPrimal(Q,direction)
