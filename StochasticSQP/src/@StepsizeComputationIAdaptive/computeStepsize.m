@@ -31,6 +31,26 @@ else
     alpha_opt = max(min(alpha_hat,1) , alpha_tilde);
     alpha_1 = min(min(alpha_opt,1) , 2 * (1 - S.sufficient_decrease_) * stepsize_scaling * quantities.modelReduction / denominator);
     
+    forward_lengthening = S.forward_lengthening_;
+    
+    if forward_lengthening > 1
+        while 1  
+            alpha_ext = forward_lengthening * alpha_1;
+            
+            Ufunc = alpha_ext * (S.sufficient_decrease_ - 1) * stepsize_scaling * quantities.modelReduction ...
+                + norm(alpha_ext * quantities.residualDual + (1 - alpha_ext) * quantities.currentIterate.constraintFunctionEqualities(quantities),1) ...
+                - norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1) ...
+                + alpha_ext * (norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1) - quantities.residualDualNorm1) ...
+                + 0.5 * alpha_ext^2 * denominator;
+            
+            if Ufunc > 0
+                break;
+            else
+                alpha_1 = alpha_ext;
+            end  
+        end
+    end
+    
     % Set projection bounds
     lower_bound = 2 * (1 - S.sufficient_decrease_) * stepsize_scaling * quantities.ratioParameter * quantities.meritParameter / (quantities.meritParameter * quantities.objectiveLipschitzConstants + quantities.constraintLipschitzConstants);
     upper_bound = lower_bound + S.projection_width_ * stepsize_scaling^2;

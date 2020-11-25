@@ -14,5 +14,6 @@ S.projection_width_ = options.getOption(reporter,'SCIA_projection_width');
 S.stepsize_diminishing_ = options.getOption(reporter,'SCIA_stepsize_diminishing');
 S.stepsize_scaling_ = options.getOption(reporter,'SCIA_stepsize_scaling');
 S.sufficient_decrease_ = options.getOption(reporter,'SCIA_sufficient_decrease');
+S.forward_lengthening_ = options.getOption(reporter,'SCIA_forward_lengthening');
 
 end % getOptions

@@ -24,6 +24,7 @@ classdef StepsizeComputationIAdaptive < StepsizeComputation
     stepsize_diminishing_
     stepsize_scaling_
     sufficient_decrease_
+    forward_lengthening_
     
   end % properties (private access)
   
