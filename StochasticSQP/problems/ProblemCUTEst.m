@@ -224,7 +224,7 @@ classdef ProblemCUTEst < Problem
     end % evaluateObjectiveFunction
     
     % Objective gradient
-    function [g,err] = evaluateObjectiveGradient(P,x)
+    function [gbar,err] = evaluateObjectiveGradient(P,x)
 
       % Initialize error
       err = false;
@@ -232,13 +232,29 @@ classdef ProblemCUTEst < Problem
       % Evaluate objective gradient
       try
         g = cutest_grad(x);
-        % gbar = g + randn(n,1) * noise_level... {1e-8,-4,-2,0}
+        gbar = g + randn(size(x)) * 1e-1; % noise_level ... {1e-8,-4,-2,-1}
+      catch
+        gbar = [];
+        err = true;
+      end
+      
+    end % evaluateObjectiveGradient
+    
+    % True Objective gradient
+    function [g,err] = evaluateTrueObjectiveGradient(P,x)
+
+      % Initialize error
+      err = false;
+      
+      % Evaluate objective gradient
+      try
+        g = cutest_grad(x);
       catch
         g = [];
         err = true;
       end
       
-    end % evaluateObjectiveGradient
+    end % evaluateTrueObjectiveGradient
     
     % Initial point
     function x = initialPoint(P)

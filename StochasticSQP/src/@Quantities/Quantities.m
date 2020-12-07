@@ -28,6 +28,7 @@ classdef Quantities < handle
     dual_residual_norm1_
     termination_test_number_
     
+    
     %%%%%%%%%%%%
     % COUNTERS %
     %%%%%%%%%%%%
@@ -37,6 +38,7 @@ classdef Quantities < handle
     constraint_Jacobian_inequalities_evaluation_counter_ = 0
     hessian_of_lagrangian_evaluation_counter_ = 0
     iteration_counter_ = 0
+    inner_iteration_counter_ = 0
     objective_function_evaluation_counter_ = 0
     objective_gradient_evaluation_counter_ = 0
     
@@ -44,6 +46,7 @@ classdef Quantities < handle
     % INDICATORS %
     %%%%%%%%%%%%%%
     scale_problem_
+    compute_iterate_stationarity_
     objective_Lipschitz_
     constraint_Lipschitz_
     
@@ -58,8 +61,9 @@ classdef Quantities < handle
     objective_function_evaluation_limit_
     objective_gradient_evaluation_limit_
     scale_factor_gradient_limit_
-    size_limit_;
+    size_limit_
     stationarity_tolerance_
+    inner_iteration_relative_limit_
     
   end
   
@@ -193,6 +197,14 @@ classdef Quantities < handle
       
     end % CPUTimeLimit
     
+    % Check Stationarity Measure
+    function s = checkStationarityMeasure(Q)
+        
+        % Set return value
+        s = Q.compute_iterate_stationarity_;
+        
+    end % checkStationarityMeasure
+    
     % Current iterate
     function iterate = currentIterate(Q)
       
@@ -265,11 +277,27 @@ classdef Quantities < handle
       
     end % iterationCounter
     
+    % Inner iteration counter
+    function k = innerIterationCounter(Q)
+      
+      % Set return value
+      k = Q.inner_iteration_counter_;
+      
+    end % innerIterationCounter
+    
     % Iteration limit
     function k_max = iterationLimit(Q)
       
       % Set return value
       k_max = Q.iteration_limit_;
+      
+    end % iterationLimit
+    
+    % Inner iteration relative limit
+    function k_max = innerIterationRelativeLimit(Q)
+      
+      % Set return value
+      k_max = Q.inner_iteration_relative_limit_;
       
     end % iterationLimit
     
@@ -496,21 +524,26 @@ classdef Quantities < handle
     
     % Update iterate
     function updateIterate(Q)
-      
-      % Update best iterate
-      if (Q.best_iterate_.constraintNormInf(Q) > Q.stationarityTolerance && ...
-          Q.current_iterate_.constraintNormInf(Q) < Q.best_iterate_.constraintNormInf(Q)) || ...
-         (Q.best_iterate_.constraintNormInf(Q) <= Q.stationarityTolerance && ...
-          Q.current_iterate_.stationarityMeasure(Q) <= Q.best_iterate_.stationarityMeasure(Q))
-        Q.best_iterate_ = Q.current_iterate_;
-      end
-      
-      % Set previous iterate to current iterate
-      Q.previous_iterate_ = Q.current_iterate_;
-      
-      % Set current iterate to trial iterate
-      Q.current_iterate_ = Q.trial_iterate_;
-      
+        
+        % check whether needs to update the best itearate
+        if Q.compute_iterate_stationarity_
+            
+            % Update best iterate
+            if (Q.best_iterate_.constraintNormInf(Q) > Q.stationarityTolerance && ...
+                    Q.current_iterate_.constraintNormInf(Q) < Q.best_iterate_.constraintNormInf(Q)) || ...
+                    (Q.best_iterate_.constraintNormInf(Q) <= Q.stationarityTolerance && ...
+                    Q.current_iterate_.trueStationarityMeasure(Q) <= Q.best_iterate_.trueStationarityMeasure(Q))
+                Q.best_iterate_ = Q.current_iterate_;
+            end
+            
+        end
+        
+        % Set previous iterate to current iterate
+        Q.previous_iterate_ = Q.current_iterate_;
+        
+        % Set current iterate to trial iterate
+        Q.current_iterate_ = Q.trial_iterate_;
+        
     end % updateIterate
     
     %%%%%%%%%%%%%%%%%%%%%
@@ -564,6 +597,14 @@ classdef Quantities < handle
       Q.iteration_counter_ = Q.iteration_counter_ + 1;
       
     end % incrementIterationCounter
+    
+    % Increment inner iteration counter
+    function incrementInnerIterationCounter(Q,iter)
+      
+      % Increment inner iteration counter
+      Q.inner_iteration_counter_ = Q.inner_iteration_counter_ + iter;
+      
+    end % incrementInnerIterationCounter
     
     % Increment objective function evaluation counter
     function incrementObjectiveFunctionEvaluationCounter(Q)

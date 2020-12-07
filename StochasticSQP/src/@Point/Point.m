@@ -22,11 +22,14 @@ classdef Point < handle
     mE % number of constraints, equalities
     mI % number of constraints, inequalities
     yE % multipliers, equalities
+    yE_true % true multipliers, equalities
     yI % multipliers, inequalities
+    yI_true % true multipliers, inequalities
     x % primal point
     f % objective function
     f_unscaled % objective function, unscaled
     g % objective gradient
+    g_true % true objective gradient
     cE % constraint function, equalities
     cE_unscaled % constraint function, equalities, unscaled
     cI % constraint function, inequalities
@@ -56,6 +59,7 @@ classdef Point < handle
     %%%%%%%%%%%%%%
     f_evaluated = false
     g_evaluated = false
+    g_true_evaluated = false
     cE_evaluated = false
     cI_evaluated = false
     JE_evaluated = false
@@ -152,6 +156,15 @@ classdef Point < handle
       P.yI = yI;
       
     end % setMultipliers
+    
+    % Set true multipliers
+    function setTrueMultipliers(P,yE,yI)
+      
+      % Set multipliers
+      P.yE_true = yE;
+      P.yI_true = yI;
+      
+    end % setTrueMultipliers
     
     %%%%%%%%%%%%%%%
     % GET METHODS %
@@ -596,6 +609,29 @@ classdef Point < handle
       
     end % stationarityMeasure
     
+    % True stationarity measure
+    function v = trueStationarityMeasure(P,quantities)
+      
+      % Evaluate measure
+      if P.mE == 0 && P.mI == 0
+        v = norm(P.trueObjectiveGradient(quantities),inf);
+      else
+        vec = P.trueObjectiveGradient(quantities);
+        if P.mE > 0
+          vec = vec + (P.yE_true' * P.constraintJacobianEqualities(quantities))';
+        end
+        if P.mI > 0
+          vec = vec + (P.yI_true' * P.constraintJacobianInequalities(quantities))';
+        end
+        v = norm(vec,inf);
+        if P.mI > 0
+          v = max(v,norm([min(P.yI_true,0); P.yI_true .* P.constraintFunctionInequalities(quantities)],inf));
+        end
+        v = max(v,P.constraintNormInf(quantities));
+      end
+      
+    end % trueStationarityMeasure
+    
     % Objective function
     function f = objectiveFunction(P,quantities)
       
@@ -681,6 +717,38 @@ classdef Point < handle
       g = P.g;
       
     end % end objectiveGradient
+    
+    % True objective gradient
+    function g = trueObjectiveGradient(P,quantities)
+        
+        % Check if scales have been set
+        if ~P.scales_set
+            error('Point: Scale factors have not been set!');
+        end
+        
+        % Check if already evaluated
+        if ~P.g_true_evaluated
+            
+            % Evaluate
+            [P.g_true,err] = P.p.evaluateTrueObjectiveGradient(P.x);
+            
+            % Check for error
+            if err == true
+                error('Point: Error evaluating objective gradient!');
+            end
+            
+            % Scale
+            P.g_true = P.f_scale * P.g_true;
+            
+            % Set indicator
+            P.g_true_evaluated = true;
+            
+        end
+        
+        % Set objective gradient value
+        g = P.g_true;
+        
+    end % end trueObjectiveGradient
     
     % Objective gradient 2-norm
     function v = objectiveGradientNorm1(P,quantities)

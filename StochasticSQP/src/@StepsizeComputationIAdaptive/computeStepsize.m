@@ -10,7 +10,7 @@ function computeStepsize(S,options,quantities,reporter,strategies)
 % Set scaling
 stepsize_scaling = S.stepsize_scaling_;
 if S.stepsize_diminishing_ == true
-  stepsize_scaling = stepsize_scaling / quantities.iterationCounter;
+  stepsize_scaling = stepsize_scaling / (quantities.iterationCounter + 1);
 end
 
 %%%%%%%%%%%%

@@ -9,6 +9,6 @@ function printIterationHeader(S,reporter)
 
 % Print iteration header
 reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...
-  '  |Direction|   |Multiplier|  |KKT Error|  |TTnum|  |Primal Res|  |Dual Res|   ');
+  ' |InnerIter|    |Direction|   |Multiplier|  |KKT Error|  |TTnum|  |Primal Res|  |Dual Res|   ');
 
 end % printIterationHeader

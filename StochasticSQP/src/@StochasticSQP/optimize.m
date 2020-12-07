@@ -23,7 +23,7 @@ S.quantities_.currentIterate.determineScaleFactors(S.quantities_);
     
     % Estimate Lipschitz Constants
     currentIterate = S.quantities_.currentIterate.primalPoint;
-    currentObjectiveGradient = S.quantities_.currentIterate.objectiveGradient(S.quantities_);
+    currentTrueObjectiveGradient = S.quantities_.currentIterate.trueObjectiveGradient(S.quantities_);
     currentJacobian = S.quantities_.currentIterate.constraintJacobianEqualities(S.quantities_);
     n = S.quantities_.currentIterate.numberOfVariables;
     m = S.quantities_.currentIterate.numberOfConstraintsEqualities;
@@ -34,11 +34,11 @@ S.quantities_.currentIterate.determineScaleFactors(S.quantities_);
         sampleIterate = currentIterate;
         sampleIterate(i) = sampleIterate(i) + 1e-4;
         [f_scale,cE_scale,~] = S.quantities_.currentIterate.scaleFactors;
-        sampleObjectiveGradient = f_scale * problem.evaluateObjectiveGradient(sampleIterate);
+        sampleTrueObjectiveGradient = f_scale * problem.evaluateTrueObjectiveGradient(sampleIterate);
         sampleJacobian = cE_scale .* problem.evaluateConstraintJacobianEqualities(sampleIterate);
         
         % Update Lipschitz estimates
-        objectiveLipschitz = max(objectiveLipschitz , 1e+4 * norm(currentObjectiveGradient - sampleObjectiveGradient));
+        objectiveLipschitz = max(objectiveLipschitz , 1e+4 * norm(currentTrueObjectiveGradient - sampleTrueObjectiveGradient));
         for j = 1:m
             constraintsLipschitz(j) = max(constraintsLipschitz(j) , 1e+4 * norm(currentJacobian(j,:) - sampleJacobian(j,:)));
         end
@@ -79,6 +79,11 @@ while true
     S.status_ = Enumerations.S_ITERATION_LIMIT;
     break;
   end
+  if S.quantities_.innerIterationCounter >= S.quantities_.innerIterationRelativeLimit * ...
+          (S.quantities_.currentIterate.numberOfVariables + S.quantities_.currentIterate.numberOfConstraintsEqualities)
+    S.status_ = Enumerations.S_ITERATION_LIMIT;
+    break;
+  end
   
   % Compute search direction (sets direction)
   err = S.strategies_.directionComputation.computeDirection(S.options_,S.quantities_,S.reporter_,S.strategies_);
@@ -92,11 +97,11 @@ while true
   % Print direction computation values
   S.strategies_.directionComputation.printIterationValues(S.quantities_,S.reporter_);
   
-  % Check for termination
-  if S.quantities_.currentIterate.stationarityMeasure(S.quantities_) <= S.quantities_.stationarityTolerance
-    S.status_ = Enumerations.S_SUCCESS;
-    break;
-  end
+%   % Check for termination
+%   if S.quantities_.currentIterate.stationarityMeasure(S.quantities_) <= S.quantities_.stationarityTolerance
+%     S.status_ = Enumerations.S_SUCCESS;
+%     break;
+%   end
   
   % Compute merit parameter (sets merit_parameter and model_reduction)
   S.strategies_.meritParameterComputation.computeMeritParameter(S.options_,S.quantities_,S.reporter_,S.strategies_);

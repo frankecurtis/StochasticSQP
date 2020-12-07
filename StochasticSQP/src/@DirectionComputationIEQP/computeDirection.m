@@ -58,6 +58,17 @@ else
       return
   end
   
+  if quantities.checkStationarityMeasure
+      
+      % Compute exact direction with the true gradient
+      v_true = -matrix \ [quantities.currentIterate.trueObjectiveGradient(quantities);
+          quantities.currentIterate.constraintFunctionEqualities(quantities)];
+      
+      % Set true multipliers
+      quantities.currentIterate.setTrueMultipliers(v_true(quantities.currentIterate.numberOfVariables+1:end),[]);
+      
+  end
+  
   
   [current_multipliers , ~] = quantities.currentIterate.multipliers;
   previousIterateMeasure = norm([quantities.previousIterate.objectiveGradient(quantities) + quantities.previousIterate.constraintJacobianEqualities(quantities)' * current_multipliers ; quantities.previousIterate.constraintFunctionEqualities(quantities)]);
@@ -69,7 +80,7 @@ else
   addpath('/Users/baoyuzhou/Desktop/Software/StochasticSQP/StochasticSQP/external');
   
   % Inexact solve by iterative solver
-  [v,TTnum,residual] = minres_stanford(matrix, -currentIterateInfo, quantities.currentIterate.numberOfVariables, currentIterateMeasure, previousIterateMeasure, c_norm1, c_norm2, ...
+  [v,TTnum,residual,innerIter] = minres_stanford(matrix, -currentIterateInfo, quantities.currentIterate.numberOfVariables, currentIterateMeasure, previousIterateMeasure, c_norm1, c_norm2, ...
       D.full_residual_norm_factor_, D.primal_residual_norm_factor_, D.dual_residual_norm_factor_, D.constraint_norm_factor_, D.lagrangian_primal_norm_factor_, ...
       D.curvature_threshold_, D.model_reduction_factor_, quantities.currentIterate.objectiveGradient(quantities), quantities.meritParameter, ...
       quantities.currentIterate.constraintJacobianEqualities(quantities),[],0,false,true,max(size(matrix,1)*10,100),1e-10);
@@ -94,14 +105,13 @@ else
       end
   end
   
+  % Increment inner iteration counter
+  quantities.incrementInnerIterationCounter(innerIter);
+  
   % Set residual
   quantities.setPrimalResidual(residual(1:quantities.currentIterate.numberOfVariables));
   quantities.setDualResidual(residual(quantities.currentIterate.numberOfVariables+1:end));
   quantities.setDualResidualNorm1(norm(residual(quantities.currentIterate.numberOfVariables+1:end),1));
-  
-%   % Compute direction
-%   v = -matrix \ [quantities.currentIterate.objectiveGradient(quantities);
-%     quantities.currentIterate.constraintFunctionEqualities(quantities)];
   
   % Set direction
   quantities.setDirectionPrimal(v(1:quantities.currentIterate.numberOfVariables));
