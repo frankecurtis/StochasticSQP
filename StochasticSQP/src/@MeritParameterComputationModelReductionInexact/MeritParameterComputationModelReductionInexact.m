@@ -21,7 +21,7 @@ classdef MeritParameterComputationModelReductionInexact < MeritParameterComputat
     curvature_threshold_
     model_reduction_factor_
     parameter_reduction_factor_
-    dual_residual_norm_factor_
+    % dual_residual_norm_factor_
             
   end % properties (private access)
   
