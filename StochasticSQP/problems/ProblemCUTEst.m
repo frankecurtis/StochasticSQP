@@ -232,7 +232,7 @@ classdef ProblemCUTEst < Problem
       % Evaluate objective gradient
       try
         g = cutest_grad(x);
-        gbar = g + randn(size(x)) * 1e-8; % noise_level ... {1e-8,-4,-2,-1}
+        gbar = g + randn(size(x)) * (1e-1/sqrt(size(x,1))); % noise_level ... {1e-4,-2,-1}
       catch
         gbar = [];
         err = true;

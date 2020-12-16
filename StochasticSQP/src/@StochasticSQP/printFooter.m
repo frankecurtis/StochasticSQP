@@ -24,6 +24,9 @@ switch S.status_
   case Enumerations.S_DIRECTION_COMPUTATION_FAILURE
     S.reporter_.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,...
       '\nEXIT: Direction computation failure.\n\n');
+  case Enumerations.S_CPU_TIME_LIMIT
+    S.reporter_.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,...
+      '\nEXIT: CPU time limit exceeded.\n\n');
   otherwise
     S.reporter_.printf(Enumerations.R_SOLVER,Enumerations.R_BASIC,...
       '\nEXIT: Status unknown!\n\n');

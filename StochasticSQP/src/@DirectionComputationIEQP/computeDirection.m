@@ -14,8 +14,8 @@ err = false;
 assert(quantities.currentIterate.numberOfConstraintsInequalities == 0,'ComputeDirection: For this strategy, number of inequalities should be zero!');
 
 % Set matrix
-matrix = sparse(quantities.currentIterate.numberOfVariables + quantities.currentIterate.numberOfConstraintsEqualities,...
-  quantities.currentIterate.numberOfVariables + quantities.currentIterate.numberOfConstraintsEqualities);
+% matrix = sparse(quantities.currentIterate.numberOfVariables + quantities.currentIterate.numberOfConstraintsEqualities,...
+%   quantities.currentIterate.numberOfVariables + quantities.currentIterate.numberOfConstraintsEqualities);
 if D.use_hessian_of_lagrangian_
   matrix = [quantities.currentIterate.hessianOfLagrangian(quantities) quantities.currentIterate.constraintJacobianEqualities(quantities)';
     quantities.currentIterate.constraintJacobianEqualities(quantities) zeros(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
@@ -27,8 +27,10 @@ if D.use_hessian_of_lagrangian_
     factor = factor * 10;
   end
 else
-  matrix = [eye(quantities.currentIterate.numberOfVariables) quantities.currentIterate.constraintJacobianEqualities(quantities)';
-    quantities.currentIterate.constraintJacobianEqualities(quantities) zeros(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
+%     matrix = sparse([eye(quantities.currentIterate.numberOfVariables) quantities.currentIterate.constraintJacobianEqualities(quantities)';
+%         quantities.currentIterate.constraintJacobianEqualities(quantities) zeros(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)]);
+    matrix = [eye(quantities.currentIterate.numberOfVariables) quantities.currentIterate.constraintJacobianEqualities(quantities)';
+        quantities.currentIterate.constraintJacobianEqualities(quantities) zeros(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
 end
 
 % Check for nonsingularity
@@ -51,12 +53,12 @@ else
   % Add iterative solver minres here...
   %%%%%%%%%%%%%%
   
-  % Check whether LICQ holds
-  if min(svd(quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.currentIterate.constraintJacobianEqualities(quantities)')) < 1e-8
-      err = true;
-      fprintf('LICQ does not hold!!! \n');
-      return
-  end
+%   % Check whether LICQ holds
+%   if min(svd(quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.currentIterate.constraintJacobianEqualities(quantities)')) < 1e-8
+%       err = true;
+%       fprintf('LICQ does not hold!!! \n');
+%       return
+%   end
   
   if quantities.checkStationarityMeasure
       
@@ -89,20 +91,20 @@ else
   quantities.setTerminationTestNumber(TTnum);
   
   if TTnum < 0
-      TTnum = checkTerminationAgain(TTnum, v, residual, quantities.currentIterate.numberOfVariables, quantities.meritParameter, ...
-          D.model_reduction_factor_, quantities.currentIterate.objectiveGradient(quantities), D.curvature_threshold_, c_norm1, ...
-          D.full_residual_norm_factor_, currentIterateMeasure, previousIterateMeasure, D.dual_residual_norm_factor_, ...
-          D.primal_residual_norm_factor_, c_norm2, D.constraint_norm_factor_, -currentIterateInfo, ...
-          quantities.currentIterate.constraintJacobianEqualities(quantities), D.lagrangian_primal_norm_factor_, matrix);
-      
-      % Set Termination Test Number
-      quantities.setTerminationTestNumber(TTnum);
-  
-      if TTnum < 0
+%       TTnum = checkTerminationAgain(TTnum, v, residual, quantities.currentIterate.numberOfVariables, quantities.meritParameter, ...
+%           D.model_reduction_factor_, quantities.currentIterate.objectiveGradient(quantities), D.curvature_threshold_, c_norm1, ...
+%           D.full_residual_norm_factor_, currentIterateMeasure, previousIterateMeasure, D.dual_residual_norm_factor_, ...
+%           D.primal_residual_norm_factor_, c_norm2, D.constraint_norm_factor_, -currentIterateInfo, ...
+%           quantities.currentIterate.constraintJacobianEqualities(quantities), D.lagrangian_primal_norm_factor_, matrix);
+%       
+%       % Set Termination Test Number
+%       quantities.setTerminationTestNumber(TTnum);
+%   
+%       if TTnum < 0
         err = true;
         fprintf('No termination test is satisfied!!! \n');
         return;
-      end
+%       end
   end
   
   % Increment inner iteration counter

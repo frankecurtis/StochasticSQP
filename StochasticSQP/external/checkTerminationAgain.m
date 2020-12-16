@@ -2,7 +2,7 @@ function [TTnum] = checkTerminationAgain(TTnum, x, residual, size_primal, tau, s
                     kappa, CIM, PIM, mu_1, mu_2, c_norm2, theta_1, b, Jacobian, theta_2, A)
 
                 
-% if norm(residual) <= 1e-10 * kappa*min(CIM,PIM)               
+% if norm(residual,inf) <= 1e-6 * kappa*min(CIM,PIM)               
                 
     % Set updates
     primal_update = x(1:size_primal);

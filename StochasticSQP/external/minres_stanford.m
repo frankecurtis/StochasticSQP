@@ -287,9 +287,9 @@ if ~done                              % k = itn = 1 first time through
         initialResidualNormInf = norm(residual,inf);
     end
     
-    if norm(residual,inf) < 0.01 * initialResidualNormInf
+    if norm(residual,inf) < 0.1 * initialResidualNormInf
         
-        % if norm(residual) <= 1e-10 * kappa*min(CIM,PIM)
+        % if norm(residual,inf) <= 1e-6 * kappa*min(CIM,PIM)
             
             % Set updates
             primal_update = x(1:size_primal);
