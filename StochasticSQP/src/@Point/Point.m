@@ -109,8 +109,8 @@ classdef Point < handle
       
         % Initialize scale factors
         P.f_scale = 1.0;
-        P.cE_scale = ones(P.mE,1);
-        P.cI_scale = ones(P.mI,1);
+        P.cE_scale = sparse(ones(P.mE,1));
+        P.cI_scale = sparse(ones(P.mI,1));
         
       else % point + vector input (2 arguments)
         
@@ -126,7 +126,7 @@ classdef Point < handle
         P.scales_set = true;
 
         % Set point
-        P.x = varargin{2};
+        P.x = sparse(varargin{2});
       
       end
       
@@ -174,8 +174,8 @@ classdef Point < handle
     function [yE,yI] = multipliers(P)
       
       % Set multipliers
-      yE = P.yE;
-      yI = P.yI;
+      yE = sparse(P.yE);
+      yI = sparse(P.yI);
       
     end % multipliers
     
@@ -505,7 +505,7 @@ classdef Point < handle
           quantities.incrementConstraintJacobianEqualitiesEvaluationCounter;
           
           % Set constraint scale factor
-          P.cE_scale = quantities.scaleFactorGradientLimit./max(quantities.scaleFactorGradientLimit,vecnorm(Jacobian,inf,2));
+          P.cE_scale = sparse(quantities.scaleFactorGradientLimit./max(quantities.scaleFactorGradientLimit,vecnorm(Jacobian,inf,2)));
           
           % Evaluate
           P.JE = P.cE_scale .* Jacobian;
@@ -530,7 +530,7 @@ classdef Point < handle
           quantities.incrementConstraintJacobianInequalitiesEvaluationCounter;
           
           % Set constraint scale factor
-          P.cI_scale = quantities.scaleFactorGradientLimit./max(quantities.scaleFactorGradientLimit,vecnorm(Jacobian,inf,2));
+          P.cI_scale = sparse(quantities.scaleFactorGradientLimit./max(quantities.scaleFactorGradientLimit,vecnorm(Jacobian,inf,2)));
           
           % Evaluate
           P.JI = P.cI_scale .* Jacobian;
@@ -544,8 +544,8 @@ classdef Point < handle
         
         % Set scales to 1
         P.f_scale = 1.0;
-        P.cE_scale = ones(P.mE,1);
-        P.cI_scale = ones(P.mI,1);
+        P.cE_scale = sparse(ones(P.mE,1));
+        P.cI_scale = sparse(ones(P.mI,1));
         
       end
       

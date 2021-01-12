@@ -48,14 +48,14 @@ classdef ProblemCUTEst < Problem
       prob = cutest_setup();
             
       % Get initial point
-      P.x = prob.x;
+      P.x = sparse(prob.x);
       
       % Set number of variables
       P.n = prob.n;
       
       % Get variable bounds
-      P.xl = prob.bl;
-      P.xu = prob.bu;
+      P.xl = sparse(prob.bl);
+      P.xu = sparse(prob.bu);
       
       % Set indices of variable bounds (that are finite)
       P.ixl = find(P.xl > -1e+18);
@@ -71,10 +71,10 @@ classdef ProblemCUTEst < Problem
       P.m = prob.m;
       
       % Get constraint lower bounds
-      P.cl = prob.cl;
+      P.cl = sparse(prob.cl);
       
       % Get constraint upper bounds
-      P.cu = prob.cu;
+      P.cu = sparse(prob.cu);
       
       % Set indices of constraint types
       P.ice = find(P.cl == P.cu);
@@ -114,9 +114,10 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate constraint function, equalities
       try
-        c = cutest_cons(x);
+        c = sparse(cutest_cons(x));
         cE = c(P.ice) - P.cu(P.ice);
         if isempty(cE), cE = []; end
+        if max(isnan(cE)), err = true; end
       catch
         cE = [];
         err = true;
@@ -132,12 +133,13 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate constraint function, inequalities
       try
-        c = cutest_cons(x);
+        c = sparse(cutest_cons(x));
         cI = [P.cl(P.icl) - c(P.icl);
               c(P.icu) - P.cu(P.icu);
               P.xl(P.ixl) - x(P.ixl);
               x(P.ixu) - P.xu(P.ixu)];
         if isempty(cI), cI = []; end
+        if max(isnan(cI)), err = true; end
       catch
         cI = [];
         err = true;
@@ -154,7 +156,7 @@ classdef ProblemCUTEst < Problem
       % Evaluate constraint Jacobian, equalities
       try
         [~,J] = cutest_cons(x);
-        JE = J(P.ice,:);
+        JE = sparse(J(P.ice,:));
         if isempty(JE), JE = []; end
       catch
         JE = [];
@@ -193,13 +195,13 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate Hessian of Lagrangian
       try
-        yEorig = zeros(P.m,1);
-        yLorig = zeros(P.m,1);
-        yUorig = zeros(P.m,1);
+        yEorig = sparse(zeros(P.m,1));
+        yLorig = sparse(zeros(P.m,1));
+        yUorig = sparse(zeros(P.m,1));
         yEorig(P.ice) =  yE;
         yLorig(P.icl) = -yI(1:P.mcl);
         yUorig(P.icu) =  yI(P.mcl+1:P.mcl+P.mcu);
-        H = cutest_hess(x,yEorig + yLorig + yUorig);
+        H = sparse(cutest_hess(x,yEorig + yLorig + yUorig));
       catch
         H = [];
         err = true;
@@ -232,7 +234,7 @@ classdef ProblemCUTEst < Problem
       % Evaluate objective gradient
       try
         g = cutest_grad(x);
-        gbar = g + randn(size(x)) * (1e-1/sqrt(size(x,1))); % noise_level ... {1e-4,-2,-1}
+        gbar = sparse(g + randn(size(x)) * (1e-2/sqrt(size(x,1)))); % noise_level ... {1e-4,-2,-1}
       catch
         gbar = [];
         err = true;
@@ -248,7 +250,7 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate objective gradient
       try
-        g = cutest_grad(x);
+        g = sparse(cutest_grad(x));
       catch
         g = [];
         err = true;
@@ -260,7 +262,7 @@ classdef ProblemCUTEst < Problem
     function x = initialPoint(P)
       
       % Set initial point
-      x = P.x;
+      x = sparse(P.x);
       
     end % initialPoint
     

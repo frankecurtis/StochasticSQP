@@ -27,27 +27,27 @@ if D.use_hessian_of_lagrangian_
     factor = factor * 10;
   end
 else
-%     matrix = sparse([eye(quantities.currentIterate.numberOfVariables) quantities.currentIterate.constraintJacobianEqualities(quantities)';
-%         quantities.currentIterate.constraintJacobianEqualities(quantities) zeros(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)]);
-    matrix = [eye(quantities.currentIterate.numberOfVariables) quantities.currentIterate.constraintJacobianEqualities(quantities)';
+    matrix = [speye(quantities.currentIterate.numberOfVariables) quantities.currentIterate.constraintJacobianEqualities(quantities)';
         quantities.currentIterate.constraintJacobianEqualities(quantities) zeros(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
+%     matrix = [eye(quantities.currentIterate.numberOfVariables) quantities.currentIterate.constraintJacobianEqualities(quantities)';
+%         quantities.currentIterate.constraintJacobianEqualities(quantities) zeros(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
 end
 
-% Check for nonsingularity
-if sum(sum(isnan(matrix))) > 0 || sum(sum(isinf(matrix))) > 0 || ...
-    sum(abs(eig(matrix)) >= 1e-08) < quantities.currentIterate.numberOfVariables + quantities.currentIterate.numberOfConstraintsEqualities
-  
-  % Indicate error (violation of LICQ or second-order sufficiency)
-  fprintf('Violation of LICQ or second-order sufficiency!!! \n');
-  err = true;
-  
-  % Set null direction
-  quantities.setDirectionPrimal(zeros(quantities.currentIterate.numberOfVariables,1));
-  
-  % Set null multipliers
-  quantities.currentIterate.setMultipliers(zeros(quantities.currentIterate.numberOfConstraintsEqualities,1),[]);
-  
-else
+% % Check for nonsingularity
+% if sum(sum(isnan(matrix))) > 0 || sum(sum(isinf(matrix))) > 0 || ...
+%     sum(abs(eig(matrix)) >= 1e-08) < quantities.currentIterate.numberOfVariables + quantities.currentIterate.numberOfConstraintsEqualities
+%   
+%   % Indicate error (violation of LICQ or second-order sufficiency)
+%   fprintf('Violation of LICQ or second-order sufficiency!!! \n');
+%   err = true;
+%   
+%   % Set null direction
+%   quantities.setDirectionPrimal(zeros(quantities.currentIterate.numberOfVariables,1));
+%   
+%   % Set null multipliers
+%   quantities.currentIterate.setMultipliers(zeros(quantities.currentIterate.numberOfConstraintsEqualities,1),[]);
+%   
+% else
     
   %%%%%%%%%%%%%%
   % Add iterative solver minres here...
@@ -67,7 +67,7 @@ else
           quantities.currentIterate.constraintFunctionEqualities(quantities)];
       
       % Set true multipliers
-      quantities.currentIterate.setTrueMultipliers(v_true(quantities.currentIterate.numberOfVariables+1:end),[]);
+      quantities.currentIterate.setTrueMultipliers(v_true(quantities.currentIterate.numberOfVariables+1:end),sparse([]));
       
   end
   
@@ -107,6 +107,10 @@ else
 %       end
   end
   
+  % Transform dense to sparse format
+  v = sparse(v);
+  residual = sparse(residual);
+  
   % Increment inner iteration counter
   quantities.incrementInnerIterationCounter(innerIter);
   
@@ -121,6 +125,6 @@ else
   % Set multiplier
   quantities.currentIterate.setMultipliers(current_multipliers + v(quantities.currentIterate.numberOfVariables+1:end),[]);
   
-end
+% end
 
 end % computeDirection

@@ -22,6 +22,6 @@ Q.ratio_parameter_ = options.getOption(reporter,'ratio_parameter_initial');
 Q.scale_factor_gradient_limit_ = options.getOption(reporter,'scale_factor_gradient_limit');
 Q.size_limit_ = options.getOption(reporter,'size_limit');
 Q.stationarity_tolerance_ = options.getOption(reporter,'stationarity_tolerance');
-Q.inner_iteration_relative_limit_ = options.getOption(reporter,'inner_iteration_relative_limit');
+% Q.inner_iteration_relative_limit_ = options.getOption(reporter,'inner_iteration_relative_limit');
 
 end % getOptions

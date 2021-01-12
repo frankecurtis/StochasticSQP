@@ -110,7 +110,7 @@ end
 
 istop = 0;   itn   = 0;   Anorm = 0;    Acond = 0;
 rnorm = 0;   ynorm = 0;   done  = false;
-x     = zeros(n,1);   TTnum = -1;
+x     = sparse(zeros(n,1));   TTnum = -1;
 
 %---------------------------------------------------------------------
 % Decode A.
@@ -118,8 +118,8 @@ x     = zeros(n,1);   TTnum = -1;
 if isa(A,'double')         % A is an explicit matrix A.
   if issparse(A)
     nnzA = nnz(A);
-    fprintf('\n A is an explicit sparse matrix')
-    fprintf('\n nnz(A) =%8g', nnzA)
+    % fprintf('\n A is an explicit sparse matrix')
+    % fprintf('\n nnz(A) =%8g', nnzA)
   else
     fprintf('\n A is an explicit dense matrix' )
   end
@@ -289,7 +289,7 @@ if ~done                              % k = itn = 1 first time through
     
     if norm(residual,inf) < 0.1 * initialResidualNormInf
         
-        % if norm(residual,inf) <= 1e-6 * kappa*min(CIM,PIM)
+        if norm(residual,inf) <= 1e-6 * kappa*min(CIM,PIM)
             
             % Set updates
             primal_update = x(1:size_primal);
@@ -321,7 +321,7 @@ if ~done                              % k = itn = 1 first time through
                 end
             end
             
-        % end
+        end
         
     end
         

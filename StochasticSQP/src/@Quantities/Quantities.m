@@ -434,6 +434,14 @@ classdef Quantities < handle
         
     end % setLipschitzConstants
     
+    % Set Inner Iteration Relative Limit
+    function setInnerIterationRelativeLimit(Q,num)
+        
+        % Set Inner Iteration Relative Limit
+        Q.inner_iteration_relative_limit_ = num;
+        
+    end % setInnerIterationRelativeLimit
+    
     % Set direction, primal
     function setDirectionPrimal(Q,direction)
       

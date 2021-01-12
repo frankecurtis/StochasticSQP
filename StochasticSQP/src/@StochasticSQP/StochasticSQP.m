@@ -117,6 +117,22 @@ classdef StochasticSQP < handle
 
     end % solution
     
+    % Get upper bound of the ratio
+    function [upperRatio] = getUpperRatio(S)
+        
+        % Set return values
+        upperRatio = S.quantities_.innerIterationRelativeLimit;
+        
+    end % getUpperRatio
+    
+    % Get baseline ratio
+    function [baseInnerIter] = baselineInnerIteration(S)
+        
+        % Set return values
+        baseInnerIter = S.quantities_.innerIterationCounter;
+        
+    end % baselineInnerIteration
+    
   end % methods (public access)
   
   % Methods (private access)

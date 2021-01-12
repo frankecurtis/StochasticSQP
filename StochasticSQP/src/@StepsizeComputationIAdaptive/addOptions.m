@@ -15,7 +15,7 @@ options.addDoubleOption(reporter,'SCIA_objective_Lipschitz',1e+02,0,inf);
 options.addDoubleOption(reporter,'SCIA_constraint_Lipschitz',1e+02,0,inf);
 options.addDoubleOption(reporter,'SCIA_projection_width',1e+04,0,inf);
 options.addDoubleOption(reporter,'SCIA_stepsize_scaling',1e+00,0,inf);
-options.addDoubleOption(reporter,'SCIA_sufficient_decrease',5e-01,0,inf);
-options.addDoubleOption(reporter,'SCIA_forward_lengthening',1e+00,1,inf);
+options.addDoubleOption(reporter,'SCIA_sufficient_decrease',1e-01,0,inf);
+options.addDoubleOption(reporter,'SCIA_forward_lengthening',1.1e+00,1,inf);
 
 end % addOptions
