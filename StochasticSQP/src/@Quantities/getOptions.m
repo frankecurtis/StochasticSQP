@@ -23,5 +23,7 @@ Q.scale_factor_gradient_limit_ = options.getOption(reporter,'scale_factor_gradie
 Q.size_limit_ = options.getOption(reporter,'size_limit');
 Q.stationarity_tolerance_ = options.getOption(reporter,'stationarity_tolerance');
 % Q.inner_iteration_relative_limit_ = options.getOption(reporter,'inner_iteration_relative_limit');
+Q.Lipschitz_estimate_iter_first_ = options.getOption(reporter,'Lipschitz_estimate_iter_first');
+Q.Lipschitz_estimate_iter_later_ = options.getOption(reporter,'Lipschitz_estimate_iter_later');
 
 end % getOptions

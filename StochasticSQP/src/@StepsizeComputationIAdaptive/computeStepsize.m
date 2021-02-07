@@ -34,20 +34,23 @@ else
     forward_lengthening = S.forward_lengthening_;
     
     if forward_lengthening > 1
-        while 1  
-            alpha_ext = forward_lengthening * alpha_1;
-            
-            Ufunc = alpha_ext * (S.sufficient_decrease_ - 1) * stepsize_scaling * quantities.modelReduction ...
-                + norm(alpha_ext * quantities.residualDual + (1 - alpha_ext) * quantities.currentIterate.constraintFunctionEqualities(quantities),1) ...
-                - norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1) ...
-                + alpha_ext * (norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1) - quantities.residualDualNorm1) ...
-                + 0.5 * alpha_ext^2 * denominator;
-            
-            if Ufunc > 0
-                break;
-            else
-                alpha_1 = alpha_ext;
-            end  
+        if alpha_1 < 1
+            while alpha_1 < 1
+                alpha_ext = forward_lengthening * alpha_1;
+                
+                Ufunc = alpha_ext * (S.sufficient_decrease_ - 1) * stepsize_scaling * quantities.modelReduction ...
+                    + norm(alpha_ext * quantities.residualDual + (1 - alpha_ext) * quantities.currentIterate.constraintFunctionEqualities(quantities),1) ...
+                    - norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1) ...
+                    + alpha_ext * (norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1) - quantities.residualDualNorm1) ...
+                    + 0.5 * alpha_ext^2 * denominator;
+                
+                if Ufunc > 0
+                    break;
+                else
+                    alpha_1 = alpha_ext;
+                end
+            end
+            alpha_1 = min(alpha_1,1);
         end
     end
     

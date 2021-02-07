@@ -14,10 +14,30 @@ function computeMeritParameter(M,options,quantities,reporter,strategies)
 % Check whether termination test 2 is satisfied
 if quantities.terminationTestNumber == 2
     
-    % Compute objective model value
-    objective_model_value = quantities.currentIterate.objectiveGradient'*quantities.directionPrimal + ...
-        max(quantities.directionPrimal' * quantities.directionPrimal,...
-        M.curvature_threshold_ * norm(quantities.directionPrimal)^2);
+    name = quantities.currentIterate.problem.name;
+    if min(name(1:7) == 'OPTCONT') == 1
+        
+        matrix = speye(quantities.currentIterate.numberOfVariables,quantities.currentIterate.numberOfVariables);
+        
+        if name(end) == '2'
+            matrix(quantities.currentIterate.numberOfConstraintsEqualities+1:quantities.currentIterate.numberOfVariables,quantities.currentIterate.numberOfConstraintsEqualities+1:quantities.currentIterate.numberOfVariables) = 1e-1 * speye(quantities.currentIterate.numberOfVariables - quantities.currentIterate.numberOfConstraintsEqualities);
+        else
+            matrix(quantities.currentIterate.numberOfConstraintsEqualities+1:quantities.currentIterate.numberOfVariables,quantities.currentIterate.numberOfConstraintsEqualities+1:quantities.currentIterate.numberOfVariables) = 1e-1 * speye(quantities.currentIterate.numberOfVariables - quantities.currentIterate.numberOfConstraintsEqualities);
+        end
+        
+        % Compute objective model value
+        objective_model_value = quantities.currentIterate.objectiveGradient'*quantities.directionPrimal + ...
+            max(quantities.directionPrimal' * matrix * quantities.directionPrimal,...
+            M.curvature_threshold_ * norm(quantities.directionPrimal)^2);
+        
+    else
+        
+        % Compute objective model value
+        objective_model_value = quantities.currentIterate.objectiveGradient'*quantities.directionPrimal + ...
+            max(quantities.directionPrimal' * quantities.directionPrimal,...
+            M.curvature_threshold_ * norm(quantities.directionPrimal)^2);
+        
+    end
     
     % Evaluate constraint violation norm
     if quantities.currentIterate.constraintNorm1 > 0.0

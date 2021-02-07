@@ -38,6 +38,7 @@ classdef Quantities < handle
     constraint_Jacobian_inequalities_evaluation_counter_ = 0
     hessian_of_lagrangian_evaluation_counter_ = 0
     iteration_counter_ = 0
+    iterative_solver_counter_ = 0
     inner_iteration_counter_ = 0
     objective_function_evaluation_counter_ = 0
     objective_gradient_evaluation_counter_ = 0
@@ -64,6 +65,8 @@ classdef Quantities < handle
     size_limit_
     stationarity_tolerance_
     inner_iteration_relative_limit_
+    Lipschitz_estimate_iter_first_
+    Lipschitz_estimate_iter_later_
     
   end
   
@@ -277,6 +280,14 @@ classdef Quantities < handle
       
     end % iterationCounter
     
+    % Iterative Solver Counter
+    function k = iterativeSolverCounter(Q)
+        
+        % Set return value
+        k = Q.iterative_solver_counter_;
+        
+    end % iterativeSolverCounter
+    
     % Inner iteration counter
     function k = innerIterationCounter(Q)
       
@@ -421,6 +432,22 @@ classdef Quantities < handle
         
     end % constraintLipschitzConstants
     
+    % Lipschitz Estimate Itertion 1
+    function iter_1 = lipschitzEstimateIterationFirst(Q)
+        
+        % Set Lipschitz Estimate Iteration 1
+        iter_1 = Q.Lipschitz_estimate_iter_first_;
+        
+    end % lipschitzEstimateIterationFirst
+    
+    % Lipschitz Estimate Itertion 2
+    function iter_2 = lipschitzEstimateIterationLater(Q)
+        
+        % Set Lipschitz Estimate Iteration 2
+        iter_2 = Q.Lipschitz_estimate_iter_later_;
+        
+    end % lipschitzEstimateIterationLater
+    
     %%%%%%%%%%%%%%%
     % SET METHODS %
     %%%%%%%%%%%%%%%
@@ -481,6 +508,14 @@ classdef Quantities < handle
         Q.dual_residual_norm1_ = dual_residual_norm1;
         
     end %setDualResidualNorm1
+    
+    % Set iterative solver counter
+    function setIterativeSolverCounter(Q,iter)
+        
+        % Increment iterative solver counter
+        Q.iterative_solver_counter_ = iter;
+        
+    end % setIterativeSolverCounter
     
     % Set termination test number
     function setTerminationTestNumber(Q,TTnum)

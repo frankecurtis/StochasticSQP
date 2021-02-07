@@ -207,13 +207,16 @@ if show
   fprintf(' gbar/|A|\n')   %%%%%% Check gbar
 end
 
+% Compute norm b
+normb = norm(b,inf);
+
 %---------------------------------------------------------------------
 % Main iteration loop.
 % --------------------------------------------------------------------
 if ~done                              % k = itn = 1 first time through
   while itn < itnlim
     itn    = itn+1;
-
+    
     %-----------------------------------------------------------------
     % Obtain quantities for the next Lanczos vector vk+1, k = 1, 2,...
     % The general iteration is similar to the case k = 1 with v0 = 0:
@@ -287,10 +290,12 @@ if ~done                              % k = itn = 1 first time through
         initialResidualNormInf = norm(residual,inf);
     end
     
-    if norm(residual,inf) < 0.1 * initialResidualNormInf
+    % if norm(residual,inf) <= min(0.1 * initialResidualNormInf , 1e-6)
+    
+    if norm(residual,inf) <= kappa * normb
         
-        if norm(residual,inf) <= 1e-6 * kappa*min(CIM,PIM)
-            
+        % if norm(residual,inf) <= 1e-6 * kappa*min(CIM,PIM)
+
             % Set updates
             primal_update = x(1:size_primal);
             dual_update = x(size_primal+1:end);
@@ -298,9 +303,9 @@ if ~done                              % k = itn = 1 first time through
             dual_residual = residual(size_primal+1:end);
             
             % Check whether model reduction condition holds...
-            Delta_q = -tau*(obj_grad'*primal_update + 0.5*max(primal_update'*primal_update,kappa_u*norm(primal_update)^2)) + c_norm1 - norm(dual_residual,1);
+            Delta_q = -tau*(obj_grad'*primal_update + 0.5*max(primal_update'*A(1:size_primal,1:size_primal)*primal_update,kappa_u*norm(primal_update)^2)) + c_norm1 - norm(dual_residual,1);
             
-            if Delta_q >= 0.5*tau*sigma*max(primal_update'*primal_update,kappa_u*norm(primal_update)^2) + sigma*max(c_norm1 , norm(dual_residual,1) - c_norm1)
+            if Delta_q >= 0.5*tau*sigma*max(primal_update'*A(1:size_primal,1:size_primal)*primal_update,kappa_u*norm(primal_update)^2) + sigma*max(c_norm1 , norm(dual_residual,1) - c_norm1)
                 if norm(residual) <= kappa*min(CIM,PIM)
                     TTnum = 1;
                     return;
@@ -321,7 +326,7 @@ if ~done                              % k = itn = 1 first time through
                 end
             end
             
-        end
+        % end
         
     end
         

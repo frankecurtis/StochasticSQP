@@ -20,6 +20,8 @@ options.addIntegerOption(reporter,'objective_gradient_evaluation_limit',1e+03,0,
 options.addIntegerOption(reporter,'iteration_limit',1e+08,0,inf);
 options.addIntegerOption(reporter,'size_limit',2e+04,0,inf);
 % options.addIntegerOption(reporter,'inner_iteration_relative_limit',5e+02,0,inf);
+options.addIntegerOption(reporter,'Lipschitz_estimate_iter_first',1,0,inf);
+options.addIntegerOption(reporter,'Lipschitz_estimate_iter_later',1e+4,0,inf);
 
 % Add double options
 options.addDoubleOption(reporter,'cpu_time_limit',1800,0,inf);

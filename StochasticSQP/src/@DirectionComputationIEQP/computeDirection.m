@@ -54,12 +54,23 @@ end
   %%%%%%%%%%%%%%
   
 %   % Check whether LICQ holds
-%   if min(svd(quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.currentIterate.constraintJacobianEqualities(quantities)')) < 1e-8
+%   if eigs(quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.currentIterate.constraintJacobianEqualities(quantities)',1,'sm') < 1e-8
 %       err = true;
 %       fprintf('LICQ does not hold!!! \n');
 %       return
 %   end
+
+
+  name = quantities.currentIterate.problem.name;
+  if min(name(1:7) == 'OPTCONT') == 1
+      if name(end) == '2'
+          matrix(quantities.currentIterate.numberOfConstraintsEqualities+1:quantities.currentIterate.numberOfVariables,quantities.currentIterate.numberOfConstraintsEqualities+1:quantities.currentIterate.numberOfVariables) = 1e-1 * speye(quantities.currentIterate.numberOfVariables - quantities.currentIterate.numberOfConstraintsEqualities);
+      else
+          matrix(quantities.currentIterate.numberOfConstraintsEqualities+1:quantities.currentIterate.numberOfVariables,quantities.currentIterate.numberOfConstraintsEqualities+1:quantities.currentIterate.numberOfVariables) = 1e-1 * speye(quantities.currentIterate.numberOfVariables - quantities.currentIterate.numberOfConstraintsEqualities);
   
+      end
+  end
+    
   if quantities.checkStationarityMeasure
       
       % Compute exact direction with the true gradient
@@ -71,7 +82,27 @@ end
       
   end
   
-  
+%   % sanity check
+%   step = sparse(v_true(1:quantities.currentIterate.numberOfVariables));
+%   dualUpdate = sparse(v_true(quantities.currentIterate.numberOfVariables+1:end));
+%   trial_iterate = Point(quantities.currentIterate,quantities.currentIterate.primalPoint + step);
+%   quantities.setTrialIterate(trial_iterate);
+%   quantities.updateIterate;
+%   stat = norm([quantities.currentIterate.trueObjectiveGradient(quantities) + quantities.currentIterate.constraintJacobianEqualities(quantities)'*dualUpdate;
+%       quantities.currentIterate.constraintFunctionEqualities(quantities)])
+% 
+% 
+% %     v = v_true;
+% %     TTnum = 1;
+% %     residual = sparse(quantities.currentIterate.numberOfVariables + quantities.currentIterate.numberOfConstraintsEqualities , 1);
+% %     innerIter = 1;
+% %     [current_multipliers , ~] = quantities.currentIterate.multipliers;
+% %     currentIterateInfo = [quantities.currentIterate.objectiveGradient(quantities) + quantities.currentIterate.constraintJacobianEqualities(quantities)' * current_multipliers; quantities.currentIterate.constraintFunctionEqualities(quantities)];
+% %     residual = matrix * v + currentIterateInfo;
+% 
+%   condest(quantities.currentIterate.constraintJacobianEqualities(quantities)*quantities.currentIterate.constraintJacobianEqualities(quantities)')
+
+    
   [current_multipliers , ~] = quantities.currentIterate.multipliers;
   previousIterateMeasure = norm([quantities.previousIterate.objectiveGradient(quantities) + quantities.previousIterate.constraintJacobianEqualities(quantities)' * current_multipliers ; quantities.previousIterate.constraintFunctionEqualities(quantities)]);
   currentIterateInfo = [quantities.currentIterate.objectiveGradient(quantities) + quantities.currentIterate.constraintJacobianEqualities(quantities)' * current_multipliers; quantities.currentIterate.constraintFunctionEqualities(quantities)];
@@ -110,6 +141,9 @@ end
   % Transform dense to sparse format
   v = sparse(v);
   residual = sparse(residual);
+  
+  % Set current inner iteration counter
+  quantities.setIterativeSolverCounter(innerIter);
   
   % Increment inner iteration counter
   quantities.incrementInnerIterationCounter(innerIter);

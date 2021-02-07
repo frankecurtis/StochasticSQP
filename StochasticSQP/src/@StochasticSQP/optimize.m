@@ -18,11 +18,11 @@ S.quantities_.currentIterate.determineScaleFactors(S.quantities_);
 
 
 
-% Set inner iteration relative
-filename = strcat('/Users/baoyuzhou/Desktop/Software/SCO/output/sparse_lengthening/Residual_1e-1/Gradient_1e-2/',problem.name,'_IEQP','.mat');
-load(filename);
-ratio = innerIteration/(size(x,1) + size(yE,1) + size(yI,1));
-S.quantities_.setInnerIterationRelativeLimit(ratio);
+% % Set inner iteration relative
+% filename = strcat('/Users/baoyuzhou/Desktop/Software/SCO/output/sparse_lengthening/Residual_1e-1/Gradient_1e-2/',problem.name,'_IEQP','.mat');
+% load(filename);
+% ratio = innerIteration/(size(x,1) + size(yE,1) + size(yI,1));
+% S.quantities_.setInnerIterationRelativeLimit(ratio);
 
 
 
@@ -30,7 +30,7 @@ S.quantities_.setInnerIterationRelativeLimit(ratio);
 %         S.quantities_.currentIterate.numberOfConstraintsEqualities + ...
 %         S.quantities_.currentIterate.numberOfConstraintsInequalities <= ...
 %         S.quantities_.sizeLimit
-%    
+   
 %     % Estimate Lipschitz Constants
 %     currentIterate = S.quantities_.currentIterate.primalPoint;
 %     currentTrueObjectiveGradient = S.quantities_.currentIterate.trueObjectiveGradient(S.quantities_);
@@ -50,32 +50,34 @@ S.quantities_.setInnerIterationRelativeLimit(ratio);
 %         
 %         % Update Lipschitz estimates
 %         objectiveLipschitz = max(objectiveLipschitz , 1e+4 * norm(currentTrueObjectiveGradient - sampleTrueObjectiveGradient));
-%         blank = 1e+4 * vecnorm(currentJacobian' - sampleJacobian')';
-% %         blank = zeros(m,1);
-% %         for j = 1:m
-% %             blank(j) = 1e+4 * norm(currentJacobian(j,:) - sampleJacobian(j,:));
-% %             % constraintsLipschitz(j) = max(constraintsLipschitz(j) , 1e+4 * norm(currentJacobian(j,:) - sampleJacobian(j,:)));
-% %         end
-%         constraintsLipschitz = max(constraintsLipschitz , blank);
+% %         blank = 1e+4 * vecnorm(currentJacobian' - sampleJacobian')';
+% % %         blank = zeros(m,1);
+% % %         for j = 1:m
+% % %             blank(j) = 1e+4 * norm(currentJacobian(j,:) - sampleJacobian(j,:));
+% % %             % constraintsLipschitz(j) = max(constraintsLipschitz(j) , 1e+4 * norm(currentJacobian(j,:) - sampleJacobian(j,:)));
+% % %         end
+% %        constraintsLipschitz = max(constraintsLipschitz , blank);
 %         
 %     end
-%     
-%     constraintsLipschitz = sum(constraintsLipschitz);
-%     Lipschitz_constants = [objectiveLipschitz ; constraintsLipschitz];
+    
+    % constraintsLipschitz = sum(constraintsLipschitz);
+    constraintsLipschitz = 0;
+    objectiveLipschitz = 2;
+    Lipschitz_constants = [objectiveLipschitz ; constraintsLipschitz];
     
 
 
-    filename = strcat('/Users/baoyuzhou/Desktop/Software/SCO/output/problem_info/Lipschitz/',problem.name,'.mat');
-    load(filename);
-    objectiveLipschitz = Lipschitz_constants(1);
-    constraintsLipschitz = Lipschitz_constants(2);
-
-    % Set Lipschitz Constants
-    S.quantities_.setLipschitzConstants(objectiveLipschitz,constraintsLipschitz);
-    
-    
+%     filename = strcat('/Users/baoyuzhou/Desktop/Software/SCO/output/problem_info/Lipschitz/',problem.name,'.mat');
+%     load(filename);
+%     objectiveLipschitz = Lipschitz_constants(1);
+%     constraintsLipschitz = Lipschitz_constants(2);
+% 
 %     % Set Lipschitz Constants
 %     S.quantities_.setLipschitzConstants(objectiveLipschitz,constraintsLipschitz);
+    
+    
+    % Set Lipschitz Constants
+    S.quantities_.setLipschitzConstants(objectiveLipschitz,constraintsLipschitz);
 %     % Save Lipschitz Information
 %     filename = strcat('/Users/baoyuzhou/Desktop/Software/SCO/output/problem_info/Lipschitz/',problem.name,'.mat');
 %     save(filename,'Lipschitz_constants');
@@ -99,20 +101,69 @@ while true
   % Print iteration quantities
   S.quantities_.printIterationValues(S.reporter_);
   
+  % Check for termination of best iterate
+  if S.quantities_.bestIterate.constraintNormInf(S.quantities_) <= 1e-6
+      if S.quantities_.bestIterate.trueStationarityMeasure(S.quantities_) <= 1e-3
+          S.status_ = Enumerations.S_SUCCESS;
+          break;
+      end
+  end
+  
+  
+%   % Estimate Lipschitz constant again when necessary
+%   if S.quantities_.iterationCounter <= S.quantities_.lipschitzEstimateIterationFirst ...
+%           || mod(S.quantities_.iterationCounter - S.quantities_.lipschitzEstimateIterationFirst , S.quantities_.lipschitzEstimateIterationLater) == 0
+%       
+%       % Estimate Lipschitz Constants
+%       currentIterate = S.quantities_.currentIterate.primalPoint;
+%       currentTrueObjectiveGradient = S.quantities_.currentIterate.trueObjectiveGradient(S.quantities_);
+%       currentJacobian = S.quantities_.currentIterate.constraintJacobianEqualities(S.quantities_);
+%       n = S.quantities_.currentIterate.numberOfVariables;
+%       m = S.quantities_.currentIterate.numberOfConstraintsEqualities;
+%       objectiveLipschitz = 1;
+%       constraintsLipschitz = zeros(m,1);
+%       
+%       for i = 1:n
+%           
+%           sampleIterate = currentIterate;
+%           sampleIterate(i) = sampleIterate(i) + 1e-4;
+%           [f_scale,cE_scale,~] = S.quantities_.currentIterate.scaleFactors;
+%           sampleTrueObjectiveGradient = f_scale * problem.evaluateTrueObjectiveGradient(sampleIterate);
+%           sampleJacobian = cE_scale .* problem.evaluateConstraintJacobianEqualities(sampleIterate);
+%           
+%           % Update Lipschitz estimates
+%           objectiveLipschitz = max(objectiveLipschitz , 1e+4 * norm(currentTrueObjectiveGradient - sampleTrueObjectiveGradient));
+%           blank = 1e+4 * vecnorm(currentJacobian' - sampleJacobian')';
+%           %         blank = zeros(m,1);
+%           %         for j = 1:m
+%           %             blank(j) = 1e+4 * norm(currentJacobian(j,:) - sampleJacobian(j,:));
+%           %             % constraintsLipschitz(j) = max(constraintsLipschitz(j) , 1e+4 * norm(currentJacobian(j,:) - sampleJacobian(j,:)));
+%           %         end
+%           constraintsLipschitz = max(constraintsLipschitz , blank);
+%           
+%       end
+%       
+%       constraintsLipschitz = sum(constraintsLipschitz);
+%       
+%       % Set Lipschitz Constants
+%       S.quantities_.setLipschitzConstants(objectiveLipschitz,constraintsLipschitz);
+%       
+%   end
+  
 %   % Check for CPU time termination
 %   if S.quantities_.CPUTime >= S.quantities_.CPUTimeLimit
 %     S.status_ = Enumerations.S_CPU_TIME_LIMIT;
 %     break;
 %   end
   
-  % Check for termination
-  if S.quantities_.currentIterate.numberOfVariables + ...
-      S.quantities_.currentIterate.numberOfConstraintsEqualities + ...
-      S.quantities_.currentIterate.numberOfConstraintsInequalities > ...
-      S.quantities_.sizeLimit
-    S.status_ = Enumerations.S_SIZE_LIMIT;
-    break;
-  end
+%   % Check for termination
+%   if S.quantities_.currentIterate.numberOfVariables + ...
+%       S.quantities_.currentIterate.numberOfConstraintsEqualities + ...
+%       S.quantities_.currentIterate.numberOfConstraintsInequalities > ...
+%       S.quantities_.sizeLimit
+%     S.status_ = Enumerations.S_SIZE_LIMIT;
+%     break;
+%   end
 %   if S.quantities_.iterationCounter >= S.quantities_.iterationLimit
 %     S.status_ = Enumerations.S_ITERATION_LIMIT;
 %     break;
@@ -139,14 +190,6 @@ while true
 %   if S.quantities_.currentIterate.stationarityMeasure(S.quantities_) <= S.quantities_.stationarityTolerance
 %     S.status_ = Enumerations.S_SUCCESS;
 %     break;
-%   end
-
-%   % Check for termination of best iterate
-%   if S.quantities_.bestIterate.constraintNormInf(S.quantities_) <= 1e-6
-%       if S.quantities_.bestIterate.trueStationarityMeasure(S.quantities_) <= 1e-3
-%           S.status_ = Enumerations.S_SUCCESS;
-%           break;
-%       end
 %   end
   
   % Compute merit parameter (sets merit_parameter and model_reduction)
