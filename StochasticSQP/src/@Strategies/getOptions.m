@@ -11,6 +11,7 @@ function getOptions(S,options,reporter)
 direction_computation_name = options.getOption(reporter,'direction_computation');
 merit_parameter_computation_name = options.getOption(reporter,'merit_parameter_computation');
 stepsize_computation_name = options.getOption(reporter,'stepsize_computation');
+Lipschitz_estimation_name = options.getOption(reporter,'Lipschitz_estimation');
 
 % Switch on direction computation names
 switch direction_computation_name
@@ -30,8 +31,6 @@ switch merit_parameter_computation_name
     S.merit_parameter_computation_ = MeritParameterComputationFixed;
   case 'ModelReduction'
     S.merit_parameter_computation_ = MeritParameterComputationModelReduction;
-  case 'ModelReductionInexact'
-    S.merit_parameter_computation_ = MeritParameterComputationModelReductionInexact;
   otherwise
     S.merit_parameter_computation_ = MeritParameterComputationModelReduction;
 end
@@ -42,15 +41,20 @@ switch stepsize_computation_name
     S.stepsize_computation_ = StepsizeComputationAdaptive;
   case 'Conservative'
     S.stepsize_computation_ = StepsizeComputationConservative;
-  case 'IAdaptive'
-    S.stepsize_computation_ = StepsizeComputationIAdaptive;
   otherwise
     S.stepsize_computation_ = StepsizeComputationAdaptive;
+end
+
+% Switch on lipschitz estimation names
+switch Lipschitz_estimation_name
+    case 'FiniteDifference'
+        S.Lipschitz_estimation_ = LipschitzEstimationFiniteDifference;
 end
 
 % Get options
 S.direction_computation_.getOptions(options,reporter);
 S.merit_parameter_computation_.getOptions(options,reporter);
 S.stepsize_computation_.getOptions(options,reporter);
+S.Lipschitz_estimation_.getOptions(options,reporter);
 
 end % getOptions

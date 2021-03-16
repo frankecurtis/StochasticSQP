@@ -210,7 +210,7 @@ classdef Options < handle
         if strcmp(O.list{i}.name,name)
           name_found = true;
           if strcmp(O.list{i}.type,'bool')
-            if length(size(value)) == 2 && size(value,1) == 1 && size(value,2) == 1 && isbool(value)
+            if length(size(value)) == 2 && size(value,1) == 1 && size(value,2) == 1 && islogical(value)
               O.list{i}.value = value;
               reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...
                 'Options: Modified option %s with new value %d.\n',name,mat2str(value));

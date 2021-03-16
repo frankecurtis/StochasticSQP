@@ -42,6 +42,7 @@ classdef Quantities < handle
     inner_iteration_counter_ = 0
     objective_function_evaluation_counter_ = 0
     objective_gradient_evaluation_counter_ = 0
+    diminishing_stepsize_level_counter_ = 0
     
     %%%%%%%%%%%%%%
     % INDICATORS %
@@ -54,19 +55,25 @@ classdef Quantities < handle
     %%%%%%%%%%%%%%
     % TOLERANCES %
     %%%%%%%%%%%%%%
-    cpu_time_limit_
+    Comparison_ratio_
     constraint_function_evaluation_limit_
     constraint_Jacobian_evaluation_limit_
+    cpu_time_limit_
+    curv_info_
+    feasibility_tolerance_
     hessian_of_lagrangian_evaluation_limit_
+    inner_iteration_relative_limit_
     iteration_limit_
+    Lipschitz_estimate_iter_first_
+    Lipschitz_estimate_iter_later_
     objective_function_evaluation_limit_
     objective_gradient_evaluation_limit_
+    Progress_check_iter_
+    Progress_ratio_
     scale_factor_gradient_limit_
     size_limit_
     stationarity_tolerance_
-    inner_iteration_relative_limit_
-    Lipschitz_estimate_iter_first_
-    Lipschitz_estimate_iter_later_
+    
     
   end
   
@@ -272,6 +279,14 @@ classdef Quantities < handle
         
     end % terminationTestNumber
     
+    % Diminishing stepsize level counter
+    function level_counter = diminishingStepsizeLevelCounter(Q)
+        
+        % Set return value
+        level_counter = Q.diminishing_stepsize_level_counter_;
+        
+    end % diminishingStepsizeLevelCounter
+    
     % Iteration counter
     function k = iterationCounter(Q)
       
@@ -391,6 +406,14 @@ classdef Quantities < handle
       s_max = Q.size_limit_;
       
     end % sizeLimit
+    
+    % Feasibility tolerance
+    function t = feasibilityTolerance(Q)
+      
+      % Set return value
+      t = Q.feasibility_tolerance_;
+      
+    end % stationarityTolerance
 
     % Stationarity tolerance
     function t = stationarityTolerance(Q)
@@ -447,6 +470,38 @@ classdef Quantities < handle
         iter_2 = Q.Lipschitz_estimate_iter_later_;
         
     end % lipschitzEstimateIterationLater
+    
+    % Progress Check Iteration
+    function iter = progressCheckIteration(Q)
+        
+        % Set Progress Check Iteration
+        iter = Q.Progress_check_iter_;
+        
+    end % progressCheckIteration
+    
+    % Progress Ratio
+    function ratio = progressRatio(Q)
+        
+        % Set Progress Ratio
+        ratio = Q.Progress_ratio_;
+        
+    end % progressRatio
+    
+    % Comparison Ratio
+    function ratio = comparisonRatio(Q)
+        
+        % Set Comparison Ratio
+        ratio = Q.Comparison_ratio_;
+        
+    end % comparisonRatio
+    
+    % Curvature Information
+    function curv_info = curvatureInfo(Q)
+        
+        % Set curvature information
+        curv_info = Q.curv_info_;
+        
+    end % curvatureInfo
     
     %%%%%%%%%%%%%%%
     % SET METHODS %
@@ -565,6 +620,14 @@ classdef Quantities < handle
       
     end % setTrialIterate
     
+    % Set curvature information
+    function setCurvature(Q,curv)
+        
+        % Set curvature information
+        Q.curv_info_ = curv;
+        
+    end % setCurvature
+    
     % Update iterate
     function updateIterate(Q)
         
@@ -572,10 +635,10 @@ classdef Quantities < handle
         if Q.compute_iterate_stationarity_
             
             % Update best iterate
-            if (Q.best_iterate_.constraintNormInf(Q) > Q.stationarityTolerance && ...
+            if (Q.best_iterate_.constraintNormInf(Q) > Q.feasibilityTolerance && ...
                     Q.current_iterate_.constraintNormInf(Q) < Q.best_iterate_.constraintNormInf(Q)) || ...
-                    (Q.best_iterate_.constraintNormInf(Q) <= Q.stationarityTolerance && ...
-                    Q.current_iterate_.trueStationarityMeasure(Q) <= Q.best_iterate_.trueStationarityMeasure(Q))
+                    (Q.best_iterate_.constraintNormInf(Q) <= Q.feasibilityTolerance && ...
+                    Q.current_iterate_.stationarityMeasure(Q,'true') <= Q.best_iterate_.stationarityMeasure(Q,'true'))
                 Q.best_iterate_ = Q.current_iterate_;
             end
             
@@ -632,6 +695,14 @@ classdef Quantities < handle
       Q.hessian_of_lagrangian_evaluation_counter_ = Q.hessian_of_lagrangian_evaluation_counter_ + 1;
       
     end % incrementHessianOfLagrangianEvaluationCounter
+    
+    % Increment diminishing stepsize level counter
+    function incrementDiminishingStepsizeLevelCounter(Q)
+        
+        % Increment diminishing stepsize level counter
+        Q.diminishing_stepsize_level_counter_ = Q.diminishing_stepsize_level_counter_ + 1;
+        
+    end % incrementDiminishingStepsizeLevelCounter
     
     % Increment iteration counter
     function incrementIterationCounter(Q)

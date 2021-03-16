@@ -195,9 +195,9 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate Hessian of Lagrangian
       try
-        yEorig = sparse(zeros(P.m,1));
-        yLorig = sparse(zeros(P.m,1));
-        yUorig = sparse(zeros(P.m,1));
+        yEorig = sparse(P.m,1);
+        yLorig = sparse(P.m,1);
+        yUorig = sparse(P.m,1);
         yEorig(P.ice) =  yE;
         yLorig(P.icl) = -yI(1:P.mcl);
         yUorig(P.icu) =  yI(P.mcl+1:P.mcl+P.mcu);
@@ -226,37 +226,29 @@ classdef ProblemCUTEst < Problem
     end % evaluateObjectiveFunction
     
     % Objective gradient
-    function [gbar,err] = evaluateObjectiveGradient(P,x)
+    function [g,err] = evaluateObjectiveGradient(P,x,varargin)
 
       % Initialize error
       err = false;
       
-      % Evaluate objective gradient
-      try
-        g = cutest_grad(x);
-        gbar = sparse(g + randn(size(x)) * (1e-2/sqrt(size(x,1)))); % noise_level ... {1e-4,-2,-1}
-      catch
-        gbar = [];
-        err = true;
+      % Check for correct number of input arguments
+      if length(varargin) > 1 || length(varargin) == 0
+          err = true;
+          error('Point: Incorrect number of inputs to Problem.evaluateObjectiveGradient.');
       end
-      
-    end % evaluateObjectiveGradient
-    
-    % True Objective gradient
-    function [g,err] = evaluateTrueObjectiveGradient(P,x)
-
-      % Initialize error
-      err = false;
       
       % Evaluate objective gradient
       try
         g = sparse(cutest_grad(x));
+        if strcmp(varargin,'stochastic')
+            g = sparse(g + randn(size(x)) * (1e-2/sqrt(size(x,1)))); % noise_level ... {1e-4,-2,-1}
+        end
       catch
         g = [];
         err = true;
       end
       
-    end % evaluateTrueObjectiveGradient
+    end % evaluateObjectiveGradient
     
     % Initial point
     function x = initialPoint(P)

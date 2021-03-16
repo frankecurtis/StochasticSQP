@@ -21,9 +21,11 @@ Q.objective_gradient_evaluation_limit_ = options.getOption(reporter,'objective_g
 Q.ratio_parameter_ = options.getOption(reporter,'ratio_parameter_initial');
 Q.scale_factor_gradient_limit_ = options.getOption(reporter,'scale_factor_gradient_limit');
 Q.size_limit_ = options.getOption(reporter,'size_limit');
+Q.feasibility_tolerance_ = options.getOption(reporter,'feasibility_tolerance');
 Q.stationarity_tolerance_ = options.getOption(reporter,'stationarity_tolerance');
-% Q.inner_iteration_relative_limit_ = options.getOption(reporter,'inner_iteration_relative_limit');
-Q.Lipschitz_estimate_iter_first_ = options.getOption(reporter,'Lipschitz_estimate_iter_first');
-Q.Lipschitz_estimate_iter_later_ = options.getOption(reporter,'Lipschitz_estimate_iter_later');
+Q.inner_iteration_relative_limit_ = options.getOption(reporter,'inner_iteration_relative_limit');
+Q.Progress_check_iter_ = options.getOption(reporter,'progress_check_iter');
+Q.Progress_ratio_ = options.getOption(reporter,'progress_ratio');
+Q.Comparison_ratio_ = options.getOption(reporter,'comparison_ratio');
 
 end % getOptions

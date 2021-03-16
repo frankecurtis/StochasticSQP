@@ -120,6 +120,7 @@ classdef Point < handle
         P.mE = varargin{1}.numberOfConstraintsEqualities;
         P.mI = varargin{1}.numberOfConstraintsInequalities;
         [P.yE,P.yI] = varargin{1}.multipliers;
+        [P.yE_true,P.yI_true] = varargin{1}.multipliers('true');
         [P.f_scale,P.cE_scale,P.cI_scale] = varargin{1}.scaleFactors;
         
         % Set indicator
@@ -149,33 +150,48 @@ classdef Point < handle
     %%%%%%%%%%%%%%%
     
     % Set multipliers
-    function setMultipliers(P,yE,yI)
-      
-      % Set multipliers
-      P.yE = yE;
-      P.yI = yI;
+    function setMultipliers(P,varargin) %yE,yI)
+        
+        % Check for correct number of input arguments
+        if length(varargin) < 2 || length(varargin) > 3
+            error('Point: Incorrect number of inputs to Point.setMultipliers.');
+        end
+        
+        % Check for problem input
+        if length(varargin) == 2
+            % Set multipliers
+            P.yE = varargin{1};
+            P.yI = varargin{2};
+        else
+            % Set true multipliers
+            P.yE_true = varargin{1};
+            P.yI_true = varargin{2};
+        end
       
     end % setMultipliers
-    
-    % Set true multipliers
-    function setTrueMultipliers(P,yE,yI)
-      
-      % Set multipliers
-      P.yE_true = yE;
-      P.yI_true = yI;
-      
-    end % setTrueMultipliers
     
     %%%%%%%%%%%%%%%
     % GET METHODS %
     %%%%%%%%%%%%%%%
     
     % Multipliers
-    function [yE,yI] = multipliers(P)
-      
-      % Set multipliers
-      yE = sparse(P.yE);
-      yI = sparse(P.yI);
+    function [yE,yI] = multipliers(P,varargin)
+        
+        % Check for correct number of input arguments
+        if length(varargin) > 1 
+            error('Point: Incorrect number of inputs to Point.multipliers.');
+        end
+        
+        % Check for problem input
+        if isempty(varargin)
+            % Set multipliers
+            yE = sparse(P.yE);
+            yI = sparse(P.yI);
+        else
+            % Set true multipliers
+            yE = sparse(P.yE_true);
+            yI = sparse(P.yI_true);
+        end
       
     end % multipliers
     
@@ -476,7 +492,7 @@ classdef Point < handle
       if quantities.scaleProblem
       
         % Evaluate objective gradient
-        gradient = P.p.evaluateObjectiveGradient(P.x);
+        gradient = P.p.evaluateObjectiveGradient(P.x,'stochastic');
       
         % Increment counter
         quantities.incrementObjectiveGradientEvaluationCounter;
@@ -566,7 +582,15 @@ classdef Point < handle
       if ~P.H_evaluated
         
         % Evaluate
-        [P.H,err] = P.p.evaluateHessianOfLagrangian(P.x,P.yE./P.cE_scale,P.yI./P.cI_scale);
+        [P.H,err] = P.p.evaluateHessianOfLagrangian(P.x,(P.yE.*P.cE_scale)/P.f_scale,(P.yI.*P.cI_scale)/P.f_scale);
+        P.H = (P.H + P.H')/2;
+        
+        % Rescale P.H
+        P.H = P.f_scale * P.H;
+        
+        if sum(sum(isnan(P.H))) > 0 || sum(sum(isinf(P.H))) > 0 || condest(P.H) > 1e+12 || max(max(abs(P.H))) > 1e+10
+            P.H = P.f_scale * speye(P.n);
+        end
         
         % Check for error
         if err == true
@@ -587,50 +611,52 @@ classdef Point < handle
     end % hessianOfLagrangian
     
     % Stationarity measure
-    function v = stationarityMeasure(P,quantities)
-      
-      % Evaluate measure
-      if P.mE == 0 && P.mI == 0
-        v = norm(P.objectiveGradient(quantities),inf);
-      else
-        vec = P.objectiveGradient(quantities);
-        if P.mE > 0
-          vec = vec + (P.yE' * P.constraintJacobianEqualities(quantities))';
+    function v = stationarityMeasure(P,quantities,varargin)
+        
+        % Check for correct number of input arguments
+        if length(varargin) > 1 || length(varargin) == 0
+            error('Point: Incorrect number of inputs to Point.stationarityMeasure.');
         end
-        if P.mI > 0
-          vec = vec + (P.yI' * P.constraintJacobianInequalities(quantities))';
+        
+        % Evaluate measure
+        if P.mE == 0 && P.mI == 0
+            v = norm(P.objectiveGradient(quantities,varargin{1}),inf);
+        else
+            vec = P.objectiveGradient(quantities,varargin{1});
+            if P.mE > 0
+                if strcmp(varargin{1},'stochastic')
+                    vec = vec + (P.yE' * P.constraintJacobianEqualities(quantities))';
+                elseif strcmp(varargin{1},'true')
+                    Jg = P.constraintJacobianEqualities(quantities) * vec;
+                    invJJ_Jg = (P.constraintJacobianEqualities(quantities) * P.constraintJacobianEqualities(quantities)') \ Jg;
+                    vec = vec - P.constraintJacobianEqualities(quantities)' * invJJ_Jg;
+                else
+                    error('Point: Input to stationarityMeasure is invalid!');
+                end
+            end
+            if P.mI > 0
+                if strcmp(varargin{1},'stochastic')
+                    vec = vec + (P.yI' * P.constraintJacobianInequalities(quantities))';
+                elseif strcmp(varargin{1},'true')
+                    vec = vec + (P.yI_true' * P.constraintJacobianInequalities(quantities))';
+                else
+                    error('Point: Input to stationarityMeasure is invalid!');
+                end
+            end
+            v = norm(vec,inf);
+            if P.mI > 0
+                if strcmp(varargin{1},'stochastic')
+                    v = max(v,norm([min(P.yI,0); P.yI .* P.constraintFunctionInequalities(quantities)],inf));
+                elseif strcmp(varargin{1},'true')
+                    v = max(v,norm([min(P.yI_true,0); P.yI_true .* P.constraintFunctionInequalities(quantities)],inf));
+                else
+                    error('Point: Input to stationarityMeasure is invalid!');
+                end
+            end
+            v = max(v,P.constraintNormInf(quantities));
         end
-        v = norm(vec,inf);
-        if P.mI > 0
-          v = max(v,norm([min(P.yI,0); P.yI .* P.constraintFunctionInequalities(quantities)],inf));
-        end
-        v = max(v,P.constraintNormInf(quantities));
-      end
-      
+        
     end % stationarityMeasure
-    
-    % True stationarity measure
-    function v = trueStationarityMeasure(P,quantities)
-      
-      % Evaluate measure
-      if P.mE == 0 && P.mI == 0
-        v = norm(P.trueObjectiveGradient(quantities),inf);
-      else
-        vec = P.trueObjectiveGradient(quantities);
-        if P.mE > 0
-          vec = vec + (P.yE_true' * P.constraintJacobianEqualities(quantities))';
-        end
-        if P.mI > 0
-          vec = vec + (P.yI_true' * P.constraintJacobianInequalities(quantities))';
-        end
-        v = norm(vec,inf);
-        if P.mI > 0
-          v = max(v,norm([min(P.yI_true,0); P.yI_true .* P.constraintFunctionInequalities(quantities)],inf));
-        end
-        v = max(v,P.constraintNormInf(quantities));
-      end
-      
-    end % trueStationarityMeasure
     
     % Objective function
     function f = objectiveFunction(P,quantities)
@@ -684,53 +710,24 @@ classdef Point < handle
     end % objectiveFunctionUnscaled
     
     % Objective gradient
-    function g = objectiveGradient(P,quantities)
-
-      % Check if scales have been set
-      if ~P.scales_set
-        error('Point: Scale factors have not been set!');
-      end
-      
-      % Check if already evaluated
-      if ~P.g_evaluated
-        
-        % Evaluate
-        [P.g,err] = P.p.evaluateObjectiveGradient(P.x);
-
-        % Check for error
-        if err == true
-          error('Point: Error evaluating objective gradient!');
-        end
-
-        % Scale
-        P.g = P.f_scale * P.g;
-        
-        % Set indicator
-        P.g_evaluated = true;
-        
-        % Increment counter
-        quantities.incrementObjectiveGradientEvaluationCounter;
-        
-      end
-      
-      % Set objective gradient value
-      g = P.g;
-      
-    end % end objectiveGradient
-    
-    % True objective gradient
-    function g = trueObjectiveGradient(P,quantities)
+    function g = objectiveGradient(P,quantities,varargin)
         
         % Check if scales have been set
         if ~P.scales_set
             error('Point: Scale factors have not been set!');
         end
         
+        % Check for correct number of input arguments
+        if length(varargin) > 1 || length(varargin) == 0
+            error('Point: Incorrect number of inputs to Point.objectiveGradient.');
+        end
+        
+        
         % Check if already evaluated
-        if ~P.g_true_evaluated
+        if (~P.g_evaluated && strcmp(varargin{1},'stochastic')) || (~P.g_true_evaluated && strcmp(varargin{1},'true'))
             
             % Evaluate
-            [P.g_true,err] = P.p.evaluateTrueObjectiveGradient(P.x);
+            [g,err] = P.p.evaluateObjectiveGradient(P.x,varargin{1});
             
             % Check for error
             if err == true
@@ -738,17 +735,39 @@ classdef Point < handle
             end
             
             % Scale
-            P.g_true = P.f_scale * P.g_true;
+            g = P.f_scale * g;
             
-            % Set indicator
-            P.g_true_evaluated = true;
+            if strcmp(varargin{1},'stochastic')
+                % Set indicator
+                P.g_evaluated = true;
+                P.g = g;
+                
+                % Increment counter
+                quantities.incrementObjectiveGradientEvaluationCounter;
+                
+            elseif strcmp(varargin{1},'true')
+                % Set indicator
+                P.g_true_evaluated = true;
+                P.g_true = g;
+                
+            else
+                error('Point: Input errors of objective gradient!');
+            end
+            
+        else
+            
+            if strcmp(varargin{1},'stochastic')
+                g = P.g;
+            elseif strcmp(varargin{1},'true')
+                g = P.g_true;
+            else
+                error('Point: Input errors of objective gradient!');
+            end
             
         end
+
         
-        % Set objective gradient value
-        g = P.g_true;
-        
-    end % end trueObjectiveGradient
+    end % end objectiveGradient
     
     % Objective gradient 2-norm
     function v = objectiveGradientNorm1(P,quantities)

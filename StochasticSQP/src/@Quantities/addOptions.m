@@ -19,15 +19,18 @@ options.addIntegerOption(reporter,'objective_function_evaluation_limit',1e+03,0,
 options.addIntegerOption(reporter,'objective_gradient_evaluation_limit',1e+03,0,inf);
 options.addIntegerOption(reporter,'iteration_limit',1e+08,0,inf);
 options.addIntegerOption(reporter,'size_limit',2e+04,0,inf);
-% options.addIntegerOption(reporter,'inner_iteration_relative_limit',5e+02,0,inf);
-options.addIntegerOption(reporter,'Lipschitz_estimate_iter_first',1,0,inf);
-options.addIntegerOption(reporter,'Lipschitz_estimate_iter_later',1e+4,0,inf);
+
 
 % Add double options
 options.addDoubleOption(reporter,'cpu_time_limit',1800,0,inf);
 options.addDoubleOption(reporter,'merit_parameter_initial',1e-01,0,inf);
 options.addDoubleOption(reporter,'scale_factor_gradient_limit',1e+02,0,inf);
-options.addDoubleOption(reporter,'stationarity_tolerance',1e-04,0,inf);
+options.addDoubleOption(reporter,'feasibility_tolerance',1e-06,0,inf);
+options.addDoubleOption(reporter,'stationarity_tolerance',1e-03,0,inf);
 options.addDoubleOption(reporter,'ratio_parameter_initial',1e+00,0,inf);
+options.addDoubleOption(reporter,'progress_check_iter',20,0,inf);
+options.addDoubleOption(reporter,'progress_ratio',1.005,0,inf);
+options.addDoubleOption(reporter,'comparison_ratio',3,0,inf);
+options.addDoubleOption(reporter,'inner_iteration_relative_limit',5e+02,0,inf);
 
 end % addOptions

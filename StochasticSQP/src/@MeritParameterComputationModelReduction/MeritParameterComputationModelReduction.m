@@ -18,6 +18,8 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
+    linear_model_
+    quadratic_model_
     curvature_threshold_
     model_reduction_factor_
     parameter_reduction_factor_
