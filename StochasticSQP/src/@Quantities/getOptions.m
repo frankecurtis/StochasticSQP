@@ -27,5 +27,6 @@ Q.inner_iteration_relative_limit_ = options.getOption(reporter,'inner_iteration_
 Q.Progress_check_iter_ = options.getOption(reporter,'progress_check_iter');
 Q.Progress_ratio_ = options.getOption(reporter,'progress_ratio');
 Q.Comparison_ratio_ = options.getOption(reporter,'comparison_ratio');
+Q.termination_test_number_ = options.getOption(reporter,'termination_test_number');
 
 end % getOptions

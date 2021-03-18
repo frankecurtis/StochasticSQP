@@ -17,13 +17,13 @@ objective_model_value = quantities.currentIterate.objectiveGradient(quantities,'
     max(quantities.curvatureInfo, M.curvature_threshold_ * norm(quantities.directionPrimal)^2);
 
 % Evaluate constraint violation norm
-if quantities.currentIterate.constraintNorm1 > 0.0
+if quantities.currentIterate.constraintNorm1 > 0.0 
     
     % Initialize trial value
     merit_parameter_trial = inf;
     
     % Check sign of objective model value
-    if objective_model_value > 0.0
+    if objective_model_value > 0.0 && (quantities.terminationTestNumber == -1 || quantities.terminationTestNumber == 2)
         
         % Update trial value
         merit_parameter_trial = ((1 - M.model_reduction_factor_) * quantities.currentIterate.constraintNorm1 - quantities.residualDualNorm1) / objective_model_value;

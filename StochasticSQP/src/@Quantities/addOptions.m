@@ -18,7 +18,8 @@ options.addIntegerOption(reporter,'hessian_of_lagrangian_evaluation_limit',1e+03
 options.addIntegerOption(reporter,'objective_function_evaluation_limit',1e+03,0,inf);
 options.addIntegerOption(reporter,'objective_gradient_evaluation_limit',1e+03,0,inf);
 options.addIntegerOption(reporter,'iteration_limit',1e+08,0,inf);
-options.addIntegerOption(reporter,'size_limit',2e+04,0,inf);
+options.addIntegerOption(reporter,'size_limit',5e+04,0,inf);
+options.addIntegerOption(reporter,'termination_test_number',-1,-inf,inf);
 
 
 % Add double options

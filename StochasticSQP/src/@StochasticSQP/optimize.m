@@ -36,7 +36,7 @@ while true
     
     % Check for termination of best iterate
     if S.quantities_.bestIterate.constraintNormInf(S.quantities_) <= S.quantities_.feasibilityTolerance
-        if S.quantities_.bestIterate.stationarityMeasure(S.quantities_,true) <= S.quantities_.stationarityTolerance
+        if S.quantities_.bestIterate.stationarityMeasure(S.quantities_,'true') <= S.quantities_.stationarityTolerance
             S.status_ = Enumerations.S_SUCCESS;
             break;
         end
