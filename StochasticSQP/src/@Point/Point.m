@@ -119,7 +119,7 @@ classdef Point < handle
         P.n = varargin{1}.numberOfVariables;
         P.mE = varargin{1}.numberOfConstraintsEqualities;
         P.mI = varargin{1}.numberOfConstraintsInequalities;
-        [P.yE,P.yI] = varargin{1}.multipliers;
+        [P.yE,P.yI] = varargin{1}.multipliers('stochastic');
         [P.yE_true,P.yI_true] = varargin{1}.multipliers('true');
         [P.f_scale,P.cE_scale,P.cI_scale] = varargin{1}.scaleFactors;
         
@@ -150,22 +150,19 @@ classdef Point < handle
     %%%%%%%%%%%%%%%
     
     % Set multipliers
-    function setMultipliers(P,varargin) %yE,yI)
-        
-        % Check for correct number of input arguments
-        if length(varargin) < 2 || length(varargin) > 3
-            error('Point: Incorrect number of inputs to Point.setMultipliers.');
-        end
+    function setMultipliers(P,yE,yI,type)
         
         % Check for problem input
-        if length(varargin) == 2
+        if strcmp(type,'stochastic')
             % Set multipliers
-            P.yE = varargin{1};
-            P.yI = varargin{2};
-        else
+            P.yE = yE;
+            P.yI = yI;
+        elseif strcmp(type,'true')
             % Set true multipliers
-            P.yE_true = varargin{1};
-            P.yI_true = varargin{2};
+            P.yE_true = yE;
+            P.yI_true = yI;
+        else
+            error('Point: Incorrect type of inputs to Point.setMultipliers.');
         end
       
     end % setMultipliers
@@ -175,22 +172,19 @@ classdef Point < handle
     %%%%%%%%%%%%%%%
     
     % Multipliers
-    function [yE,yI] = multipliers(P,varargin)
-        
-        % Check for correct number of input arguments
-        if length(varargin) > 1 
-            error('Point: Incorrect number of inputs to Point.multipliers.');
-        end
+    function [yE,yI] = multipliers(P,type)
         
         % Check for problem input
-        if isempty(varargin)
+        if strcmp(type,'stochastic')
             % Set multipliers
             yE = sparse(P.yE);
             yI = sparse(P.yI);
-        else
+        elseif strcmp(type,'true')
             % Set true multipliers
             yE = sparse(P.yE_true);
             yI = sparse(P.yI_true);
+        else
+            error('Point: Incorrect type of inputs to Point.multipliers.');
         end
       
     end % multipliers
@@ -492,7 +486,7 @@ classdef Point < handle
       if quantities.scaleProblem
       
         % Evaluate objective gradient
-        gradient = P.p.evaluateObjectiveGradient(P.x,'stochastic');
+        gradient = P.p.evaluateObjectiveGradient(P.x,'stochastic',quantities.batchSize);
       
         % Increment counter
         quantities.incrementObjectiveGradientEvaluationCounter;
@@ -611,22 +605,17 @@ classdef Point < handle
     end % hessianOfLagrangian
     
     % Stationarity measure
-    function v = stationarityMeasure(P,quantities,varargin)
-        
-        % Check for correct number of input arguments
-        if length(varargin) > 1 || length(varargin) == 0
-            error('Point: Incorrect number of inputs to Point.stationarityMeasure.');
-        end
+    function v = stationarityMeasure(P,quantities,type)
         
         % Evaluate measure
         if P.mE == 0 && P.mI == 0
-            v = norm(P.objectiveGradient(quantities,varargin{1}),inf);
+            v = norm(P.objectiveGradient(quantities,type),inf);
         else
-            vec = P.objectiveGradient(quantities,varargin{1});
+            vec = P.objectiveGradient(quantities,type);
             if P.mE > 0
-                if strcmp(varargin{1},'stochastic')
+                if strcmp(type,'stochastic')
                     vec = vec + (P.yE' * P.constraintJacobianEqualities(quantities))';
-                elseif strcmp(varargin{1},'true')
+                elseif strcmp(type,'true')
                     Jg = P.constraintJacobianEqualities(quantities) * vec;
                     invJJ_Jg = (P.constraintJacobianEqualities(quantities) * P.constraintJacobianEqualities(quantities)') \ Jg;
                     vec = vec - P.constraintJacobianEqualities(quantities)' * invJJ_Jg;
@@ -635,9 +624,9 @@ classdef Point < handle
                 end
             end
             if P.mI > 0
-                if strcmp(varargin{1},'stochastic')
+                if strcmp(type,'stochastic')
                     vec = vec + (P.yI' * P.constraintJacobianInequalities(quantities))';
-                elseif strcmp(varargin{1},'true')
+                elseif strcmp(type,'true')
                     vec = vec + (P.yI_true' * P.constraintJacobianInequalities(quantities))';
                 else
                     error('Point: Input to stationarityMeasure is invalid!');
@@ -645,9 +634,9 @@ classdef Point < handle
             end
             v = norm(vec,inf);
             if P.mI > 0
-                if strcmp(varargin{1},'stochastic')
+                if strcmp(type,'stochastic')
                     v = max(v,norm([min(P.yI,0); P.yI .* P.constraintFunctionInequalities(quantities)],inf));
-                elseif strcmp(varargin{1},'true')
+                elseif strcmp(type,'true')
                     v = max(v,norm([min(P.yI_true,0); P.yI_true .* P.constraintFunctionInequalities(quantities)],inf));
                 else
                     error('Point: Input to stationarityMeasure is invalid!');
@@ -710,24 +699,18 @@ classdef Point < handle
     end % objectiveFunctionUnscaled
     
     % Objective gradient
-    function g = objectiveGradient(P,quantities,varargin)
+    function g = objectiveGradient(P,quantities,type)
         
         % Check if scales have been set
         if ~P.scales_set
             error('Point: Scale factors have not been set!');
         end
         
-        % Check for correct number of input arguments
-        if length(varargin) > 1 || length(varargin) == 0
-            error('Point: Incorrect number of inputs to Point.objectiveGradient.');
-        end
-        
-        
         % Check if already evaluated
-        if (~P.g_evaluated && strcmp(varargin{1},'stochastic')) || (~P.g_true_evaluated && strcmp(varargin{1},'true'))
+        if (~P.g_evaluated && strcmp(type,'stochastic')) || (~P.g_true_evaluated && strcmp(type,'true'))
             
             % Evaluate
-            [g,err] = P.p.evaluateObjectiveGradient(P.x,varargin{1});
+            [g,err] = P.p.evaluateObjectiveGradient(P.x,type,quantities.batchSize);
             
             % Check for error
             if err == true
@@ -737,7 +720,7 @@ classdef Point < handle
             % Scale
             g = P.f_scale * g;
             
-            if strcmp(varargin{1},'stochastic')
+            if strcmp(type,'stochastic')
                 % Set indicator
                 P.g_evaluated = true;
                 P.g = g;
@@ -745,7 +728,7 @@ classdef Point < handle
                 % Increment counter
                 quantities.incrementObjectiveGradientEvaluationCounter;
                 
-            elseif strcmp(varargin{1},'true')
+            elseif strcmp(type,'true')
                 % Set indicator
                 P.g_true_evaluated = true;
                 P.g_true = g;
@@ -756,9 +739,9 @@ classdef Point < handle
             
         else
             
-            if strcmp(varargin{1},'stochastic')
+            if strcmp(type,'stochastic')
                 g = P.g;
-            elseif strcmp(varargin{1},'true')
+            elseif strcmp(type,'true')
                 g = P.g_true;
             else
                 error('Point: Input errors of objective gradient!');

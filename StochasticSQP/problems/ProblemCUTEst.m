@@ -31,6 +31,7 @@ classdef ProblemCUTEst < Problem
     mcl % number of constraints, inequalities, lower bounded
     mcu % number of constraints, inequalities, upper bounded
     s % name
+    seed = 1 % random seed
     
   end % properties (private access)
   
@@ -226,22 +227,29 @@ classdef ProblemCUTEst < Problem
     end % evaluateObjectiveFunction
     
     % Objective gradient
-    function [g,err] = evaluateObjectiveGradient(P,x,varargin)
+    function [g,err] = evaluateObjectiveGradient(P,x,type,factor)
 
       % Initialize error
       err = false;
       
-      % Check for correct number of input arguments
-      if length(varargin) > 1 || length(varargin) == 0
-          err = true;
-          error('Point: Incorrect number of inputs to Problem.evaluateObjectiveGradient.');
-      end
-      
       % Evaluate objective gradient
       try
-        g = sparse(cutest_grad(x));
-        if strcmp(varargin,'stochastic')
-            g = sparse(g + randn(size(x)) * (1e-2/sqrt(size(x,1)))); % noise_level ... {1e-4,-2,-1}
+        
+        if strcmp(type,'stochastic')
+            rng(P.seed);
+            g = sparse(cutest_grad(x));
+            noise = sparse(P.n,1);
+            for i = 1:factor
+                noise = noise + sprandn(P.n,1,1);
+            end
+            noise = noise/factor;
+            g = sparse(g + noise * (1e-2/sqrt(P.n))); % noise_level ... {1e-4,-2,-1}
+            P.seed = rng;
+        elseif strcmp(type,'true')
+            g = sparse(cutest_grad(x));
+        else
+            err = true;
+            error('Point: Incorrect type of inputs to Problem.evaluateObjectiveGradient.');
         end
       catch
         g = [];

@@ -73,6 +73,7 @@ classdef Quantities < handle
     scale_factor_gradient_limit_
     size_limit_
     stationarity_tolerance_
+    batch_size_
     
     
   end
@@ -143,6 +144,14 @@ classdef Quantities < handle
     % GET METHODS %
     %%%%%%%%%%%%%%%
     
+    % Batch size
+    function batch_size = batchSize(Q)
+        
+        % Set return value
+        batch_size = Q.batch_size_;
+        
+    end % batchSize
+        
     % Best iterate
     function iterate = bestIterate(Q)
       
@@ -506,6 +515,14 @@ classdef Quantities < handle
     %%%%%%%%%%%%%%%
     % SET METHODS %
     %%%%%%%%%%%%%%%
+    
+    % Set batch size
+    function setBatchSize(Q,batchSize)
+        
+        % Set batch size
+        Q.batch_size_ = batchSize;
+        
+    end % setBatchSize
     
     % Set Lipschitz constants
     function setLipschitzConstants(Q,objectiveLipschitz,constraintLipschitz)

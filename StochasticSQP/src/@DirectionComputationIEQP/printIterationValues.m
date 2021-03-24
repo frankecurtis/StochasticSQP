@@ -8,7 +8,7 @@
 function printIterationValues(S,quantities,reporter)
 
 % Get multipliers
-[yE,yI] = quantities.currentIterate.multipliers;
+[yE,yI] = quantities.currentIterate.multipliers('stochastic');
 
 % Print information
 reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...

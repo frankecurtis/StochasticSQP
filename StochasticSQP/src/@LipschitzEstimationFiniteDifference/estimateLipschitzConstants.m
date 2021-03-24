@@ -23,8 +23,10 @@ if quantities.iterationCounter <= L.FD_Lipschitz_estimate_iter_first_ ...
             [objectiveLipschitz, constraintsLipschitz] = computeLipschitzConstants(quantities,sampleIterate,objectiveLipschitz,constraintsLipschitz);
         end
     else
+        rng(L.FD_seed_);
         sampleIterate = quantities.currentIterate.primalPoint + L.FD_Lipschitz_estimate_sample_distance_ * sparse(randn(quantities.currentIterate.numberOfVariables,1));
         [objectiveLipschitz, constraintsLipschitz] = computeLipschitzConstants(quantities,sampleIterate,objectiveLipschitz,constraintsLipschitz);
+        L.FD_seed_ = rng;
     end
     
     % Compute Lipschitz constants for Jacobian

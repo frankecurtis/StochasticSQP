@@ -111,7 +111,7 @@ classdef StochasticSQP < handle
       
       % Set return values
       x = S.quantities_.bestIterate.primalPoint;
-      [yE,yI] = S.quantities_.bestIterate.multipliers;
+      [yE,yI] = S.quantities_.bestIterate.multipliers('stochastic');
       infeasibility = S.quantities_.bestIterate.constraintNormInf(S.quantities_);
       stationarity = S.quantities_.bestIterate.stationarityMeasure(S.quantities_,'true');
 

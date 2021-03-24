@@ -45,7 +45,7 @@ if quantities.checkStationarityMeasure
     quantities.currentIterate.setMultipliers(v_true(quantities.currentIterate.numberOfVariables+1:end),sparse([]),'true');
 end
 
-[current_multipliers , ~] = quantities.currentIterate.multipliers;
+[current_multipliers , ~] = quantities.currentIterate.multipliers('stochastic');
 previousIterateMeasure = norm([quantities.previousIterate.objectiveGradient(quantities,'stochastic') + quantities.previousIterate.constraintJacobianEqualities(quantities)' * current_multipliers ; quantities.previousIterate.constraintFunctionEqualities(quantities)]);
 currentIterateInfo = [quantities.currentIterate.objectiveGradient(quantities,'stochastic') + quantities.currentIterate.constraintJacobianEqualities(quantities)' * current_multipliers; quantities.currentIterate.constraintFunctionEqualities(quantities)];
 currentIterateMeasure = norm(currentIterateInfo);
@@ -91,6 +91,6 @@ quantities.setDirectionPrimal(v(1:quantities.currentIterate.numberOfVariables));
 quantities.setCurvature(v(1:quantities.currentIterate.numberOfVariables)' * matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * v(1:quantities.currentIterate.numberOfVariables));
 
 % Set multiplier
-quantities.currentIterate.setMultipliers(current_multipliers + v(quantities.currentIterate.numberOfVariables+1:end),[]);
+quantities.currentIterate.setMultipliers(current_multipliers + v(quantities.currentIterate.numberOfVariables+1:end),[],'stochastic');
 
 end % computeDirection

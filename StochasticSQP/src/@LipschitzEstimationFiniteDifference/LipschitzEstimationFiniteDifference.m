@@ -22,6 +22,7 @@ classdef LipschitzEstimationFiniteDifference < LipschitzEstimation
     FD_Lipschitz_estimate_iter_first_
     FD_Lipschitz_estimate_iter_later_
     FD_Lipschitz_estimate_sample_distance_
+    FD_seed_ = 0 % random seed
     
   end % properties (private access)
   
@@ -46,8 +47,8 @@ classdef LipschitzEstimationFiniteDifference < LipschitzEstimation
     
     % Constructor
     function L = LipschitzEstimationFiniteDifference
-      
-      % DO NOTHING
+
+        % Do Nothing
       
     end % Constructor
     

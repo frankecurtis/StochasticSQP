@@ -7,9 +7,6 @@
 % StochasticSQP: optimize
 function optimize(S,problem)
 
-% Use random seed
-rng(0);
-
 % Get options
 S.getOptions;
 

@@ -33,5 +33,6 @@ options.addDoubleOption(reporter,'progress_check_iter',20,0,inf);
 options.addDoubleOption(reporter,'progress_ratio',1.005,0,inf);
 options.addDoubleOption(reporter,'comparison_ratio',3,0,inf);
 options.addDoubleOption(reporter,'inner_iteration_relative_limit',5e+02,0,inf);
+options.addDoubleOption(reporter,'batch_size',1,0,inf);
 
 end % addOptions
