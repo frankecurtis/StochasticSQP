@@ -19,9 +19,15 @@ classdef Quantities < handle
     direction_dual_
     merit_parameter_
     model_reduction_
+    previous_iterate_
     ratio_parameter_
     stepsize_
     trial_iterate_
+    primal_residual_
+    dual_residual_
+    dual_residual_norm1_
+    termination_test_number_
+    
     
     %%%%%%%%%%%%
     % COUNTERS %
@@ -32,27 +38,43 @@ classdef Quantities < handle
     constraint_Jacobian_inequalities_evaluation_counter_ = 0
     hessian_of_lagrangian_evaluation_counter_ = 0
     iteration_counter_ = 0
+    iterative_solver_counter_ = 0
+    inner_iteration_counter_ = 0
     objective_function_evaluation_counter_ = 0
     objective_gradient_evaluation_counter_ = 0
+    diminishing_stepsize_level_counter_ = 0
     
     %%%%%%%%%%%%%%
     % INDICATORS %
     %%%%%%%%%%%%%%
     scale_problem_
+    compute_iterate_stationarity_
+    objective_Lipschitz_
+    constraint_Lipschitz_
     
     %%%%%%%%%%%%%%
     % TOLERANCES %
     %%%%%%%%%%%%%%
-    cpu_time_limit_
+    Comparison_ratio_
     constraint_function_evaluation_limit_
     constraint_Jacobian_evaluation_limit_
+    cpu_time_limit_
+    curv_info_
+    feasibility_tolerance_
     hessian_of_lagrangian_evaluation_limit_
+    inner_iteration_relative_limit_
     iteration_limit_
+    Lipschitz_estimate_iter_first_
+    Lipschitz_estimate_iter_later_
     objective_function_evaluation_limit_
     objective_gradient_evaluation_limit_
+    Progress_check_iter_
+    Progress_ratio_
     scale_factor_gradient_limit_
-    size_limit_;
+    size_limit_
     stationarity_tolerance_
+    batch_size_
+    
     
   end
   
@@ -122,6 +144,14 @@ classdef Quantities < handle
     % GET METHODS %
     %%%%%%%%%%%%%%%
     
+    % Batch size
+    function batch_size = batchSize(Q)
+        
+        % Set return value
+        batch_size = Q.batch_size_;
+        
+    end % batchSize
+        
     % Best iterate
     function iterate = bestIterate(Q)
       
@@ -186,6 +216,14 @@ classdef Quantities < handle
       
     end % CPUTimeLimit
     
+    % Check Stationarity Measure
+    function s = checkStationarityMeasure(Q)
+        
+        % Set return value
+        s = Q.compute_iterate_stationarity_;
+        
+    end % checkStationarityMeasure
+    
     % Current iterate
     function iterate = currentIterate(Q)
       
@@ -193,6 +231,14 @@ classdef Quantities < handle
       iterate = Q.current_iterate_;
       
     end % currentIterate
+    
+    % Previous iterate
+    function iterate = previousIterate(Q)
+        
+        % Set return value
+        iterate = Q.previous_iterate_;
+        
+    end % previousIterate
     
     % Direction, primal
     function d = directionPrimal(Q)
@@ -210,6 +256,46 @@ classdef Quantities < handle
       
     end % directionDual
     
+    % Residual, primal
+    function rho = residualPrimal(Q)
+        
+        % Set return value
+        rho = Q.primal_residual_;
+        
+    end % residualPrimal
+    
+    % Residual, dual
+    function r = residualDual(Q)
+        
+        % Set return value
+        r = Q.dual_residual_;
+        
+    end % residualDual
+    
+    % Residual, dual, norm1
+    function r_norm1 = residualDualNorm1(Q)
+       
+        % Set return value
+        r_norm1 = Q.dual_residual_norm1_;
+        
+    end % residualDuanNorm1
+    
+    % Termination test number
+    function termination_test_number = terminationTestNumber(Q)
+        
+        % Set return value
+        termination_test_number = Q.termination_test_number_;
+        
+    end % terminationTestNumber
+    
+    % Diminishing stepsize level counter
+    function level_counter = diminishingStepsizeLevelCounter(Q)
+        
+        % Set return value
+        level_counter = Q.diminishing_stepsize_level_counter_;
+        
+    end % diminishingStepsizeLevelCounter
+    
     % Iteration counter
     function k = iterationCounter(Q)
       
@@ -218,11 +304,35 @@ classdef Quantities < handle
       
     end % iterationCounter
     
+    % Iterative Solver Counter
+    function k = iterativeSolverCounter(Q)
+        
+        % Set return value
+        k = Q.iterative_solver_counter_;
+        
+    end % iterativeSolverCounter
+    
+    % Inner iteration counter
+    function k = innerIterationCounter(Q)
+      
+      % Set return value
+      k = Q.inner_iteration_counter_;
+      
+    end % innerIterationCounter
+    
     % Iteration limit
     function k_max = iterationLimit(Q)
       
       % Set return value
       k_max = Q.iteration_limit_;
+      
+    end % iterationLimit
+    
+    % Inner iteration relative limit
+    function k_max = innerIterationRelativeLimit(Q)
+      
+      % Set return value
+      k_max = Q.inner_iteration_relative_limit_;
       
     end % iterationLimit
     
@@ -305,6 +415,14 @@ classdef Quantities < handle
       s_max = Q.size_limit_;
       
     end % sizeLimit
+    
+    % Feasibility tolerance
+    function t = feasibilityTolerance(Q)
+      
+      % Set return value
+      t = Q.feasibility_tolerance_;
+      
+    end % stationarityTolerance
 
     % Stationarity tolerance
     function t = stationarityTolerance(Q)
@@ -330,9 +448,98 @@ classdef Quantities < handle
       
     end % trialIterate
     
+    % Objective Lipschitz constants
+    function objectiveLipschitz = objectiveLipschitzConstants(Q)
+        
+        % Set objective Lipschitz constants
+        objectiveLipschitz = Q.objective_Lipschitz_;
+        
+    end % objectiveLipschitzConstants
+    
+    % Constraint Lipschitz constants
+    function constraintLipschitz = constraintLipschitzConstants(Q)
+        
+        % Set constraint Lipschitz constants
+        constraintLipschitz = Q.constraint_Lipschitz_;
+        
+    end % constraintLipschitzConstants
+    
+    % Lipschitz Estimate Itertion 1
+    function iter_1 = lipschitzEstimateIterationFirst(Q)
+        
+        % Set Lipschitz Estimate Iteration 1
+        iter_1 = Q.Lipschitz_estimate_iter_first_;
+        
+    end % lipschitzEstimateIterationFirst
+    
+    % Lipschitz Estimate Itertion 2
+    function iter_2 = lipschitzEstimateIterationLater(Q)
+        
+        % Set Lipschitz Estimate Iteration 2
+        iter_2 = Q.Lipschitz_estimate_iter_later_;
+        
+    end % lipschitzEstimateIterationLater
+    
+    % Progress Check Iteration
+    function iter = progressCheckIteration(Q)
+        
+        % Set Progress Check Iteration
+        iter = Q.Progress_check_iter_;
+        
+    end % progressCheckIteration
+    
+    % Progress Ratio
+    function ratio = progressRatio(Q)
+        
+        % Set Progress Ratio
+        ratio = Q.Progress_ratio_;
+        
+    end % progressRatio
+    
+    % Comparison Ratio
+    function ratio = comparisonRatio(Q)
+        
+        % Set Comparison Ratio
+        ratio = Q.Comparison_ratio_;
+        
+    end % comparisonRatio
+    
+    % Curvature Information
+    function curv_info = curvatureInfo(Q)
+        
+        % Set curvature information
+        curv_info = Q.curv_info_;
+        
+    end % curvatureInfo
+    
     %%%%%%%%%%%%%%%
     % SET METHODS %
     %%%%%%%%%%%%%%%
+    
+    % Set batch size
+    function setBatchSize(Q,batchSize)
+        
+        % Set batch size
+        Q.batch_size_ = batchSize;
+        
+    end % setBatchSize
+    
+    % Set Lipschitz constants
+    function setLipschitzConstants(Q,objectiveLipschitz,constraintLipschitz)
+        
+        % Set Lipschitz constants
+        Q.objective_Lipschitz_ = objectiveLipschitz;
+        Q.constraint_Lipschitz_ = constraintLipschitz;
+        
+    end % setLipschitzConstants
+    
+    % Set Inner Iteration Relative Limit
+    function setInnerIterationRelativeLimit(Q,num)
+        
+        % Set Inner Iteration Relative Limit
+        Q.inner_iteration_relative_limit_ = num;
+        
+    end % setInnerIterationRelativeLimit
     
     % Set direction, primal
     function setDirectionPrimal(Q,direction)
@@ -349,6 +556,46 @@ classdef Quantities < handle
       Q.direction_dual_ = direction;
       
     end % setDirectionDual
+    
+    % Set residal, primal
+    function setPrimalResidual(Q,primal_residual)
+       
+        % Set primal residual
+        Q.primal_residual_ = primal_residual;
+        
+    end %setPrimalResidual
+    
+    % Set residal, dual
+    function setDualResidual(Q,dual_residual)
+       
+        % Set primal residual
+        Q.dual_residual_ = dual_residual;
+        
+    end %setDualResidual
+    
+    % Set residal, dual with 1-norm
+    function setDualResidualNorm1(Q,dual_residual_norm1)
+       
+        % Set primal residual
+        Q.dual_residual_norm1_ = dual_residual_norm1;
+        
+    end %setDualResidualNorm1
+    
+    % Set iterative solver counter
+    function setIterativeSolverCounter(Q,iter)
+        
+        % Increment iterative solver counter
+        Q.iterative_solver_counter_ = iter;
+        
+    end % setIterativeSolverCounter
+    
+    % Set termination test number
+    function setTerminationTestNumber(Q,TTnum)
+        
+        % Set termination test number
+        Q.termination_test_number_ = TTnum;
+        
+    end %setTerminationTestNumber
     
     % Set merit parameter
     function setMeritParameter(Q,merit_parameter)
@@ -390,20 +637,36 @@ classdef Quantities < handle
       
     end % setTrialIterate
     
+    % Set curvature information
+    function setCurvature(Q,curv)
+        
+        % Set curvature information
+        Q.curv_info_ = curv;
+        
+    end % setCurvature
+    
     % Update iterate
     function updateIterate(Q)
-      
-      % Update best iterate
-      if (Q.best_iterate_.constraintNormInf(Q) > Q.stationarityTolerance && ...
-          Q.current_iterate_.constraintNormInf(Q) < Q.best_iterate_.constraintNormInf(Q)) || ...
-         (Q.best_iterate_.constraintNormInf(Q) <= Q.stationarityTolerance && ...
-          Q.current_iterate_.stationarityMeasure(Q) <= Q.best_iterate_.stationarityMeasure(Q))
-        Q.best_iterate_ = Q.current_iterate_;
-      end
-      
-      % Set current iterate to trial iterate
-      Q.current_iterate_ = Q.trial_iterate_;
-      
+        
+        % check whether needs to update the best itearate
+        if Q.compute_iterate_stationarity_
+            
+            % Update best iterate
+            if (Q.best_iterate_.constraintNormInf(Q) > Q.feasibilityTolerance && ...
+                    Q.current_iterate_.constraintNormInf(Q) < Q.best_iterate_.constraintNormInf(Q)) || ...
+                    (Q.best_iterate_.constraintNormInf(Q) <= Q.feasibilityTolerance && ...
+                    Q.current_iterate_.stationarityMeasure(Q,'true') <= Q.best_iterate_.stationarityMeasure(Q,'true'))
+                Q.best_iterate_ = Q.current_iterate_;
+            end
+            
+        end
+        
+        % Set previous iterate to current iterate
+        Q.previous_iterate_ = Q.current_iterate_;
+        
+        % Set current iterate to trial iterate
+        Q.current_iterate_ = Q.trial_iterate_;
+        
     end % updateIterate
     
     %%%%%%%%%%%%%%%%%%%%%
@@ -450,6 +713,14 @@ classdef Quantities < handle
       
     end % incrementHessianOfLagrangianEvaluationCounter
     
+    % Increment diminishing stepsize level counter
+    function incrementDiminishingStepsizeLevelCounter(Q)
+        
+        % Increment diminishing stepsize level counter
+        Q.diminishing_stepsize_level_counter_ = Q.diminishing_stepsize_level_counter_ + 1;
+        
+    end % incrementDiminishingStepsizeLevelCounter
+    
     % Increment iteration counter
     function incrementIterationCounter(Q)
       
@@ -457,6 +728,14 @@ classdef Quantities < handle
       Q.iteration_counter_ = Q.iteration_counter_ + 1;
       
     end % incrementIterationCounter
+    
+    % Increment inner iteration counter
+    function incrementInnerIterationCounter(Q,iter)
+      
+      % Increment inner iteration counter
+      Q.inner_iteration_counter_ = Q.inner_iteration_counter_ + iter;
+      
+    end % incrementInnerIterationCounter
     
     % Increment objective function evaluation counter
     function incrementObjectiveFunctionEvaluationCounter(Q)

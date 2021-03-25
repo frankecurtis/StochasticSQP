@@ -19,9 +19,9 @@ matrix = sparse(quantities.currentIterate.numberOfVariables + quantities.current
 if D.use_hessian_of_lagrangian_
   matrix = [quantities.currentIterate.hessianOfLagrangian(quantities) quantities.currentIterate.constraintJacobianEqualities(quantities)';
     quantities.currentIterate.constraintJacobianEqualities(quantities) zeros(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
-  factor = 1e-08;
+  factor = D.curvature_threshold_;
   while 1
-    if sum(sum(isnan(matrix))) > 0 || sum(sum(isinf(matrix))) > 0 || sum(eig(matrix) >= 1e-08) >= quantities.currentIterate.numberOfVariables, break; end
+    if sum(sum(isnan(matrix))) > 0 || sum(sum(isinf(matrix))) > 0 || sum(eig(matrix) >= D.curvature_threshold_) >= quantities.currentIterate.numberOfVariables, break; end
     matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) = ...
       matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) + factor * speye(quantities.currentIterate.numberOfVariables,quantities.currentIterate.numberOfVariables);
     factor = factor * 10;
@@ -32,8 +32,9 @@ else
 end
 
 % Check for nonsingularity
+%%%%%% Add 1e-08 as a new option...
 if sum(sum(isnan(matrix))) > 0 || sum(sum(isinf(matrix))) > 0 || ...
-    sum(abs(eig(matrix)) >= 1e-08) < quantities.currentIterate.numberOfVariables + quantities.currentIterate.numberOfConstraintsEqualities
+    sum(abs(eig(matrix)) >= D.curvature_threshold_) < quantities.currentIterate.numberOfVariables + quantities.currentIterate.numberOfConstraintsEqualities
   
   % Indicate error (violation of LICQ or second-order sufficiency)
   err = true;
@@ -52,6 +53,15 @@ else
   
   % Set direction
   quantities.setDirectionPrimal(v(1:quantities.currentIterate.numberOfVariables));
+  
+  % Set residual
+  quantities.setPrimalResidual(sparse(quantities.currentIterate.numberOfVariables,1));
+  quantities.setDualResidual(sparse(quantities.currentIterate.numberOfConstraintsEqualities,1));
+  quantities.setDualResidualNorm1(0);
+  
+  % Set curvature
+  quantities.setCurvature(v(1:quantities.currentIterate.numberOfVariables)' * matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * v(1:quantities.currentIterate.numberOfVariables));
+
   
   % Set multiplier
   quantities.currentIterate.setMultipliers(v(quantities.currentIterate.numberOfVariables+1:end),[]);

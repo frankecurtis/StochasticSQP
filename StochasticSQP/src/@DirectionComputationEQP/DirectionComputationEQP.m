@@ -19,6 +19,7 @@ classdef DirectionComputationEQP < DirectionComputation
     % OPTIONS %
     %%%%%%%%%%%
     use_hessian_of_lagrangian_
+    curvature_threshold_
     
   end % properties (private access)
   

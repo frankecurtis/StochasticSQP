@@ -111,11 +111,27 @@ classdef StochasticSQP < handle
       
       % Set return values
       x = S.quantities_.bestIterate.primalPoint;
-      [yE,yI] = S.quantities_.bestIterate.multipliers;
+      [yE,yI] = S.quantities_.bestIterate.multipliers('stochastic');
       infeasibility = S.quantities_.bestIterate.constraintNormInf(S.quantities_);
-      stationarity = S.quantities_.bestIterate.stationarityMeasure(S.quantities_);
+      stationarity = S.quantities_.bestIterate.stationarityMeasure(S.quantities_,'true');
 
     end % solution
+    
+    % Get upper bound of the ratio
+    function [upperRatio] = getUpperRatio(S)
+        
+        % Set return values
+        upperRatio = S.quantities_.innerIterationRelativeLimit;
+        
+    end % getUpperRatio
+    
+    % Get baseline ratio
+    function [baseInnerIter] = baselineInnerIteration(S)
+        
+        % Set return values
+        baseInnerIter = S.quantities_.innerIterationCounter;
+        
+    end % baselineInnerIteration
     
   end % methods (public access)
   

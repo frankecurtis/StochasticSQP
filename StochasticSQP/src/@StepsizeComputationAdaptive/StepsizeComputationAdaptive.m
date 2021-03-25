@@ -24,6 +24,10 @@ classdef StepsizeComputationAdaptive < StepsizeComputation
     stepsize_diminishing_
     stepsize_scaling_
     sufficient_decrease_
+    lengthening_ratio_
+    diminishing_ratio_
+    forward_lengthening_
+    direction_norm_tolerance_
     
   end % properties (private access)
   

@@ -4,8 +4,8 @@
 %
 % Authors: Frank E. Curtis
 
-% MeritParameterComputationModelReduction class
-classdef MeritParameterComputationModelReduction < MeritParameterComputation
+% MeritParameterComputationFixed class
+classdef LipschitzEstimationFiniteDifference < LipschitzEstimation
   
   % Properties (private access)
   properties (SetAccess = private, GetAccess = private)
@@ -13,17 +13,17 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%
     % NAME %
     %%%%%%%%
-    n = 'ModelReduction'
+    n = 'FiniteDifference'
     
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    linear_model_
-    quadratic_model_
-    curvature_threshold_
-    model_reduction_factor_
-    parameter_reduction_factor_
-            
+    FD_full_samples_
+    FD_Lipschitz_estimate_iter_first_
+    FD_Lipschitz_estimate_iter_later_
+    FD_Lipschitz_estimate_sample_distance_
+    FD_seed_ = 0 % random seed
+    
   end % properties (private access)
   
   % Methods (static)
@@ -46,9 +46,9 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%%%%%%%%
     
     % Constructor
-    function M = MeritParameterComputationModelReduction
-      
-      % DO NOTHING
+    function L = LipschitzEstimationFiniteDifference
+
+        % Do Nothing
       
     end % Constructor
     
@@ -57,34 +57,34 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%%%%%%%%%%
     
     % Print iteration header
-    printIterationHeader(M,reporter)
+    printIterationHeader(L,reporter)
     
     % Print iteration values
-    printIterationValues(M,quantities,reporter)
+    printIterationValues(L,quantities,reporter)
     
     %%%%%%%%%%%%%%%%%%%
     % OPTIONS METHODS %
     %%%%%%%%%%%%%%%%%%%
     
     % Get options
-    getOptions(M,options,reporter)
+    getOptions(L,options,reporter)
     
     %%%%%%%%%%%%%%%%%%%%%%
     % INITIALIZE METHODS %
     %%%%%%%%%%%%%%%%%%%%%%
     
     % Initialize
-    initialize(M,options,quantities,reporter)
+    initialize(L,options,quantities,reporter)
     
     %%%%%%%%%%%%%%%
     % GET METHODS %
     %%%%%%%%%%%%%%%
 
     % Name
-    function n = name(M)
+    function n = name(L)
       
       % Set return value
-      n = M.n;
+      n = L.n;
       
     end % name
     
@@ -92,8 +92,8 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     % COMPUTE METHODS %
     %%%%%%%%%%%%%%%%%%%
 
-    % Compute stepsize
-    computeMeritParameter(M,options,quantities,reporter,strategies)
+    % Compute Lipschitz constants
+    estimateLipschitzConstants(L,options,quantities,reporter,strategies)
         
   end % methods (public access)
   

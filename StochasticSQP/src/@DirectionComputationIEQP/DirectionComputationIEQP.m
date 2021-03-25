@@ -4,8 +4,8 @@
 %
 % Authors: Frank E. Curtis
 
-% MeritParameterComputationModelReduction class
-classdef MeritParameterComputationModelReduction < MeritParameterComputation
+% DirectionComputationIEQP class
+classdef DirectionComputationIEQP < DirectionComputation
   
   % Properties (private access)
   properties (SetAccess = private, GetAccess = private)
@@ -13,17 +13,20 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%
     % NAME %
     %%%%%%%%
-    n = 'ModelReduction'
+    n = 'IEQP'
     
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    linear_model_
-    quadratic_model_
+    use_hessian_of_lagrangian_
+    full_residual_norm_factor_
+    primal_residual_norm_factor_
+    dual_residual_norm_factor_
+    constraint_norm_factor_
+    lagrangian_primal_norm_factor_
     curvature_threshold_
     model_reduction_factor_
-    parameter_reduction_factor_
-            
+    
   end % properties (private access)
   
   % Methods (static)
@@ -46,7 +49,7 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%%%%%%%%
     
     % Constructor
-    function M = MeritParameterComputationModelReduction
+    function D = DirectionComputationIEQP
       
       % DO NOTHING
       
@@ -57,44 +60,44 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%%%%%%%%%%
     
     % Print iteration header
-    printIterationHeader(M,reporter)
+    printIterationHeader(D,reporter)
     
     % Print iteration values
-    printIterationValues(M,quantities,reporter)
+    printIterationValues(D,quantities,reporter)
     
     %%%%%%%%%%%%%%%%%%%
     % OPTIONS METHODS %
     %%%%%%%%%%%%%%%%%%%
     
     % Get options
-    getOptions(M,options,reporter)
+    getOptions(D,options,reporter)
     
     %%%%%%%%%%%%%%%%%%%%%%
     % INITIALIZE METHODS %
     %%%%%%%%%%%%%%%%%%%%%%
     
     % Initialize
-    initialize(M,options,quantities,reporter)
+    initialize(D,options,quantities,reporter)
     
     %%%%%%%%%%%%%%%
     % GET METHODS %
     %%%%%%%%%%%%%%%
-
+    
     % Name
-    function n = name(M)
+    function n = name(D)
       
       % Set return value
-      n = M.n;
+      n = D.n;
       
     end % name
     
     %%%%%%%%%%%%%%%%%%%
     % COMPUTE METHODS %
     %%%%%%%%%%%%%%%%%%%
-
-    % Compute stepsize
-    computeMeritParameter(M,options,quantities,reporter,strategies)
-        
+    
+    % Compute direction
+    err = computeDirection(D,options,quantities,reporter,strategies)
+    
   end % methods (public access)
   
-end % Options
+end % DirectionComputationEQP

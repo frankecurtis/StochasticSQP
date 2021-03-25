@@ -11,6 +11,7 @@ function getOptions(S,options,reporter)
 direction_computation_name = options.getOption(reporter,'direction_computation');
 merit_parameter_computation_name = options.getOption(reporter,'merit_parameter_computation');
 stepsize_computation_name = options.getOption(reporter,'stepsize_computation');
+Lipschitz_estimation_name = options.getOption(reporter,'Lipschitz_estimation');
 
 % Switch on direction computation names
 switch direction_computation_name
@@ -18,6 +19,8 @@ switch direction_computation_name
     S.direction_computation_ = DirectionComputationEQP;
   case 'Subgradient'
     S.direction_computation_ = DirectionComputationSubgradient;
+  case 'IEQP'
+    S.direction_computation_ = DirectionComputationIEQP;
   otherwise
     S.direction_computation_ = DirectionComputationEQP;
 end
@@ -42,9 +45,16 @@ switch stepsize_computation_name
     S.stepsize_computation_ = StepsizeComputationAdaptive;
 end
 
+% Switch on lipschitz estimation names
+switch Lipschitz_estimation_name
+    case 'FiniteDifference'
+        S.Lipschitz_estimation_ = LipschitzEstimationFiniteDifference;
+end
+
 % Get options
 S.direction_computation_.getOptions(options,reporter);
 S.merit_parameter_computation_.getOptions(options,reporter);
 S.stepsize_computation_.getOptions(options,reporter);
+S.Lipschitz_estimation_.getOptions(options,reporter);
 
 end % getOptions

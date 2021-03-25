@@ -16,6 +16,7 @@ classdef Strategies < handle
     direction_computation_
     merit_parameter_computation_
     stepsize_computation_
+    Lipschitz_estimation_
     
   end
   
@@ -89,6 +90,14 @@ classdef Strategies < handle
       s = S.stepsize_computation_;
       
     end % stepsizeComputation
+    
+    % Lipschitz Estimation
+    function s = LipschitzEstimation(S)
+      
+      % Set return value
+      s = S.Lipschitz_estimation_;
+      
+    end % LipschitzEstimation
     
   end % methods (public access)
   
