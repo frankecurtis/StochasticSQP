@@ -4,15 +4,19 @@
 %
 % Authors: Frank E. Curtis
 
-% MeritParameterComputationModelReduction: addOptions
+% LipschitzEstimationFiniteDifference: addOptions
 function addOptions(options,reporter)
 
 % Add bool options
-options.addBoolOption(reporter,'FD_full_samples',false);
+options.addBoolOption(reporter,'LEFD_coordinate_directions',true);
+options.addBoolOption(reporter,'LEFD_random_direction',true);
+options.addBoolOption(reporter,'LEFD_use_true_gradient',true);
 
 % Add double options
-options.addDoubleOption(reporter,'FD_Lipschitz_estimate_iter_first',1,0,inf);
-options.addDoubleOption(reporter,'FD_Lipschitz_estimate_iter_later',1e+4,0,inf);
-options.addDoubleOption(reporter,'FD_Lipschitz_estimate_sample_distance',1e-04,0,inf);
+options.addDoubleOption(reporter,'LEFD_displacement',1e-04,0,inf);
+
+% Add integer options
+options.addIntegerOption(reporter,'LEFD_estimate_always_until',1,1,inf);
+options.addIntegerOption(reporter,'LEFD_estimate_frequency',1,1,inf);
 
 end % addOptions

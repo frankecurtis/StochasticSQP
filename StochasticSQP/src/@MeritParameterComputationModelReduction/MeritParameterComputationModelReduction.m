@@ -18,12 +18,12 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    linear_model_
-    quadratic_model_
     curvature_threshold_
     model_reduction_factor_
     parameter_reduction_factor_
-            
+    quadratic_model_for_merit_update_
+    quadratic_model_for_stepsize_
+    
   end % properties (private access)
   
   % Methods (static)
@@ -79,7 +79,7 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%%%%%%%%
     % GET METHODS %
     %%%%%%%%%%%%%%%
-
+    
     % Name
     function n = name(M)
       
@@ -91,10 +91,10 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%%%%%%%%%%%%
     % COMPUTE METHODS %
     %%%%%%%%%%%%%%%%%%%
-
+    
     % Compute stepsize
     computeMeritParameter(M,options,quantities,reporter,strategies)
-        
+    
   end % methods (public access)
   
-end % Options
+end % MeritParameterComputationModelReduction

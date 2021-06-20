@@ -14,7 +14,7 @@ classdef Reporter < handle
     % MEMBERS %
     %%%%%%%%%%%
     list = {}
-            
+    
   end % properties (private access)
   
   % Methods (public access)

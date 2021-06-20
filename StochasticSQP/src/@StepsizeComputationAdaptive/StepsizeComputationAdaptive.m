@@ -18,16 +18,13 @@ classdef StepsizeComputationAdaptive < StepsizeComputation
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    objective_Lipschitz_
-    constraint_Lipschitz_
-    projection_width_
-    stepsize_diminishing_
-    stepsize_scaling_
-    sufficient_decrease_
-    lengthening_ratio_
-    diminishing_ratio_
-    forward_lengthening_
+    diminishing_
     direction_norm_tolerance_
+    lengthening_
+    lengthening_ratio_
+    projection_width_
+    scaling_
+    sufficient_decrease_
     
   end % properties (private access)
   

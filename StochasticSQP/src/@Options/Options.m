@@ -259,7 +259,7 @@ classdef Options < handle
           break;
         end
       end
-            
+      
       % Check if name found
       if ~name_found
         reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...

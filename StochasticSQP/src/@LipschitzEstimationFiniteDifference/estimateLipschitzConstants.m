@@ -7,44 +7,63 @@
 % LipschitzEstimationFiniteDifference: estimateLipschitzConstants
 function estimateLipschitzConstants(L,options,quantities,reporter,strategies)
 
-
-% Set Lipschitz Constants
-if quantities.iterationCounter <= L.FD_Lipschitz_estimate_iter_first_ ...
-        || mod(quantities.iterationCounter - L.FD_Lipschitz_estimate_iter_first_ , L.FD_Lipschitz_estimate_iter_later_) == 0
-    
-    % Initialize Lipschitz constants
-    objectiveLipschitz = 1;
-    constraintsLipschitz = sparse(quantities.currentIterate.numberOfConstraintsEqualities,1);
-    
-    if L.FD_full_samples_
-        for i = 1:quantities.currentIterate.numberOfVariables
-            sampleIterate = quantities.currentIterate.primalPoint;
-            sampleIterate(i) = sampleIterate(i) + L.FD_Lipschitz_estimate_sample_distance_;
-            [objectiveLipschitz, constraintsLipschitz] = computeLipschitzConstants(quantities,sampleIterate,objectiveLipschitz,constraintsLipschitz);
-        end
-    else
-        rng(L.FD_seed_);
-        sampleIterate = quantities.currentIterate.primalPoint + L.FD_Lipschitz_estimate_sample_distance_ * sparse(randn(quantities.currentIterate.numberOfVariables,1));
-        [objectiveLipschitz, constraintsLipschitz] = computeLipschitzConstants(quantities,sampleIterate,objectiveLipschitz,constraintsLipschitz);
-        L.FD_seed_ = rng;
+% Check whether to estimate
+if quantities.iterationCounter <= L.estimate_always_until_ || mod(quantities.iterationCounter - L.estimate_always_until_, L.estimate_frequency_) == 0
+  
+  % Initialize Lipschitz estimates
+  lipschitz_constraint = 0;
+  lipschitz_objective = 0;
+  
+  % Check whether to use coordinate directions
+  if L.coordinate_directions_
+    for i = 1:quantities.currentIterate.numberOfVariables
+      samplePoint = quantities.currentIterate.primalPoint;
+      samplePoint(i) = samplePoint(i) + L.displacement_;
+      [lip_con, lip_obj] = computeEstimates(quantities,samplePoint,L.use_true_gradient_);
+      lipschitz_constraint = max(lipschitz_constraint,lip_con);
+      lipschitz_objective = max(lipschitz_objective,lip_obj);
     end
-    
-    % Compute Lipschitz constants for Jacobian
-    constraintsLipschitz = sum(constraintsLipschitz);
-    
-    % Set Lipschitz Constants
-    quantities.setLipschitzConstants(objectiveLipschitz,constraintsLipschitz);
-    
+  end
+  
+  % Check whether to use random direction
+  if L.random_direction_
+    sampleDirection = randn(quantities.currentIterate.numberOfVariables,1);
+    samplePoint = quantities.currentIterate.primalPoint + L.displacement_ * sampleDirection/norm(sampleDirection);
+    [lip_con, lip_obj] = computeEstimates(quantities,samplePoint,L.use_true_gradient_);
+    lipschitz_constraint = max(lipschitz_constraint,lip_con);
+    lipschitz_objective = max(lipschitz_objective,lip_obj);
+  end
+  
+  % Ensure estimates are nonzero!
+  if lipschitz_constraint <= 0, lipschitz_constraint = 1; end
+  if lipschitz_objective <= 0, lipschitz_objective = 1; end
+  
+  % Set Lipschitz constant estimates
+  quantities.setLipschitz(lipschitz_constraint,lipschitz_objective);
+  
 end
 
 end % estimateLipschitzConstants
 
-function [objectiveLipschitz, constraintsLipschitz] = computeLipschitzConstants(quantities,sampleIterate,objectiveLipschitz,constraintsLipschitz)
+% computeEstimates
+function [lip_con, lip_obj] = computeEstimates(quantities,samplePoint,use_true)
 
+% Get scale factors
 [f_scale,cE_scale,~] = quantities.currentIterate.scaleFactors;
-sampleTrueObjectiveGradient = f_scale * quantities.currentIterate.problem.evaluateObjectiveGradient(sampleIterate,'true');
-sampleJacobian = cE_scale .* quantities.currentIterate.problem.evaluateConstraintJacobianEqualities(sampleIterate);
-objectiveLipschitz = max(objectiveLipschitz , norm(quantities.currentIterate.objectiveGradient(quantities,'true') - sampleTrueObjectiveGradient) / norm(sampleIterate - quantities.currentIterate.primalPoint));
-constraintsLipschitz = max(constraintsLipschitz, vecnorm(quantities.currentIterate.constraintJacobianEqualities(quantities)' - sampleJacobian')' / norm(sampleIterate - quantities.currentIterate.primalPoint));
+
+% Evaluate constraint Jacobian at sample point
+sampleJacobian = cE_scale .* quantities.currentIterate.problem.evaluateConstraintJacobianEqualities(samplePoint);
+
+% Estimate constraint Jacobian Lipschitz constant
+lip_con = norm(quantities.currentIterate.constraintJacobianEqualities(quantities) - sampleJacobian) / norm(quantities.currentIterate.primalPoint - samplePoint);
+
+% Evaluate objective gradient at sample point
+if use_true
+  sampleGradient = f_scale * quantities.currentIterate.problem.evaluateObjectiveGradient(samplePoint,'true');
+  lip_obj = norm(quantities.currentIterate.objectiveGradient(quantities,'true') - sampleGradient) / norm(quantities.currentIterate.primalPoint - samplePoint);
+else
+  sampleGradient = f_scale * quantities.currentIterate.problem.evaluateObjectiveGradient(samplePoint,'stochastic');
+  lip_obj = norm(quantities.currentIterate.objectiveGradient(quantities,'stochastic') - sampleGradient) / norm(quantities.currentIterate.primalPoint - samplePoint);
+end
 
 end

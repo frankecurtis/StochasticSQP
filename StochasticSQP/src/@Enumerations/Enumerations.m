@@ -14,7 +14,7 @@ classdef Enumerations < uint8
     %%%%%%%%%%%%%%%%%%
     R_SOLVER (0)
     R_SUBSOLVER (1)
-
+    
     %%%%%%%%%%%%%%%%%%%
     % REPORTER LEVELS %
     %%%%%%%%%%%%%%%%%%%
@@ -35,7 +35,7 @@ classdef Enumerations < uint8
     S_CPU_TIME_LIMIT (6)
     S_OPTIMALITY_PROGRESS_FAILURE (7)
     S_FEASIBILITY_PROGRESS_FAILURE (8)
-
+    
   end % enumeration
   
 end % Enumerations

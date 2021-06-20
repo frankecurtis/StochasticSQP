@@ -4,10 +4,10 @@
 %
 % Authors: Frank E. Curtis
 
-% MeritParameterComputationModelReduction: initialize
+% LipschitzEstimationFiniteDifference: initialize
 function initialize(L,options,quantities,reporter)
 
-% Initialize
-% DO NOTHING
+% Initialize random number generator
+rng(L.seed_);
 
 end % initialize

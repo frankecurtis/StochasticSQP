@@ -15,34 +15,34 @@ assert(quantities.currentIterate.numberOfConstraintsInequalities == 0,'ComputeDi
 
 % Set matrix
 if D.use_hessian_of_lagrangian_
-    matrix = [quantities.currentIterate.hessianOfLagrangian(quantities) quantities.currentIterate.constraintJacobianEqualities(quantities)';
-        quantities.currentIterate.constraintJacobianEqualities(quantities) sparse(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
-    factor = D.curvature_threshold_;
-    while 1
-        if max(max(isnan(matrix))) > 0 || max(max(isinf(matrix))) > 0 || sum(eig(matrix) >= D.curvature_threshold_) >= quantities.currentIterate.numberOfVariables, break; end
-        matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) = ...
-            matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) + factor * speye(quantities.currentIterate.numberOfVariables,quantities.currentIterate.numberOfVariables);
-        factor = factor * 10;
-    end
+  matrix = [quantities.currentIterate.hessianOfLagrangian(quantities) quantities.currentIterate.constraintJacobianEqualities(quantities)';
+    quantities.currentIterate.constraintJacobianEqualities(quantities) sparse(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
+  factor = D.curvature_threshold_;
+  while 1
+    if max(max(isnan(matrix))) > 0 || max(max(isinf(matrix))) > 0 || sum(eig(matrix) >= D.curvature_threshold_) >= quantities.currentIterate.numberOfVariables, break; end
+    matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) = ...
+      matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) + factor * speye(quantities.currentIterate.numberOfVariables,quantities.currentIterate.numberOfVariables);
+    factor = factor * 10;
+  end
 else
-    matrix = [speye(quantities.currentIterate.numberOfVariables) quantities.currentIterate.constraintJacobianEqualities(quantities)';
-        quantities.currentIterate.constraintJacobianEqualities(quantities) zeros(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
+  matrix = [speye(quantities.currentIterate.numberOfVariables) quantities.currentIterate.constraintJacobianEqualities(quantities)';
+    quantities.currentIterate.constraintJacobianEqualities(quantities) zeros(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
 end
 
 % Check whether LICQ holds
 if eigs(quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.currentIterate.constraintJacobianEqualities(quantities)',1,'sm') < D.curvature_threshold_ || max(max(isnan(matrix))) > 0 || max(max(isinf(matrix))) > 0
-    err = true;
-    fprintf('Violation of LICQ or second-order sufficiency!!! \n');
-    return
+  err = true;
+  fprintf('Violation of LICQ or second-order sufficiency!!! \n');
+  return
 end
 
 if quantities.checkStationarityMeasure
-    % Compute exact direction with the true gradient
-    v_true = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'true');
-        quantities.currentIterate.constraintFunctionEqualities(quantities)];
-    
-    % Set true multipliers
-    quantities.currentIterate.setMultipliers(v_true(quantities.currentIterate.numberOfVariables+1:end),sparse([]),'true');
+  % Compute exact direction with the true gradient
+  v_true = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'true');
+    quantities.currentIterate.constraintFunctionEqualities(quantities)];
+  
+  % Set true multipliers
+  quantities.currentIterate.setMultipliers(v_true(quantities.currentIterate.numberOfVariables+1:end),sparse([]),'true');
 end
 
 [current_multipliers , ~] = quantities.currentIterate.multipliers('stochastic');
@@ -56,17 +56,17 @@ addpath('/Users/baoyuzhou/Desktop/Software/StochasticSQP/StochasticSQP/external'
 
 % Inexact solve by iterative solver
 [v,TTnum,residual,innerIter] = minres_stanford(matrix, -currentIterateInfo, quantities.currentIterate.numberOfVariables, currentIterateMeasure, previousIterateMeasure, c_norm1, c_norm2, ...
-    D.full_residual_norm_factor_, D.primal_residual_norm_factor_, D.dual_residual_norm_factor_, D.constraint_norm_factor_, D.lagrangian_primal_norm_factor_, ...
-    D.curvature_threshold_, D.model_reduction_factor_, quantities.currentIterate.objectiveGradient(quantities,'stochastic'), quantities.meritParameter, ...
-    quantities.currentIterate.constraintJacobianEqualities(quantities),[],0,false,true,max(size(matrix,1)*100,100),1e-10);
+  D.full_residual_norm_factor_, D.primal_residual_norm_factor_, D.dual_residual_norm_factor_, D.constraint_norm_factor_, D.lagrangian_primal_norm_factor_, ...
+  D.curvature_threshold_, D.model_reduction_factor_, quantities.currentIterate.objectiveGradient(quantities,'stochastic'), quantities.meritParameter, ...
+  quantities.currentIterate.constraintJacobianEqualities(quantities),[],0,false,true,max(size(matrix,1)*100,100),1e-10);
 
 % Set Termination Test Number
 quantities.setTerminationTestNumber(TTnum);
 
 if TTnum < 0
-    err = true;
-    fprintf('No termination test is satisfied!!! \n');
-    return;
+  err = true;
+  fprintf('No termination test is satisfied!!! \n');
+  return;
 end
 
 % Transform dense to sparse format

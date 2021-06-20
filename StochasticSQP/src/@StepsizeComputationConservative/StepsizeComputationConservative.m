@@ -18,10 +18,8 @@ classdef StepsizeComputationConservative < StepsizeComputation
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    objective_Lipschitz_
-    constraint_Lipschitz_
-    stepsize_diminishing_
-    stepsize_scaling_
+    diminishing_
+    scaling_
     
   end % properties (private access)
   

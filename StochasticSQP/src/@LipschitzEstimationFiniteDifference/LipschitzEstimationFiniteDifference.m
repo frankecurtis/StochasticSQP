@@ -4,7 +4,7 @@
 %
 % Authors: Frank E. Curtis
 
-% MeritParameterComputationFixed class
+% LipschitzEstimationFiniteDifference class
 classdef LipschitzEstimationFiniteDifference < LipschitzEstimation
   
   % Properties (private access)
@@ -18,11 +18,13 @@ classdef LipschitzEstimationFiniteDifference < LipschitzEstimation
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    FD_full_samples_
-    FD_Lipschitz_estimate_iter_first_
-    FD_Lipschitz_estimate_iter_later_
-    FD_Lipschitz_estimate_sample_distance_
-    FD_seed_ = 0 % random seed
+    coordinate_directions_
+    displacement_
+    estimate_always_until_
+    estimate_frequency_
+    random_direction_
+    seed_ = 0
+    use_true_gradient_
     
   end % properties (private access)
   
@@ -47,8 +49,8 @@ classdef LipschitzEstimationFiniteDifference < LipschitzEstimation
     
     % Constructor
     function L = LipschitzEstimationFiniteDifference
-
-        % Do Nothing
+      
+      % Do Nothing
       
     end % Constructor
     
@@ -79,7 +81,7 @@ classdef LipschitzEstimationFiniteDifference < LipschitzEstimation
     %%%%%%%%%%%%%%%
     % GET METHODS %
     %%%%%%%%%%%%%%%
-
+    
     % Name
     function n = name(L)
       
@@ -91,10 +93,10 @@ classdef LipschitzEstimationFiniteDifference < LipschitzEstimation
     %%%%%%%%%%%%%%%%%%%
     % COMPUTE METHODS %
     %%%%%%%%%%%%%%%%%%%
-
+    
     % Compute Lipschitz constants
     estimateLipschitzConstants(L,options,quantities,reporter,strategies)
-        
+    
   end % methods (public access)
   
-end % Options
+end % LipschitzEstimationFiniteDifference

@@ -12,10 +12,10 @@ classdef (Abstract) Problem < handle
     
     % Constraint function, equalities
     [cE,err] = evaluateConstraintFunctionEqualities(P,x)
-      
+    
     % Constraint function, inequalities
     [cI,err] = evaluateConstraintFunctionInequalities(P,x)
-      
+    
     % Constraint Jacobian, equalities
     [JE,err] = evaluateConstraintJacobianEqualities(P,x)
     
@@ -27,10 +27,10 @@ classdef (Abstract) Problem < handle
     
     % Objective function
     [f,err] = evaluateObjectiveFunction(P,x)
-      
+    
     % Objective gradient
-    [g,err] = evaluateObjectiveGradient(P,x)
-      
+    [g,err] = evaluateObjectiveGradient(P,x,type,factor)
+    
     % Initial point
     x = initialPoint(P)
     

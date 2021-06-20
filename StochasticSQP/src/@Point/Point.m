@@ -21,11 +21,11 @@ classdef Point < handle
     n % number of variables
     mE % number of constraints, equalities
     mI % number of constraints, inequalities
+    x % primal point
     yE % multipliers, equalities
     yE_true % true multipliers, equalities
     yI % multipliers, inequalities
     yI_true % true multipliers, inequalities
-    x % primal point
     f % objective function
     f_unscaled % objective function, unscaled
     g % objective gradient
@@ -41,8 +41,6 @@ classdef Point < handle
     %%%%%%%%%
     % NORMS %
     %%%%%%%%%
-    g_norm1
-    g_normInf
     c_norm1
     c_normInf
     c_normInf_unscaled
@@ -53,7 +51,7 @@ classdef Point < handle
     f_scale
     cE_scale
     cI_scale
-
+    
     %%%%%%%%%%%%%%
     % INDICATORS %
     %%%%%%%%%%%%%%
@@ -71,7 +69,7 @@ classdef Point < handle
     c_normInf_evaluated = false
     c_normInf_unscaled_evaluated = false
     scales_set = false
-        
+    
   end % properties (private access)
   
   % Methods (public access)
@@ -94,23 +92,23 @@ classdef Point < handle
         
         % Set problem
         P.p = varargin{1};
-      
+        
         % Set initial primal point
         P.x = P.p.initialPoint;
-      
+        
         % Set number of variables
         P.n = P.p.numberOfVariables;
         
         % Set number of constraints, equalities
         P.mE = P.p.numberOfConstraintsEqualities;
-      
+        
         % Set number of constraints, inequalities
         P.mI = P.p.numberOfConstraintsInequalities;
-      
+        
         % Initialize scale factors
         P.f_scale = 1.0;
-        P.cE_scale = sparse(ones(P.mE,1));
-        P.cI_scale = sparse(ones(P.mI,1));
+        P.cE_scale = ones(P.mE,1);
+        P.cI_scale = ones(P.mI,1);
         
       else % point + vector input (2 arguments)
         
@@ -125,14 +123,14 @@ classdef Point < handle
         
         % Set indicator
         P.scales_set = true;
-
+        
         % Set point
-        P.x = sparse(varargin{2});
-      
+        P.x = varargin{2};
+        
       end
       
     end % Constructor
-
+    
     %%%%%%%%%%%%%%%%%%%%
     % MAKE NEW METHODS %
     %%%%%%%%%%%%%%%%%%%%
@@ -151,19 +149,19 @@ classdef Point < handle
     
     % Set multipliers
     function setMultipliers(P,yE,yI,type)
-        
-        % Check for problem input
-        if strcmp(type,'stochastic')
-            % Set multipliers
-            P.yE = yE;
-            P.yI = yI;
-        elseif strcmp(type,'true')
-            % Set true multipliers
-            P.yE_true = yE;
-            P.yI_true = yI;
-        else
-            error('Point: Incorrect type of inputs to Point.setMultipliers.');
-        end
+      
+      % Check for problem input
+      if strcmp(type,'stochastic')
+        % Set multipliers
+        P.yE = yE;
+        P.yI = yI;
+      elseif strcmp(type,'true')
+        % Set true multipliers
+        P.yE_true = yE;
+        P.yI_true = yI;
+      else
+        error('Point: Incorrect type of inputs to Point.setMultipliers.');
+      end
       
     end % setMultipliers
     
@@ -173,19 +171,19 @@ classdef Point < handle
     
     % Multipliers
     function [yE,yI] = multipliers(P,type)
-        
-        % Check for problem input
-        if strcmp(type,'stochastic')
-            % Set multipliers
-            yE = sparse(P.yE);
-            yI = sparse(P.yI);
-        elseif strcmp(type,'true')
-            % Set true multipliers
-            yE = sparse(P.yE_true);
-            yI = sparse(P.yI_true);
-        else
-            error('Point: Incorrect type of inputs to Point.multipliers.');
-        end
+      
+      % Check for problem input
+      if strcmp(type,'stochastic')
+        % Set multipliers
+        yE = P.yE;
+        yI = P.yI;
+      elseif strcmp(type,'true')
+        % Set true multipliers
+        yE = P.yE_true;
+        yI = P.yI_true;
+      else
+        error('Point: Incorrect type of inputs to Point.multipliers.');
+      end
       
     end % multipliers
     
@@ -238,7 +236,7 @@ classdef Point < handle
       cI_scale = P.cI_scale;
       
     end % scaleFactors
-        
+    
     %%%%%%%%%%%%%%%%%%%%%%
     % EVALUATION METHODS %
     %%%%%%%%%%%%%%%%%%%%%%
@@ -326,7 +324,7 @@ classdef Point < handle
         
         % Evaluate
         [P.JE,err] = P.p.evaluateConstraintJacobianEqualities(P.x);
-
+        
         % Check for error
         if err == true
           error('Point: Error evaluating constraint Jacobian, equalities!');
@@ -334,7 +332,7 @@ classdef Point < handle
         
         % Scale
         P.JE = P.cE_scale .* P.JE;
-
+        
         % Set indicator
         P.JE_evaluated = true;
         
@@ -361,7 +359,7 @@ classdef Point < handle
         
         % Evaluate
         [P.JI,err] = P.p.evaluateConstraintJacobianInequalities(P.x);
-
+        
         % Check for error
         if err == true
           error('Point: Error evaluating constraint Jacobian, inequalities!');
@@ -369,7 +367,7 @@ classdef Point < handle
         
         % Scale
         P.JI = P.cI_scale .* P.JI;
-
+        
         % Set indicator
         P.JI_evaluated = true;
         
@@ -383,7 +381,7 @@ classdef Point < handle
       
     end % end constraintJacobianEqualities
     
-    % Constraint 2-norm
+    % Constraint 1-norm
     function v = constraintNorm1(P,quantities)
       
       % Check if norm evaluated
@@ -414,7 +412,7 @@ classdef Point < handle
       v = P.c_norm1;
       
     end % end constraintNorm1
-
+    
     % Constraint inf-norm
     function v = constraintNormInf(P,quantities)
       
@@ -436,7 +434,7 @@ classdef Point < handle
           P.constraintFunctionInequalities(quantities);
           
         end
-                
+        
         % Evaluate norm
         P.c_normInf = norm(P.cE,inf) + norm(max(P.cI,0),inf);
         
@@ -478,16 +476,16 @@ classdef Point < handle
       v = P.c_normInf_unscaled;
       
     end % end constraintNormInfUnscaled
-
+    
     % Determine scale factors
     function determineScaleFactors(P,quantities)
       
       % Check whether to scale
       if quantities.scaleProblem
-      
+        
         % Evaluate objective gradient
         gradient = P.p.evaluateObjectiveGradient(P.x,'stochastic',quantities.batchSize);
-      
+        
         % Increment counter
         quantities.incrementObjectiveGradientEvaluationCounter;
         
@@ -499,7 +497,7 @@ classdef Point < handle
         
         % Set indicator
         P.g_evaluated = true;
-      
+        
         % Check if equalities present
         if P.mE == 0
           
@@ -515,7 +513,7 @@ classdef Point < handle
           quantities.incrementConstraintJacobianEqualitiesEvaluationCounter;
           
           % Set constraint scale factor
-          P.cE_scale = sparse(quantities.scaleFactorGradientLimit./max(quantities.scaleFactorGradientLimit,vecnorm(Jacobian,inf,2)));
+          P.cE_scale = quantities.scaleFactorGradientLimit./max(quantities.scaleFactorGradientLimit,vecnorm(Jacobian,inf,2));
           
           % Evaluate
           P.JE = P.cE_scale .* Jacobian;
@@ -540,7 +538,7 @@ classdef Point < handle
           quantities.incrementConstraintJacobianInequalitiesEvaluationCounter;
           
           % Set constraint scale factor
-          P.cI_scale = sparse(quantities.scaleFactorGradientLimit./max(quantities.scaleFactorGradientLimit,vecnorm(Jacobian,inf,2)));
+          P.cI_scale = quantities.scaleFactorGradientLimit./max(quantities.scaleFactorGradientLimit,vecnorm(Jacobian,inf,2));
           
           % Evaluate
           P.JI = P.cI_scale .* Jacobian;
@@ -554,8 +552,8 @@ classdef Point < handle
         
         % Set scales to 1
         P.f_scale = 1.0;
-        P.cE_scale = sparse(ones(P.mE,1));
-        P.cI_scale = sparse(ones(P.mI,1));
+        P.cE_scale = ones(P.mE,1);
+        P.cI_scale = ones(P.mI,1);
         
       end
       
@@ -563,7 +561,7 @@ classdef Point < handle
       P.scales_set = true;
       
     end % determineScaleFactors
-
+    
     % Hessian of Lagrangian
     function H = hessianOfLagrangian(P,quantities)
       
@@ -583,7 +581,7 @@ classdef Point < handle
         P.H = P.f_scale * P.H;
         
         if sum(sum(isnan(P.H))) > 0 || sum(sum(isinf(P.H))) > 0 || condest(P.H) > 1e+12 || max(max(abs(P.H))) > 1e+10
-            P.H = P.f_scale * speye(P.n);
+          P.H = P.f_scale * speye(P.n);
         end
         
         % Check for error
@@ -606,45 +604,45 @@ classdef Point < handle
     
     % Stationarity measure
     function v = stationarityMeasure(P,quantities,type)
-        
-        % Evaluate measure
-        if P.mE == 0 && P.mI == 0
-            v = norm(P.objectiveGradient(quantities,type),inf);
-        else
-            vec = P.objectiveGradient(quantities,type);
-            if P.mE > 0
-                if strcmp(type,'stochastic')
-                    vec = vec + (P.yE' * P.constraintJacobianEqualities(quantities))';
-                elseif strcmp(type,'true')
-                    Jg = P.constraintJacobianEqualities(quantities) * vec;
-                    invJJ_Jg = (P.constraintJacobianEqualities(quantities) * P.constraintJacobianEqualities(quantities)') \ Jg;
-                    vec = vec - P.constraintJacobianEqualities(quantities)' * invJJ_Jg;
-                else
-                    error('Point: Input to stationarityMeasure is invalid!');
-                end
-            end
-            if P.mI > 0
-                if strcmp(type,'stochastic')
-                    vec = vec + (P.yI' * P.constraintJacobianInequalities(quantities))';
-                elseif strcmp(type,'true')
-                    vec = vec + (P.yI_true' * P.constraintJacobianInequalities(quantities))';
-                else
-                    error('Point: Input to stationarityMeasure is invalid!');
-                end
-            end
-            v = norm(vec,inf);
-            if P.mI > 0
-                if strcmp(type,'stochastic')
-                    v = max(v,norm([min(P.yI,0); P.yI .* P.constraintFunctionInequalities(quantities)],inf));
-                elseif strcmp(type,'true')
-                    v = max(v,norm([min(P.yI_true,0); P.yI_true .* P.constraintFunctionInequalities(quantities)],inf));
-                else
-                    error('Point: Input to stationarityMeasure is invalid!');
-                end
-            end
-            v = max(v,P.constraintNormInf(quantities));
+      
+      % Evaluate measure
+      if P.mE == 0 && P.mI == 0
+        v = norm(P.objectiveGradient(quantities,type),inf);
+      else
+        vec = P.objectiveGradient(quantities,type);
+        if P.mE > 0
+          if strcmp(type,'stochastic')
+            vec = vec + (P.yE' * P.constraintJacobianEqualities(quantities))';
+          elseif strcmp(type,'true')
+            Jg = P.constraintJacobianEqualities(quantities) * vec;
+            invJJ_Jg = (P.constraintJacobianEqualities(quantities) * P.constraintJacobianEqualities(quantities)') \ Jg;
+            vec = vec - P.constraintJacobianEqualities(quantities)' * invJJ_Jg;
+          else
+            error('Point: Input to stationarityMeasure is invalid!');
+          end
         end
-        
+        if P.mI > 0
+          if strcmp(type,'stochastic')
+            vec = vec + (P.yI' * P.constraintJacobianInequalities(quantities))';
+          elseif strcmp(type,'true')
+            vec = vec + (P.yI_true' * P.constraintJacobianInequalities(quantities))';
+          else
+            error('Point: Input to stationarityMeasure is invalid!');
+          end
+        end
+        v = norm(vec,inf);
+        if P.mI > 0
+          if strcmp(type,'stochastic')
+            v = max(v,norm([min(P.yI,0); P.yI .* P.constraintFunctionInequalities(quantities)],inf));
+          elseif strcmp(type,'true')
+            v = max(v,norm([min(P.yI_true,0); P.yI_true .* P.constraintFunctionInequalities(quantities)],inf));
+          else
+            error('Point: Input to stationarityMeasure is invalid!');
+          end
+        end
+        v = max(v,P.constraintNormInf(quantities));
+      end
+      
     end % stationarityMeasure
     
     % Objective function
@@ -700,105 +698,56 @@ classdef Point < handle
     
     % Objective gradient
     function g = objectiveGradient(P,quantities,type)
+      
+      % Check if scales have been set
+      if ~P.scales_set
+        error('Point: Scale factors have not been set!');
+      end
+      
+      % Check if already evaluated
+      if (~P.g_evaluated && strcmp(type,'stochastic')) || (~P.g_true_evaluated && strcmp(type,'true'))
         
-        % Check if scales have been set
-        if ~P.scales_set
-            error('Point: Scale factors have not been set!');
+        % Evaluate
+        [g,err] = P.p.evaluateObjectiveGradient(P.x,type,quantities.batchSize);
+        
+        % Check for error
+        if err == true
+          error('Point: Error evaluating objective gradient!');
         end
         
-        % Check if already evaluated
-        if (~P.g_evaluated && strcmp(type,'stochastic')) || (~P.g_true_evaluated && strcmp(type,'true'))
-            
-            % Evaluate
-            [g,err] = P.p.evaluateObjectiveGradient(P.x,type,quantities.batchSize);
-            
-            % Check for error
-            if err == true
-                error('Point: Error evaluating objective gradient!');
-            end
-            
-            % Scale
-            g = P.f_scale * g;
-            
-            if strcmp(type,'stochastic')
-                % Set indicator
-                P.g_evaluated = true;
-                P.g = g;
-                
-                % Increment counter
-                quantities.incrementObjectiveGradientEvaluationCounter;
-                
-            elseif strcmp(type,'true')
-                % Set indicator
-                P.g_true_evaluated = true;
-                P.g_true = g;
-                
-            else
-                error('Point: Input errors of objective gradient!');
-            end
-            
+        % Scale
+        g = P.f_scale * g;
+        
+        if strcmp(type,'stochastic')
+          % Set indicator
+          P.g_evaluated = true;
+          P.g = g;
+          
+          % Increment counter
+          quantities.incrementObjectiveGradientEvaluationCounter;
+          
+        elseif strcmp(type,'true')
+          % Set indicator
+          P.g_true_evaluated = true;
+          P.g_true = g;
+          
         else
-            
-            if strcmp(type,'stochastic')
-                g = P.g;
-            elseif strcmp(type,'true')
-                g = P.g_true;
-            else
-                error('Point: Input errors of objective gradient!');
-            end
-            
+          error('Point: Input errors of objective gradient!');
         end
-
         
+      else
+        
+        if strcmp(type,'stochastic')
+          g = P.g;
+        elseif strcmp(type,'true')
+          g = P.g_true;
+        else
+          error('Point: Input errors of objective gradient!');
+        end
+        
+      end
+      
     end % end objectiveGradient
-    
-    % Objective gradient 2-norm
-    function v = objectiveGradientNorm1(P,quantities)
-      
-      % Check if norm evaluated
-      if ~P.g_norm1_evaluated
-        
-        % Check if objective function evaluated
-        if ~P.g_evaluated
-          
-          % Evaluate objective gradient function
-          P.objectiveGradient(quantities);
-          
-        end
-        
-        % Evaluate norm
-        P.g_norm1 = norm(P.g,1);
-        
-      end
-      
-      % Set return value
-      v = P.g_norm1;
-      
-    end % end objectiveGradientNorm1
-
-    % Constraint inf-norm
-    function v = objectiveGradientNormInf(P,quantities)
-      
-      % Check if norm evaluated
-      if ~P.g_normInf_evaluated
-        
-        % Check if objective function evaluated
-        if ~P.g_evaluated
-          
-          % Evaluate objective gradient function
-          P.objectiveGradient(quantities);
-          
-        end
-        
-        % Evaluate norm
-        P.g_normInf = norm(P.g,'inf');
-        
-      end
-      
-      % Set return value
-      v = P.g_normInf;
-      
-    end % end constraintNormInf
     
   end % methods (public access)
   

@@ -10,7 +10,7 @@
 %
 %   A. S. Berahas, F. E. Curtis, D. P. Robinson, and B. Zhou.  "Sequential
 %   Quadratic Optimization for Nonlinear Equality Constrained Stochastic
-%   Optimization." arXiv, 2007.10525.  2020.
+%   Optimization." SIAM Journal on Optimization, 31(2):1352-1379, 2021.
 %
 % Constructors:
 %
@@ -21,8 +21,17 @@
 %   S.optimize(problem)
 %       Runs optimization algorithm.
 %
-%   [x,y] = S.solution
-%       Returns solution estimate.
+%   [x,yE,yI,infeasibility,stationarity] = bestIterate(S)
+%       Returns best iterate.
+%
+%   [x,yE,yI,infeasibility,stationarity] = finalIterate(S)
+%       Returns final iterate.
+%
+%   o = options(S)
+%       Returns options object.
+%
+%   r = reporter(S)
+%       Returns reporter object.
 
 % StochasticSQP class
 classdef StochasticSQP < handle
@@ -79,14 +88,25 @@ classdef StochasticSQP < handle
     % GET METHODS %
     %%%%%%%%%%%%%%%
     
+    % Best iterate
+    function [x,yE,yI,infeasibility,stationarity] = bestIterate(S)
+      
+      % Set return values
+      x = S.quantities_.bestIterate.primalPoint;
+      [yE,yI] = S.quantities_.bestIterate.multipliers('stochastic');
+      infeasibility = S.quantities_.bestIterate.constraintNormInf(S.quantities_);
+      stationarity = S.quantities_.bestIterate.stationarityMeasure(S.quantities_,'stochastic');
+      
+    end % solution
+    
     % Final iterate
     function [x,yE,yI,infeasibility,stationarity] = finalIterate(S)
       
       % Set return values
       x = S.quantities_.currentIterate.primalPoint;
-      [yE,yI] = S.quantities_.currentIterate.multipliers;
+      [yE,yI] = S.quantities_.currentIterate.multipliers('stochastic');
       infeasibility = S.quantities_.currentIterate.constraintNormInf(S.quantities_);
-      stationarity = S.quantities_.currentIterate.stationarityMeasure(S.quantities_);
+      stationarity = S.quantities_.currentIterate.stationarityMeasure(S.quantities_,'stochastic');
       
     end % finalIterate
     
@@ -105,33 +125,6 @@ classdef StochasticSQP < handle
       r = S.reporter_;
       
     end % reporter
-    
-    % Solution (best)
-    function [x,yE,yI,infeasibility,stationarity] = solution(S)
-      
-      % Set return values
-      x = S.quantities_.bestIterate.primalPoint;
-      [yE,yI] = S.quantities_.bestIterate.multipliers('stochastic');
-      infeasibility = S.quantities_.bestIterate.constraintNormInf(S.quantities_);
-      stationarity = S.quantities_.bestIterate.stationarityMeasure(S.quantities_,'true');
-
-    end % solution
-    
-    % Get upper bound of the ratio
-    function [upperRatio] = getUpperRatio(S)
-        
-        % Set return values
-        upperRatio = S.quantities_.innerIterationRelativeLimit;
-        
-    end % getUpperRatio
-    
-    % Get baseline ratio
-    function [baseInnerIter] = baselineInnerIteration(S)
-        
-        % Set return values
-        baseInnerIter = S.quantities_.innerIterationCounter;
-        
-    end % baselineInnerIteration
     
   end % methods (public access)
   
@@ -160,7 +153,7 @@ classdef StochasticSQP < handle
     
     % Get options
     getOptions(S)
-        
+    
   end % methods (private access)
   
 end % StochasticSQP

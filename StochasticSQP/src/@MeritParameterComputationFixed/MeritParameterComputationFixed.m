@@ -70,7 +70,7 @@ classdef MeritParameterComputationFixed < MeritParameterComputation
     %%%%%%%%%%%%%%%
     % GET METHODS %
     %%%%%%%%%%%%%%%
-
+    
     % Name
     function n = name(M)
       
@@ -82,10 +82,10 @@ classdef MeritParameterComputationFixed < MeritParameterComputation
     %%%%%%%%%%%%%%%%%%%
     % COMPUTE METHODS %
     %%%%%%%%%%%%%%%%%%%
-
+    
     % Compute stepsize
     computeMeritParameter(M,options,quantities,reporter,strategies)
-        
+    
   end % methods (public access)
   
-end % Options
+end % MeritParameterComputationFixed

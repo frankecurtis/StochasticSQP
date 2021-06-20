@@ -8,13 +8,13 @@
 function computeStepsize(S,options,quantities,reporter,strategies)
 
 % Set scaling
-stepsize_scaling = S.stepsize_scaling_;
-if S.stepsize_diminishing_ == true
-  stepsize_scaling = stepsize_scaling / quantities.iterationCounter;
+scaling = S.scaling_;
+if S.diminishing_ == true
+  scaling = scaling / (quantities.iterationCounter + 1);
 end
 
 % Compute stepsize
-alpha = stepsize_scaling * quantities.ratioParameter * quantities.meritParameter / (quantities.meritParameter * S.objective_Lipschitz_ + S.constraint_Lipschitz_);
+alpha = scaling * quantities.ratioParameter * quantities.meritParameter / (quantities.meritParameter * quantities.lipschitzObjective + quantities.lipschitzConstraint);
 
 % Set stepsize
 quantities.setStepsize(alpha);

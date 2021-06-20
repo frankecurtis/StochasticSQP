@@ -7,54 +7,62 @@
 % StepsizeComputationAdaptive: computeStepsize
 function computeStepsize(S,options,quantities,reporter,strategies)
 
-% Set scaling
-stepsize_scaling = S.stepsize_scaling_;
-if S.stepsize_diminishing_ == true
-    stepsize_scaling = stepsize_scaling / quantities.iterationCounter;
-end
-
-% Check whether primal space update being zero or not
-% make 1e-16 as an option
+% Check for small step
 if norm(quantities.directionPrimal,inf) < S.direction_norm_tolerance_
-    
-    alpha = 1;
-    
+  
+  % Set full stepsize
+  alpha = 1;
+  
 else
+  
+  % Set scaling
+  scaling = S.scaling_;
+  if S.diminishing_ == true
+    scaling = scaling / (quantities.iterationCounter + 1);
+  end
+  
+  % Compute stepsize denominator
+  denominator = (quantities.meritParameter * quantities.lipschitzObjective + quantities.lipschitzConstraint) * norm(quantities.directionPrimal)^2;
+  
+  % Compute stepsize values
+  alpha_suff = min(1, 2*(1 - S.sufficient_decrease_) * scaling * quantities.modelReduction / denominator);
+  alpha_min = 2*(1 - S.sufficient_decrease_) * scaling * quantities.ratioParameter * quantities.meritParameter / (quantities.meritParameter * quantities.lipschitzObjective + quantities.lipschitzConstraint);
+  alpha = min(alpha_suff, alpha_min);
+  alpha_max = alpha_min + S.projection_width_ * scaling^2;
+  
+  % Check whether to lengthen
+  if S.lengthening_
     
-    % Compute preliminary values
-    denominator = (quantities.meritParameter * quantities.objectiveLipschitzConstants + quantities.constraintLipschitzConstants) * norm(quantities.directionPrimal)^2;
-    alpha_hat = stepsize_scaling * quantities.modelReduction / denominator;
-    alpha_tilde = alpha_hat - 2 * quantities.currentIterate.constraintNorm1 / denominator;
-    alpha_opt = max(min(alpha_hat,1) , alpha_tilde);
-    alpha_1 = min(min(alpha_opt,1) , 2 * (1 - S.sufficient_decrease_) * stepsize_scaling * quantities.modelReduction / denominator);
-    
-    % Set projection bounds
-    lower_bound = 2 * (1 - S.sufficient_decrease_) * stepsize_scaling * quantities.ratioParameter * quantities.meritParameter / (quantities.meritParameter * quantities.objectiveLipschitzConstants + quantities.constraintLipschitzConstants);
-    upper_bound = lower_bound + S.projection_width_ * stepsize_scaling^2;
-    
-    if S.forward_lengthening_
-        if alpha_1 < 1
-            while alpha_1 < 1
-                alpha_ext = S.lengthening_ratio_ * alpha_1;
-                
-                Ufunc = alpha_ext * (S.sufficient_decrease_ - 1) * stepsize_scaling * quantities.modelReduction ...
-                    + norm(alpha_ext * quantities.residualDual + (1 - alpha_ext) * quantities.currentIterate.constraintFunctionEqualities(quantities),1) ...
-                    - norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1) ...
-                    + alpha_ext * (norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1) - quantities.residualDualNorm1) ...
-                    + 0.5 * alpha_ext^2 * denominator;
-                
-                if Ufunc > 0
-                    break;
-                else
-                    alpha_1 = alpha_ext;
-                end
-            end
-            alpha_1 = min(alpha_1,1);
+    % Loop while less than 1
+    while alpha < alpha_max
+      
+      % Set trial stepsize
+      alpha_trial = min(alpha_max, S.lengthening_ratio_ * alpha);
+      
+      % Evaluate reduction value
+      reduction = alpha_trial * (S.sufficient_decrease_ - 1) * scaling * quantities.modelReduction ...
+        + norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + alpha_trial * quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.directionPrimal,1) ...
+        - quantities.currentIterate.constraintNorm1(quantities) ...
+        + alpha_trial * (quantities.currentIterate.constraintNorm1(quantities) - norm(quantities.residualFeasibility,1)) ...
+        + 0.5 * alpha_trial^2 * denominator;
+      
+      % Check reduction
+      if reduction > 0
+        break;
+      else
+        alpha = alpha_trial;
+        if alpha >= alpha_max
+          break;
         end
-        % Project values
-        alpha = max(lower_bound,min(alpha_1,upper_bound));
+      end
+      
     end
     
+    % Project stepsize
+    alpha = max(alpha_min,min(alpha,alpha_max));
+    
+  end
+  
 end
 
 % Set stepsize

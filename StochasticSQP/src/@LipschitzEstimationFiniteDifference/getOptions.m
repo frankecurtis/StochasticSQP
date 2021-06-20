@@ -4,13 +4,15 @@
 %
 % Authors: Frank E. Curtis
 
-% MeritParameterComputationModelReduction: getOptions
+% LipschitzEstimationFiniteDifference: getOptions
 function getOptions(L,options,reporter)
 
 % Get options
-L.FD_full_samples_ = options.getOption(reporter,'FD_full_samples');
-L.FD_Lipschitz_estimate_iter_first_ = options.getOption(reporter,'FD_Lipschitz_estimate_iter_first');
-L.FD_Lipschitz_estimate_iter_later_ = options.getOption(reporter,'FD_Lipschitz_estimate_iter_later');
-L.FD_Lipschitz_estimate_sample_distance_ = options.getOption(reporter,'FD_Lipschitz_estimate_sample_distance');
+L.coordinate_directions_ = options.getOption(reporter,'LEFD_coordinate_directions');
+L.displacement_ = options.getOption(reporter,'LEFD_displacement');
+L.estimate_always_until_ = options.getOption(reporter,'LEFD_estimate_always_until');
+L.estimate_frequency_ = options.getOption(reporter,'LEFD_estimate_frequency');
+L.random_direction_ = options.getOption(reporter,'LEFD_random_direction');
+L.use_true_gradient_ = options.getOption(reporter,'LEFD_use_true_gradient');
 
 end % getOptions

@@ -100,4 +100,4 @@ classdef DirectionComputationIEQP < DirectionComputation
     
   end % methods (public access)
   
-end % DirectionComputationEQP
+end % DirectionComputationIEQP

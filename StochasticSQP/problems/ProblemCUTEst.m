@@ -47,7 +47,7 @@ classdef ProblemCUTEst < Problem
       
       % Initialize CUTEst
       prob = cutest_setup();
-            
+      
       % Get initial point
       P.x = sparse(prob.x);
       
@@ -84,15 +84,15 @@ classdef ProblemCUTEst < Problem
       if isempty(P.ice) == true, P.ice = []; end
       if isempty(P.icl) == true, P.icl = []; end
       if isempty(P.icu) == true, P.icu = []; end
-            
+      
       % Set numbers of constraint types
       P.mce = length(P.ice);
       P.mcl = length(P.icl);
       P.mcu = length(P.icu);
-            
+      
       % Set name
       P.s = prob.name;
-            
+      
     end % Constructor
     
     %%%%%%%%%%
@@ -125,7 +125,7 @@ classdef ProblemCUTEst < Problem
       end
       
     end % evaluateConstraintFunctionEqualities
-
+    
     % Constraint function, inequalities
     function [cI,err] = evaluateConstraintFunctionInequalities(P,x)
       
@@ -136,9 +136,9 @@ classdef ProblemCUTEst < Problem
       try
         c = sparse(cutest_cons(x));
         cI = [P.cl(P.icl) - c(P.icl);
-              c(P.icu) - P.cu(P.icu);
-              P.xl(P.ixl) - x(P.ixl);
-              x(P.ixu) - P.xu(P.ixu)];
+          c(P.icu) - P.cu(P.icu);
+          P.xl(P.ixl) - x(P.ixl);
+          x(P.ixu) - P.xu(P.ixu)];
         if isempty(cI), cI = []; end
         if max(isnan(cI)), err = true; end
       catch
@@ -147,7 +147,7 @@ classdef ProblemCUTEst < Problem
       end
       
     end % evaluateConstraintFunctionInequalities
-
+    
     % Constraint Jacobian, equalities
     function [JE,err] = evaluateConstraintJacobianEqualities(P,x)
       
@@ -177,7 +177,7 @@ classdef ProblemCUTEst < Problem
         [~,J] = cutest_cons(x);
         JI = sparse(P.mcl+P.mcu+P.nxl+P.nxu,P.n);
         JI(1:P.mcl+P.mcu,1:P.n) = [-J(P.icl,:);
-                                    J(P.icu,:)];
+          J(P.icu,:)];
         JI(P.mcl+P.mcu+1:P.mcl+P.mcu+P.nxl,P.ixl) = -speye(P.nxl,P.nxl);
         JI(P.mcl+P.mcu+P.nxl+1:P.mcl+P.mcu+P.nxl+P.nxu) = speye(P.nxu,P.nxu);
         if isempty(JI), JI = []; end
@@ -215,7 +215,7 @@ classdef ProblemCUTEst < Problem
       
       % Initialize error
       err = false;
-
+      
       % Evaluate objective function
       try
         f = cutest_obj(x);
@@ -223,12 +223,12 @@ classdef ProblemCUTEst < Problem
         f = [];
         err = true;
       end
-            
+      
     end % evaluateObjectiveFunction
     
     % Objective gradient
     function [g,err] = evaluateObjectiveGradient(P,x,type,factor)
-
+      
       % Initialize error
       err = false;
       
@@ -236,20 +236,20 @@ classdef ProblemCUTEst < Problem
       try
         
         if strcmp(type,'stochastic')
-            rng(P.seed);
-            g = sparse(cutest_grad(x));
-            noise = sparse(P.n,1);
-            for i = 1:factor
-                noise = noise + sprandn(P.n,1,1);
-            end
-            noise = noise/factor;
-            g = sparse(g + noise * (1e-2/sqrt(P.n))); % noise_level ... {1e-4,-2,-1}
-            P.seed = rng;
+          rng(P.seed);
+          g = sparse(cutest_grad(x));
+          noise = sparse(P.n,1);
+          for i = 1:factor
+            noise = noise + sprandn(P.n,1,1);
+          end
+          noise = noise/factor;
+          g = sparse(g + noise * (1e-2/sqrt(P.n))); % noise_level ... {1e-4,-2,-1}
+          P.seed = rng;
         elseif strcmp(type,'true')
-            g = sparse(cutest_grad(x));
+          g = sparse(cutest_grad(x));
         else
-            err = true;
-            error('Point: Incorrect type of inputs to Problem.evaluateObjectiveGradient.');
+          err = true;
+          error('Point: Incorrect type of inputs to Problem.evaluateObjectiveGradient.');
         end
       catch
         g = [];
@@ -284,10 +284,10 @@ classdef ProblemCUTEst < Problem
     
     % Number of constraints, inequalities
     function mI = numberOfConstraintsInequalities(P)
-
+      
       % Set number of constraints, inequalities
       mI = P.mcl + P.mcu + P.nxl + P.nxu;
-
+      
     end % numberOfConstraintsInequalities
     
     % Number of variables

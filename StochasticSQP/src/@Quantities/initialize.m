@@ -17,10 +17,14 @@ Q.previous_iterate_ = Q.current_iterate_;
 Q.best_iterate_ = Q.current_iterate_;
 
 % Set multiplier
-Q.current_iterate_.setMultipliers(sparse(problem.numberOfConstraintsEqualities,(problem.numberOfConstraintsEqualities > 0)),sparse(problem.numberOfConstraintsInequalities,(problem.numberOfConstraintsInequalities > 0)),'stochastic');
+Q.current_iterate_.setMultipliers(zeros(problem.numberOfConstraintsEqualities,(problem.numberOfConstraintsEqualities > 0)),...
+  zeros(problem.numberOfConstraintsInequalities,(problem.numberOfConstraintsInequalities > 0)),...
+  'stochastic');
 
 % Set true multiplier
-Q.current_iterate_.setMultipliers(sparse(problem.numberOfConstraintsEqualities,(problem.numberOfConstraintsEqualities > 0)),sparse(problem.numberOfConstraintsInequalities,(problem.numberOfConstraintsInequalities > 0)),'true');
+Q.current_iterate_.setMultipliers(zeros(problem.numberOfConstraintsEqualities,(problem.numberOfConstraintsEqualities > 0)),...
+  zeros(problem.numberOfConstraintsInequalities,(problem.numberOfConstraintsInequalities > 0)),...
+  'true');
 
 % Start clock
 tic;

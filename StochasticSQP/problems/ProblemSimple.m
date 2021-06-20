@@ -88,7 +88,7 @@ classdef ProblemSimple < Problem
     end % evaluateObjectiveFunction
     
     % Objective gradient
-    function [g,err] = evaluateObjectiveGradient(P,x)
+    function [g,err] = evaluateObjectiveGradient(P,x,~,~)
       
       % Evaluate objective gradient
       g = [x(1); x(2)];
@@ -121,7 +121,7 @@ classdef ProblemSimple < Problem
       mE = 1;
       
     end % numberOfConstraintsEqualities
-        
+    
     % Number of constraints, inequalities
     function mI = numberOfConstraintsInequalities(P)
       
@@ -137,7 +137,7 @@ classdef ProblemSimple < Problem
       n = 2;
       
     end % numberOfVariables
-        
+    
   end % methods (public access)
   
 end % ProblemSimple
