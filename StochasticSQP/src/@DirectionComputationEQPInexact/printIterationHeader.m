@@ -4,11 +4,11 @@
 %
 % Authors: Frank E. Curtis
 
-% DirectionComputationIEQP: printIterationHeader
+% DirectionComputationEQPInexact: printIterationHeader
 function printIterationHeader(S,reporter)
 
 % Print iteration header
 reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...
-  ' |InnerIter|    |Direction|   |Multiplier|  |KKT Error|  |KKT TR Err|  |TTnum|  |Primal Res|  |Dual Res|   ');
+  ' |Direction|   |Multiplier|  |KKT Error|  |KKT TR Err|  |TTnum|  |Primal Res|  |Dual Res|   ');
 
 end % printIterationHeader

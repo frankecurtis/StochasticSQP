@@ -12,18 +12,18 @@ function computeMeritParameter(M,options,quantities,reporter,strategies)
 %%%%%%%%%%%%%%%%%%%
 
 % Compute linear objective model value
-objective_model_value = quantities.currentIterate.objectiveGradient(quantities,'stochastic')'*quantities.directionPrimal;
+objective_model_value = quantities.currentIterate.objectiveGradient(quantities,'stochastic')'*quantities.directionPrimal('full');
 
 % Compute quadratic term
 if M.quadratic_model_for_merit_update_
-  quadratic_term = max(M.curvature_threshold_ * norm(quantities.directionPrimal)^2, quantities.curvature);
+  quadratic_term = max(M.curvature_threshold_ * norm(quantities.directionPrimal('full'))^2, quantities.curvature);
 else
   quadratic_term = 0;
 end
 
 % Compute linear constraint reduction
 constraint_model_reduction = quantities.currentIterate.constraintNorm1 - ...
-  norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + quantities.currentIterate.constraintJacobianEqualities(quantities)*quantities.directionPrimal,1);
+  norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + quantities.currentIterate.constraintJacobianEqualities(quantities)*quantities.directionPrimal('full'),1);
 
 % Evaluate constraint violation norm
 if quantities.currentIterate.constraintNorm1 > 0.0
@@ -72,7 +72,7 @@ end
 %%%%%%%%%%%%%%%%%%%
 
 % Initialize trial value
-ratio_parameter_trial = quantities.modelReduction / (quantities.meritParameter * norm(quantities.directionPrimal)^2);
+ratio_parameter_trial = quantities.modelReduction / (quantities.meritParameter * norm(quantities.directionPrimal('full'))^2);
 
 % Check trial value
 if quantities.ratioParameter > ratio_parameter_trial

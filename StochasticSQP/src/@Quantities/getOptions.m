@@ -17,13 +17,14 @@ Q.feasibility_tolerance_ = options.getOption(reporter,'feasibility_tolerance');
 Q.hessian_of_lagrangian_evaluation_limit_ = options.getOption(reporter,'hessian_of_lagrangian_evaluation_limit');
 Q.inner_iteration_relative_limit_ = options.getOption(reporter,'inner_iteration_relative_limit');
 Q.iteration_limit_ = options.getOption(reporter,'iteration_limit');
+Q.kkt_error_tolerance_ = options.getOption(reporter,'kkt_error_tolerance');
 Q.merit_parameter_ = options.getOption(reporter,'merit_parameter_initial');
 Q.objective_function_evaluation_limit_ = options.getOption(reporter,'objective_function_evaluation_limit');
 Q.objective_gradient_evaluation_limit_ = options.getOption(reporter,'objective_gradient_evaluation_limit');
+Q.objective_gradient_true_evaluation_limit_ = options.getOption(reporter,'objective_gradient_true_evaluation_limit');
 Q.ratio_parameter_ = options.getOption(reporter,'ratio_parameter_initial');
 Q.scale_factor_gradient_limit_ = options.getOption(reporter,'scale_factor_gradient_limit');
 Q.scale_problem_ = options.getOption(reporter,'scale_problem');
 Q.size_limit_ = options.getOption(reporter,'size_limit');
-Q.stationarity_tolerance_ = options.getOption(reporter,'stationarity_tolerance');
 
 end % getOptions

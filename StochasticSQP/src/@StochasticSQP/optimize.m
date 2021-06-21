@@ -14,7 +14,7 @@ S.getOptions;
 S.quantities_.initialize(problem);
 
 % Scale problem
-S.quantities_.currentIterate.determineScaleFactors(S.quantities_);
+S.quantities_.currentIterate.determineScaleFactors(S.quantities_,'stochastic');
 
 % Initialize strategies
 S.strategies_.initialize(S.options_,S.quantities_,S.reporter_);
@@ -33,7 +33,7 @@ while true
   
   % Check for termination of best iterate
   if S.quantities_.bestIterate.constraintNormInf(S.quantities_) <= S.quantities_.feasibilityTolerance && ...
-      S.quantities_.bestIterate.stationarityMeasure(S.quantities_,'true') <= S.quantities_.stationarityTolerance
+      S.quantities_.bestIterate.KKTError(S.quantities_,'true') <= S.quantities_.KKTErrorTolerance
     S.status_ = Enumerations.S_SUCCESS;
     break;
   end

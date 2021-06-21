@@ -8,7 +8,7 @@
 function computeStepsize(S,options,quantities,reporter,strategies)
 
 % Check for small step
-if norm(quantities.directionPrimal,inf) < S.direction_norm_tolerance_
+if norm(quantities.directionPrimal('full'),inf) < S.direction_norm_tolerance_
   
   % Set full stepsize
   alpha = 1;
@@ -22,7 +22,7 @@ else
   end
   
   % Compute stepsize denominator
-  denominator = (quantities.meritParameter * quantities.lipschitzObjective + quantities.lipschitzConstraint) * norm(quantities.directionPrimal)^2;
+  denominator = (quantities.meritParameter * quantities.lipschitzObjective + quantities.lipschitzConstraint) * norm(quantities.directionPrimal('full'))^2;
   
   % Compute stepsize values
   alpha_suff = min(1, 2*(1 - S.sufficient_decrease_) * scaling * quantities.modelReduction / denominator);
@@ -41,9 +41,9 @@ else
       
       % Evaluate reduction value
       reduction = alpha_trial * (S.sufficient_decrease_ - 1) * scaling * quantities.modelReduction ...
-        + norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + alpha_trial * quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.directionPrimal,1) ...
+        + norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + alpha_trial * quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.directionPrimal('full'),1) ...
         - quantities.currentIterate.constraintNorm1(quantities) ...
-        + alpha_trial * (quantities.currentIterate.constraintNorm1(quantities) - norm(quantities.residualFeasibility,1)) ...
+        + alpha_trial * (quantities.currentIterate.constraintNorm1(quantities) - norm(quantities.residualFeasibility('full'),1)) ...
         + 0.5 * alpha_trial^2 * denominator;
       
       % Check reduction
@@ -69,7 +69,7 @@ end
 quantities.setStepsize(alpha);
 
 % Create trial iterate
-trial_iterate = Point(quantities.currentIterate,quantities.currentIterate.primalPoint + quantities.stepsize * quantities.directionPrimal);
+trial_iterate = Point(quantities.currentIterate,quantities.currentIterate.primalPoint + quantities.stepsize * quantities.directionPrimal('full'));
 
 % Set trial iterate
 quantities.setTrialIterate(trial_iterate);

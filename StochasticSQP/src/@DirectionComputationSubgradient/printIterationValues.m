@@ -5,16 +5,24 @@
 % Authors: Frank E. Curtis
 
 % DirectionComputationSubgradient: printIterationValues
-function printIterationValues(S,quantities,reporter)
+function printIterationValues(D,quantities,reporter)
 
-% Get multipliers
-[yE,yI] = quantities.currentIterate.multipliers('true');
-
-% Print information
+% Print full stochastic step information
+[yE,yI] = quantities.currentIterate.multipliers('stochastic');
 reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...
   ' %+e %+e %+e',...
-  norm(quantities.directionPrimal,inf),...
+  norm(quantities.directionPrimal('full'),inf),...
   norm([yE;yI],inf),...
-  quantities.currentIterate.stationarityMeasure(quantities,'true'));
+  quantities.currentIterate.KKTError(quantities,'stochastic'));
+
+% Print full true step information?
+if D.compute_true_
+  [yE_true,yI_true] = quantities.currentIterate.multipliers('true');
+  reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...
+    ' %+e %+e %+e',...
+    norm(quantities.directionPrimal('true'),inf),...
+    norm([yE_true;yI_true],inf),...
+    quantities.currentIterate.KKTError(quantities,'true'));
+end
 
 end % printIterationValues

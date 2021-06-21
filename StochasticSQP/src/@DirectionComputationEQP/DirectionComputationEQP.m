@@ -18,8 +18,13 @@ classdef DirectionComputationEQP < DirectionComputation
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    use_hessian_of_lagrangian_
+    cg_iteration_limit_
+    cg_residual_tolerance_
+    cg_trust_region_factor_
+    compute_true_
     curvature_threshold_
+    decompose_step_
+    use_hessian_of_lagrangian_
     
   end % properties (private access)
   

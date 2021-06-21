@@ -18,6 +18,7 @@ classdef DirectionComputationSubgradient < DirectionComputation
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
+    compute_true_
     compute_least_squares_multipliers_
     
   end % properties (private access)

@@ -19,6 +19,8 @@ classdef Quantities < handle
     curvature_
     direction_dual_
     direction_primal_
+    direction_primal_normal_
+    direction_primal_true_
     lipschitz_constraint_
     lipschitz_objective_
     merit_parameter_
@@ -26,6 +28,8 @@ classdef Quantities < handle
     previous_iterate_
     ratio_parameter_
     residual_feasibility_
+    residual_feasibility_normal_
+    residual_feasibility_true_
     residual_stationarity_
     stepsize_
     termination_test_
@@ -44,6 +48,7 @@ classdef Quantities < handle
     inner_iteration_counter_ = 0
     objective_function_evaluation_counter_ = 0
     objective_gradient_evaluation_counter_ = 0
+    objective_gradient_true_evaluation_counter_ = 0
     diminishing_stepsize_level_counter_ = 0
     
     %%%%%%%%%%%%%%
@@ -62,11 +67,12 @@ classdef Quantities < handle
     hessian_of_lagrangian_evaluation_limit_
     inner_iteration_relative_limit_
     iteration_limit_
+    kkt_error_tolerance_
     objective_function_evaluation_limit_
     objective_gradient_evaluation_limit_
+    objective_gradient_true_evaluation_limit_
     scale_factor_gradient_limit_
     size_limit_
-    stationarity_tolerance_
     
   end
   
@@ -249,10 +255,18 @@ classdef Quantities < handle
     end % directionDual
     
     % Direction, primal
-    function d = directionPrimal(Q)
+    function d = directionPrimal(Q,type)
       
       % Set return value
-      d = Q.direction_primal_;
+      if strcmp(type,'full')
+        d = Q.direction_primal_;
+      elseif strcmp(type,'normal')
+        d = Q.direction_primal_normal_;
+      elseif strcmp(type,'true')
+        d = Q.direction_primal_true_;
+      else
+        error('Quantities: Invalid type for directionPrimal.');
+      end
       
     end % directionPrimal
     
@@ -262,7 +276,7 @@ classdef Quantities < handle
       % Set return value
       t = Q.feasibility_tolerance_;
       
-    end % stationarityTolerance
+    end % feasibilityTolerance
     
     % Inner iteration counter
     function k = innerIterationCounter(Q)
@@ -295,6 +309,14 @@ classdef Quantities < handle
       k_max = Q.iteration_limit_;
       
     end % iterationLimit
+
+    % KKT error tolerance
+    function t = KKTErrorTolerance(Q)
+      
+      % Set return value
+      t = Q.kkt_error_tolerance_;
+      
+    end % KKTErrorTolerance
     
     % Lipschitz constant, constraint
     function lipschitz = lipschitzConstraint(Q)
@@ -352,6 +374,14 @@ classdef Quantities < handle
       
     end % objectiveGradientEvaluationCounter
     
+    % Objective gradient, true, evaluation counter
+    function g = objectiveGradientTrueEvaluationCounter(Q)
+      
+      % Set return value
+      g = Q.objective_gradient_true_evaluation_counter_;
+      
+    end % objectiveGradientTrueEvaluationCounter
+    
     % Objective gradient evaluation limit
     function g_max = objectiveGradientEvaluationLimit(Q)
       
@@ -359,6 +389,14 @@ classdef Quantities < handle
       g_max = Q.objective_gradient_evaluation_limit_;
       
     end % objectiveGradientEvaluationLimit
+    
+    % Objective gradient, true, evaluation limit
+    function g_max = objectiveGradientTrueEvaluationLimit(Q)
+      
+      % Set return value
+      g_max = Q.objective_gradient_true_evaluation_limit_;
+      
+    end % objectiveGradientTrueEvaluationLimit
     
     % Previous iterate
     function iterate = previousIterate(Q)
@@ -377,12 +415,20 @@ classdef Quantities < handle
     end % ratioParameter
     
     % Residual, feasibility
-    function residual = residualFeasibility(Q)
+    function residual = residualFeasibility(Q,type)
       
       % Set return value
-      residual = Q.residual_feasibility_;
+      if strcmp(type,'full')
+        residual = Q.residual_feasibility_;
+      elseif strcmp(type,'normal')
+        residual = Q.residual_feasibility_normal_;
+      elseif strcmp(type,'true')
+        residual = Q.residual_feasibility_true_;
+      else
+        error('Quantities: Invalid type for residualFeasibility.');
+      end
       
-    end % residualPrimal
+    end % residualFeasibility
     
     % Residual, stationarity
     function residual = residualStationarity(Q)
@@ -390,7 +436,7 @@ classdef Quantities < handle
       % Set return value
       residual = Q.residual_stationarity_;
       
-    end % residualDual
+    end % residualStationarity
     
     % Scale factor gradient limit
     function s_max = scaleFactorGradientLimit(Q)
@@ -415,14 +461,6 @@ classdef Quantities < handle
       s_max = Q.size_limit_;
       
     end % sizeLimit
-    
-    % Stationarity tolerance
-    function t = stationarityTolerance(Q)
-      
-      % Set return value
-      t = Q.stationarity_tolerance_;
-      
-    end % stationarityTolerance
     
     % Stepsize
     function a = stepsize(Q)
@@ -468,19 +506,19 @@ classdef Quantities < handle
       
     end % setCurvature
     
-    % Set direction, dual
-    function setDirectionDual(Q,direction)
-      
-      % Set direction
-      Q.direction_dual_ = direction;
-      
-    end % setDirectionDual
-    
     % Set direction, primal
-    function setDirectionPrimal(Q,direction)
+    function setDirectionPrimal(Q,direction,type)
       
       % Set direction
-      Q.direction_primal_ = direction;
+      if strcmp(type,'full')
+        Q.direction_primal_ = direction;
+      elseif strcmp(type,'normal')
+        Q.direction_primal_normal_ = direction;
+      elseif strcmp(type,'true')
+        Q.direction_primal_true_ = direction;
+      else
+        error('Quantities: Invalid type for setDirectionPrimal.');
+      end
       
     end % setDirectionPrimal
     
@@ -518,10 +556,18 @@ classdef Quantities < handle
     end % setRatioParameter
     
     % Set residal, feasibility
-    function setResidualFeasibility(Q,residual)
+    function setResidualFeasibility(Q,residual,type)
       
       % Set residual, feasibility
-      Q.residual_feasibility_ = residual;
+      if strcmp(type,'full')
+        Q.residual_feasibility_ = residual;
+      elseif strcmp(type,'normal')
+        Q.residual_feasibility_normal_ = residual;
+      elseif strcmp(type,'true')
+        Q.residual_feasibility_true_ = residual;
+      else
+        error('Quantities: Invalid type for setResidualFeasibility.');
+      end
       
     end %setResidualFeasibility
     
@@ -564,7 +610,7 @@ classdef Quantities < handle
       if (Q.best_iterate_.constraintNormInf(Q) > Q.feasibilityTolerance && ...
           Q.current_iterate_.constraintNormInf(Q) < Q.best_iterate_.constraintNormInf(Q)) || ...
           (Q.best_iterate_.constraintNormInf(Q) <= Q.feasibilityTolerance && ...
-          Q.current_iterate_.stationarityMeasure(Q,'true') <= Q.best_iterate_.stationarityMeasure(Q,'true'))
+          Q.current_iterate_.KKTError(Q,'true') <= Q.best_iterate_.KKTError(Q,'true'))
         Q.best_iterate_ = Q.current_iterate_;
       end
       
@@ -657,6 +703,14 @@ classdef Quantities < handle
       
       % Increment objective gradient evaluation counter
       Q.objective_gradient_evaluation_counter_ = Q.objective_gradient_evaluation_counter_ + 1;
+      
+    end % incrementObjectiveGradientEvaluationCounter
+    
+    % Increment objective gradient, true, evaluation counter
+    function incrementObjectiveGradientTrueEvaluationCounter(Q)
+      
+      % Increment objective gradient, true, evaluation counter
+      Q.objective_gradient_true_evaluation_counter_ = Q.objective_gradient_true_evaluation_counter_ + 1;
       
     end % incrementObjectiveGradientEvaluationCounter
     

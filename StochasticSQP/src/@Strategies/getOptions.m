@@ -17,10 +17,10 @@ stepsize_computation_name = options.getOption(reporter,'stepsize_computation');
 switch direction_computation_name
   case 'EQP'
     S.direction_computation_ = DirectionComputationEQP;
+  case 'EQPInexact'
+    S.direction_computation_ = DirectionComputationEQPInexact;
   case 'Subgradient'
     S.direction_computation_ = DirectionComputationSubgradient;
-  case 'IEQP'
-    S.direction_computation_ = DirectionComputationIEQP;
   otherwise
     S.direction_computation_ = DirectionComputationEQP;
 end

@@ -4,6 +4,7 @@ function test_StochasticSQP
 addpath('../problems/');
 addpath('../src/');
 addpath('/usr/local/opt/cutest/libexec/src/matlab');
+addpath('/Users/frankecurtis/Dropbox/git/StochasticSQP/StochasticSQP/external');
 
 % Declare algorithm
 S = StochasticSQP;

@@ -20,7 +20,7 @@ alpha = scaling * quantities.ratioParameter * quantities.meritParameter / (quant
 quantities.setStepsize(alpha);
 
 % Create trial iterate
-trial_iterate = Point(quantities.currentIterate,quantities.currentIterate.primalPoint + quantities.stepsize * quantities.directionPrimal);
+trial_iterate = Point(quantities.currentIterate,quantities.currentIterate.primalPoint + quantities.stepsize * quantities.directionPrimal('full'));
 
 % Set trial iterate
 quantities.setTrialIterate(trial_iterate);

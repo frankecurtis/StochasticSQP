@@ -4,7 +4,7 @@
 %
 % Authors: Frank E. Curtis
 
-% DirectionComputationIEQP: computeDirection
+% DirectionComputationEQPInexact: computeDirection
 function err = computeDirection(D,options,quantities,reporter,strategies)
 
 % Initialize error
@@ -36,7 +36,7 @@ if eigs(quantities.currentIterate.constraintJacobianEqualities(quantities) * qua
   return
 end
 
-if quantities.checkStationarityMeasure
+if quantities.computeStationarityTrue
   % Compute exact direction with the true gradient
   v_true = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'true');
     quantities.currentIterate.constraintFunctionEqualities(quantities)];
@@ -52,8 +52,6 @@ currentIterateMeasure = norm(currentIterateInfo);
 c_norm1 = norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1);
 c_norm2 = norm(quantities.currentIterate.constraintFunctionEqualities(quantities));
 
-addpath('/Users/baoyuzhou/Desktop/Software/StochasticSQP/StochasticSQP/external');
-
 % Inexact solve by iterative solver
 [v,TTnum,residual,innerIter] = minres_stanford(matrix, -currentIterateInfo, quantities.currentIterate.numberOfVariables, currentIterateMeasure, previousIterateMeasure, c_norm1, c_norm2, ...
   D.full_residual_norm_factor_, D.primal_residual_norm_factor_, D.dual_residual_norm_factor_, D.constraint_norm_factor_, D.lagrangian_primal_norm_factor_, ...
@@ -61,7 +59,7 @@ addpath('/Users/baoyuzhou/Desktop/Software/StochasticSQP/StochasticSQP/external'
   quantities.currentIterate.constraintJacobianEqualities(quantities),[],0,false,true,max(size(matrix,1)*100,100),1e-10);
 
 % Set Termination Test Number
-quantities.setTerminationTestNumber(TTnum);
+quantities.setTerminationTest(TTnum);
 
 if TTnum < 0
   err = true;
@@ -73,16 +71,12 @@ end
 v = sparse(v);
 residual = sparse(residual);
 
-% Set current inner iteration counter
-quantities.setIterativeSolverCounter(innerIter);
-
 % Increment inner iteration counter
 quantities.incrementInnerIterationCounter(innerIter);
 
 % Set residual
-quantities.setPrimalResidual(residual(1:quantities.currentIterate.numberOfVariables));
-quantities.setDualResidual(residual(quantities.currentIterate.numberOfVariables+1:end));
-quantities.setDualResidualNorm1(norm(residual(quantities.currentIterate.numberOfVariables+1:end),1));
+quantities.setResidualStationarity(residual(1:quantities.currentIterate.numberOfVariables));
+quantities.setResidualFeasibility(residual(quantities.currentIterate.numberOfVariables+1:end));
 
 % Set direction
 quantities.setDirectionPrimal(v(1:quantities.currentIterate.numberOfVariables));

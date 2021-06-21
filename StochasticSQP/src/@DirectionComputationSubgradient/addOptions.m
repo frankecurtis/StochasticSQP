@@ -8,6 +8,7 @@
 function addOptions(options,reporter)
 
 % Add options
-options.addBoolOption(reporter,'DCS_compute_least_squares_multipliers',true);
+options.addBoolOption(reporter,'DCS_compute_true',false);
+options.addBoolOption(reporter,'DCS_compute_least_squares_multipliers',false);
 
 end % addOptions

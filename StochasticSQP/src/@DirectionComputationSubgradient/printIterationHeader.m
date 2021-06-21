@@ -5,10 +5,16 @@
 % Authors: Frank E. Curtis
 
 % DirectionComputationSubgradient: printIterationHeader
-function printIterationHeader(S,reporter)
+function printIterationHeader(D,reporter)
+
+% Print full stochastic step information
+reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...
+  '  |Direction|   |Multiplier|   KKT Error  ');
 
 % Print iteration header
-reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...
-  '  |Direction|   |Multiplier|  |KKT Error| ');
+if D.compute_true_
+  reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...
+    '  |Dir. True|   |Mult. True|    KKT True   ');
+end
 
 end % printIterationHeader

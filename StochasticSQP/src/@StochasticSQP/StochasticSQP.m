@@ -21,10 +21,10 @@
 %   S.optimize(problem)
 %       Runs optimization algorithm.
 %
-%   [x,yE,yI,infeasibility,stationarity] = bestIterate(S)
+%   [x,yE,yI,infeasibility,kkt_error] = bestIterate(S)
 %       Returns best iterate.
 %
-%   [x,yE,yI,infeasibility,stationarity] = finalIterate(S)
+%   [x,yE,yI,infeasibility,kkt_error] = finalIterate(S)
 %       Returns final iterate.
 %
 %   o = options(S)
@@ -89,24 +89,24 @@ classdef StochasticSQP < handle
     %%%%%%%%%%%%%%%
     
     % Best iterate
-    function [x,yE,yI,infeasibility,stationarity] = bestIterate(S)
+    function [x,yE,yI,infeasibility,kkt_error] = bestIterate(S)
       
       % Set return values
       x = S.quantities_.bestIterate.primalPoint;
       [yE,yI] = S.quantities_.bestIterate.multipliers('stochastic');
       infeasibility = S.quantities_.bestIterate.constraintNormInf(S.quantities_);
-      stationarity = S.quantities_.bestIterate.stationarityMeasure(S.quantities_,'stochastic');
+      kkt_error = S.quantities_.bestIterate.KKTError(S.quantities_,'stochastic');
       
     end % solution
     
     % Final iterate
-    function [x,yE,yI,infeasibility,stationarity] = finalIterate(S)
+    function [x,yE,yI,infeasibility,kkt_error] = finalIterate(S)
       
       % Set return values
       x = S.quantities_.currentIterate.primalPoint;
       [yE,yI] = S.quantities_.currentIterate.multipliers('stochastic');
       infeasibility = S.quantities_.currentIterate.constraintNormInf(S.quantities_);
-      stationarity = S.quantities_.currentIterate.stationarityMeasure(S.quantities_,'stochastic');
+      kkt_error = S.quantities_.currentIterate.KKTError(S.quantities_,'stochastic');
       
     end % finalIterate
     

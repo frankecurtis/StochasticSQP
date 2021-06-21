@@ -1,6 +1,6 @@
 function [ x, TTnum, residual, itn ] = ...
-    minres_stanford( A, b, size_primal, CIM, PIM, c_norm1, c_norm2, kappa, mu_2, mu_1, theta_1, theta_2, ...
-    kappa_u, sigma, obj_grad, tau, Jacobian, M, shift, show, check, itnlim, rtol )
+  minres_stanford( A, b, size_primal, CIM, PIM, c_norm1, c_norm2, kappa, mu_2, mu_1, theta_1, theta_2, ...
+  kappa_u, sigma, obj_grad, tau, Jacobian, M, shift, show, check, itnlim, rtol )
 
 
 %        [ x, istop, itn, rnorm, Arnorm, Anorm, Acond, ynorm ] = ...
@@ -88,24 +88,24 @@ function [ x, TTnum, residual, itn ] = ...
 %  Initialize
 
 msg = [' beta2 = 0.  If M = I, b and x are eigenvectors '   % -1
-    ' beta1 = 0.  The exact solution is  x = 0       '   %  0
-    ' A solution to Ax = b was found, given rtol     '   %  1
-    ' A least-squares solution was found, given rtol '   %  2
-    ' Reasonable accuracy achieved, given eps        '   %  3
-    ' x has converged to an eigenvector              '   %  4
-    ' acond has exceeded 0.1/eps                     '   %  5
-    ' The iteration limit was reached                '   %  6
-    ' A  does not define a symmetric matrix          '   %  7
-    ' M  does not define a symmetric matrix          '   %  8
-    ' M  does not define a pos-def preconditioner    ']; %  9
+  ' beta1 = 0.  The exact solution is  x = 0       '   %  0
+  ' A solution to Ax = b was found, given rtol     '   %  1
+  ' A least-squares solution was found, given rtol '   %  2
+  ' Reasonable accuracy achieved, given eps        '   %  3
+  ' x has converged to an eigenvector              '   %  4
+  ' acond has exceeded 0.1/eps                     '   %  5
+  ' The iteration limit was reached                '   %  6
+  ' A  does not define a symmetric matrix          '   %  7
+  ' M  does not define a symmetric matrix          '   %  8
+  ' M  does not define a pos-def preconditioner    ']; %  9
 
 n      = length(b);
 precon = ~isempty(M);
 if show
-    fprintf('\n minres.m   SOL, Stanford University   Version of 02 Sep 2011')
-    fprintf('\n Solution of symmetric Ax = b or (A-shift*I)x = b')
-    fprintf('\n\n n      =%8g    shift =%22.14e', n,shift)
-    fprintf('\n itnlim =%8g    rtol  =%10.2e\n', itnlim,rtol)
+  fprintf('\n minres.m   SOL, Stanford University   Version of 02 Sep 2011')
+  fprintf('\n Solution of symmetric Ax = b or (A-shift*I)x = b')
+  fprintf('\n\n n      =%8g    shift =%22.14e', n,shift)
+  fprintf('\n itnlim =%8g    rtol  =%10.2e\n', itnlim,rtol)
 end
 
 istop = 0;   itn   = 0;   Anorm = 0;    Acond = 0;
@@ -116,17 +116,17 @@ x     = sparse(zeros(n,1));   TTnum = -1;
 % Decode A.
 %---------------------------------------------------------------------
 if isa(A,'double')         % A is an explicit matrix A.
-    if issparse(A)
-        nnzA = nnz(A);
-        % fprintf('\n A is an explicit sparse matrix')
-        % fprintf('\n nnz(A) =%8g', nnzA)
-    else
-        fprintf('\n A is an explicit dense matrix' )
-    end
+  if issparse(A)
+    nnzA = nnz(A);
+    % fprintf('\n A is an explicit sparse matrix')
+    % fprintf('\n nnz(A) =%8g', nnzA)
+  else
+    fprintf('\n A is an explicit dense matrix' )
+  end
 elseif isa(A,'function_handle')
-    disp(['The matrix A is defined by function_handle ' func2str(A)])
+  disp(['The matrix A is defined by function_handle ' func2str(A)])
 else
-    error('minres','A must be a matrix or a function handle')
+  error('minres','A must be a matrix or a function handle')
 end
 
 %---------------------------------------------------------------------
@@ -165,30 +165,30 @@ if beta1< 0, istop = 9;  show = true;  done = true; end
 if beta1==0,             show = true;  done = true; end
 
 if beta1> 0
-    beta1  = sqrt(beta1);       % Normalize y to get v1 later.
-    
-    % See if M is symmetric.
-    
-    if check & precon
-        r2     = minresxxxM( M,y );
-        s      = y' *y;
-        t      = r1'*r2;
-        z      = abs(s-t);
-        epsa   = (s+eps)*eps^(1/3);
-        if z > epsa, istop = 8;  show = true;  done = true; end
-    end
-    
-    % See if A is symmetric.
-    
-    if check
-        w    = minresxxxA( A,y );
-        r2   = minresxxxA( A,w );
-        s    = w'*w;
-        t    = y'*r2;
-        z    = abs(s-t);
-        epsa = (s+eps)*eps^(1/3);
-        if z > epsa, istop = 7;  done  = true;  show = true;  end
-    end
+  beta1  = sqrt(beta1);       % Normalize y to get v1 later.
+  
+  % See if M is symmetric.
+  
+  if check & precon
+    r2     = minresxxxM( M,y );
+    s      = y' *y;
+    t      = r1'*r2;
+    z      = abs(s-t);
+    epsa   = (s+eps)*eps^(1/3);
+    if z > epsa, istop = 8;  show = true;  done = true; end
+  end
+  
+  % See if A is symmetric.
+  
+  if check
+    w    = minresxxxA( A,y );
+    r2   = minresxxxA( A,w );
+    s    = w'*w;
+    t    = y'*r2;
+    z    = abs(s-t);
+    epsa = (s+eps)*eps^(1/3);
+    if z > epsa, istop = 7;  done  = true;  show = true;  end
+  end
 end
 
 %------------------------------------------------------------------
@@ -203,8 +203,8 @@ w2     = zeros(n,1);
 r2     = r1;
 
 if show
-    fprintf('\n\n   Itn     x(1)     Compatible    LS       norm(A)  cond(A)')
-    fprintf(' gbar/|A|\n')   %%%%%% Check gbar
+  fprintf('\n\n   Itn     x(1)     Compatible    LS       norm(A)  cond(A)')
+  fprintf(' gbar/|A|\n')   %%%%%% Check gbar
 end
 
 % Compute norm b
@@ -214,208 +214,208 @@ normb = norm(b,inf);
 % Main iteration loop.
 % --------------------------------------------------------------------
 if ~done                              % k = itn = 1 first time through
-    while itn < itnlim
-        itn    = itn+1;
-        
-        %-----------------------------------------------------------------
-        % Obtain quantities for the next Lanczos vector vk+1, k = 1, 2,...
-        % The general iteration is similar to the case k = 1 with v0 = 0:
-        %
-        %   p1      = Operator * v1  -  beta1 * v0,
-        %   alpha1  = v1'p1,
-        %   q2      = p2  -  alpha1 * v1,
-        %   beta2^2 = q2'q2,
-        %   v2      = (1/beta2) q2.
-        %
-        % Again, y = betak P vk,  where  P = C**(-1).
-        % .... more description needed.
-        %-----------------------------------------------------------------
-        s = 1/beta;                 % Normalize previous vector (in y).
-        v = s*y;                    % v = vk if P = I
-        
-        y = minresxxxA( A,v ) - shift*v;
-        if itn >= 2, y = y - (beta/oldb)*r1; end
-        
-        alfa   = v'*y;              % alphak
-        y      = (- alfa/beta)*r2 + y;
-        r1     = r2;
-        r2     = y;
-        if precon,  y = minresxxxM( M,r2 );  end
-        oldb   = beta;              % oldb = betak
-        beta   = r2'*y;             % beta = betak+1^2
-        if beta < 0, istop = 9;  break;  end
-        beta   = sqrt(beta);
-        tnorm2 = tnorm2 + alfa^2 + oldb^2 + beta^2;
-        
-        if itn==1                   % Initialize a few things.
-            if beta/beta1 <= 10*eps   % beta2 = 0 or ~ 0.
-                istop = -1;             % Terminate later.
-            end
+  while itn < itnlim
+    itn    = itn+1;
+    
+    %-----------------------------------------------------------------
+    % Obtain quantities for the next Lanczos vector vk+1, k = 1, 2,...
+    % The general iteration is similar to the case k = 1 with v0 = 0:
+    %
+    %   p1      = Operator * v1  -  beta1 * v0,
+    %   alpha1  = v1'p1,
+    %   q2      = p2  -  alpha1 * v1,
+    %   beta2^2 = q2'q2,
+    %   v2      = (1/beta2) q2.
+    %
+    % Again, y = betak P vk,  where  P = C**(-1).
+    % .... more description needed.
+    %-----------------------------------------------------------------
+    s = 1/beta;                 % Normalize previous vector (in y).
+    v = s*y;                    % v = vk if P = I
+    
+    y = minresxxxA( A,v ) - shift*v;
+    if itn >= 2, y = y - (beta/oldb)*r1; end
+    
+    alfa   = v'*y;              % alphak
+    y      = (- alfa/beta)*r2 + y;
+    r1     = r2;
+    r2     = y;
+    if precon,  y = minresxxxM( M,r2 );  end
+    oldb   = beta;              % oldb = betak
+    beta   = r2'*y;             % beta = betak+1^2
+    if beta < 0, istop = 9;  break;  end
+    beta   = sqrt(beta);
+    tnorm2 = tnorm2 + alfa^2 + oldb^2 + beta^2;
+    
+    if itn==1                   % Initialize a few things.
+      if beta/beta1 <= 10*eps   % beta2 = 0 or ~ 0.
+        istop = -1;             % Terminate later.
+      end
+    end
+    
+    % Apply previous rotation Qk-1 to get
+    %   [deltak epslnk+1] = [cs  sn][dbark    0   ]
+    %   [gbar k dbar k+1]   [sn -cs][alfak betak+1].
+    
+    oldeps = epsln;
+    delta  = cs*dbar + sn*alfa; % delta1 = 0         deltak
+    gbar   = sn*dbar - cs*alfa; % gbar 1 = alfa1     gbar k
+    epsln  =           sn*beta; % epsln2 = 0         epslnk+1
+    dbar   =         - cs*beta; % dbar 2 = beta2     dbar k+1
+    root   = norm([gbar dbar]);
+    Arnorm = phibar*root;       % ||Ar{k-1}||
+    
+    % Compute the next plane rotation Qk
+    
+    gamma  = norm([gbar beta]); % gammak
+    gamma  = max([gamma eps]);
+    cs     = gbar/gamma;        % ck
+    sn     = beta/gamma;        % sk
+    phi    = cs*phibar ;        % phik
+    phibar = sn*phibar ;        % phibark+1
+    
+    % Update  x.
+    
+    denom = 1/gamma;
+    w1    = w2;
+    w2    = w;
+    w     = (v - oldeps*w1 - delta*w2)*denom;
+    x     = x + phi*w;
+    
+    % Compute residual
+    residual = A*x - b;
+    
+    %         if itn == itnlim
+    %             keyboard;
+    %         end
+    
+    if norm(residual,inf) <= max(kappa * normb, 1e-12)
+      
+      % Set updates
+      primal_update = x(1:size_primal);
+      dual_update = x(size_primal+1:end);
+      primal_residual = residual(1:size_primal);
+      dual_residual = residual(size_primal+1:end);
+      
+      % Check whether model reduction condition holds...
+      Delta_q = -tau*(obj_grad'*primal_update + 0.5*max(primal_update'*A(1:size_primal,1:size_primal)*primal_update,kappa_u*norm(primal_update)^2)) + c_norm1 - norm(dual_residual,1);
+      
+      if Delta_q >= 0.5*tau*sigma*max(primal_update'*A(1:size_primal,1:size_primal)*primal_update,kappa_u*norm(primal_update)^2) + sigma*max(c_norm1 , norm(dual_residual,1) - c_norm1)
+        if norm(residual) <= kappa*min(CIM,PIM)
+          TTnum = 'TT1';
+          return;
         end
-        
-        % Apply previous rotation Qk-1 to get
-        %   [deltak epslnk+1] = [cs  sn][dbark    0   ]
-        %   [gbar k dbar k+1]   [sn -cs][alfak betak+1].
-        
-        oldeps = epsln;
-        delta  = cs*dbar + sn*alfa; % delta1 = 0         deltak
-        gbar   = sn*dbar - cs*alfa; % gbar 1 = alfa1     gbar k
-        epsln  =           sn*beta; % epsln2 = 0         epslnk+1
-        dbar   =         - cs*beta; % dbar 2 = beta2     dbar k+1
-        root   = norm([gbar dbar]);
-        Arnorm = phibar*root;       % ||Ar{k-1}||
-        
-        % Compute the next plane rotation Qk
-        
-        gamma  = norm([gbar beta]); % gammak
-        gamma  = max([gamma eps]);
-        cs     = gbar/gamma;        % ck
-        sn     = beta/gamma;        % sk
-        phi    = cs*phibar ;        % phik
-        phibar = sn*phibar ;        % phibark+1
-        
-        % Update  x.
-        
-        denom = 1/gamma;
-        w1    = w2;
-        w2    = w;
-        w     = (v - oldeps*w1 - delta*w2)*denom;
-        x     = x + phi*w;
-        
-        % Compute residual
-        residual = A*x - b;
-        
-%         if itn == itnlim
-%             keyboard;
-%         end
-        
-        if norm(residual,inf) <= max(kappa * normb, 1e-12)
-            
-            % Set updates
-            primal_update = x(1:size_primal);
-            dual_update = x(size_primal+1:end);
-            primal_residual = residual(1:size_primal);
-            dual_residual = residual(size_primal+1:end);
-            
-            % Check whether model reduction condition holds...
-            Delta_q = -tau*(obj_grad'*primal_update + 0.5*max(primal_update'*A(1:size_primal,1:size_primal)*primal_update,kappa_u*norm(primal_update)^2)) + c_norm1 - norm(dual_residual,1);
-            
-            if Delta_q >= 0.5*tau*sigma*max(primal_update'*A(1:size_primal,1:size_primal)*primal_update,kappa_u*norm(primal_update)^2) + sigma*max(c_norm1 , norm(dual_residual,1) - c_norm1)
-                if norm(residual) <= kappa*min(CIM,PIM)
-                    TTnum = 1;
-                    return;
-                end
-            end
-            
-            if norm(dual_residual,1) <= mu_1 * c_norm1 && norm(primal_residual,1) <= mu_2 * c_norm1
-                TTnum = 2;
-                return;
-            end
-            
-            if c_norm2 <= theta_1 * norm(-b(1:size_primal) + Jacobian'*dual_update)
-                if norm(-b(1:size_primal) + Jacobian'*dual_update) <= min(theta_2*norm(b(1:size_primal)) , kappa*PIM)
-                    TTnum = 3;
-                    x(1:size_primal) = zeros(size_primal,1);
-                    residual = A*x - b;
-                    return;
-                end
-            end
-            
+      end
+      
+      if norm(dual_residual,1) <= mu_1 * c_norm1 && norm(primal_residual,1) <= mu_2 * c_norm1
+        TTnum = 'TT2';
+        return;
+      end
+      
+      if c_norm2 <= theta_1 * norm(-b(1:size_primal) + Jacobian'*dual_update)
+        if norm(-b(1:size_primal) + Jacobian'*dual_update) <= min(theta_2*norm(b(1:size_primal)) , kappa*PIM)
+          TTnum = 'TT3';
+          x(1:size_primal) = zeros(size_primal,1);
+          residual = A*x - b;
+          return;
         end
-        
-        % Go round again.
-        
-        gmax   = max([gmax gamma]);
-        gmin   = min([gmin gamma]);
-        z      = rhs1/gamma;
-        rhs1   = rhs2 - delta*z;
-        rhs2   =      - epsln*z;
-        
-        % Estimate various norms.
-        
-        Anorm  = sqrt( tnorm2 );
-        ynorm  = norm(x);
-        epsa   = Anorm*eps;
-        epsx   = Anorm*ynorm*eps;
-        epsr   = Anorm*ynorm*rtol;
-        diag   = gbar;
-        if diag==0, diag = epsa; end
-        
-        qrnorm = phibar;
-        rnorm  = qrnorm;
-        test1  = rnorm/(Anorm*ynorm);    %  ||r|| / (||A|| ||x||)
-        test2  = root / Anorm;      % ||Ar{k-1}|| / (||A|| ||r_{k-1}||)
-        
-        % Estimate  cond(A).
-        % In this version we look at the diagonals of  R  in the
-        % factorization of the lower Hessenberg matrix,  Q * H = R,
-        % where H is the tridiagonal matrix from Lanczos with one
-        % extra row, beta(k+1) e_k^T.
-        
-        Acond  = gmax/gmin;
-        
-        % See if any of the stopping criteria are satisfied.
-        % In rare cases, istop is already -1 from above (Abar = const*I).
-        
-        if istop==0
-            t1 = 1 + test1;      % These tests work if rtol < eps
-            t2 = 1 + test2;
-            if t2    <= 1      , istop = 2; end
-            if t1    <= 1      , istop = 1; end
-            
-            if itn   >= itnlim , istop = 6; end
-            if Acond >= 0.1/eps, istop = 4; end
-            if epsx  >= beta1  , istop = 3; end
-            %if rnorm <= epsx   , istop = 2; end
-            %if rnorm <= epsr   , istop = 1; end
-            if test2 <= rtol   , istop = 2; end
-            if test1 <= rtol   , istop = 1; end
-        end
-        
-        % See if it is time to print something.
-        
-        prnt   = false;
-        if n      <= 40       , prnt = true; end
-        if itn    <= 10       , prnt = true; end
-        if itn    >= itnlim-10, prnt = true; end
-        if mod(itn,10)==0     , prnt = true; end
-        if qrnorm <= 10*epsx  , prnt = true; end
-        if qrnorm <= 10*epsr  , prnt = true; end
-        if Acond  <= 1e-2/eps , prnt = true; end
-        if istop  ~=  0       , prnt = true; end
-        
-        if show & prnt
-            if mod(itn,10)==0, disp(' '); end
-            str1 = sprintf('%6g %12.5e %10.3e', itn,x(1),test1);
-            str2 = sprintf(' %10.3e',           test2);
-            str3 = sprintf(' %8.1e %8.1e',      Anorm,Acond);
-            str4 = sprintf(' %8.1e',            gbar/Anorm);
-            str  = [str1 str2 str3 str4];
-            fprintf('\n %s', str)
-            
-            debug = false;  % true;
-            if debug   % Print true Arnorm.
-                % This works only if no preconditioning.
-                vv = b - minresxxxA(A,x)  + shift*x;    % vv = b - (A - shift*I)*x
-                ww =     minresxxxA(A,vv) - shift*vv;   % ww = (A - shift*I)*vv = "Ar"
-                trueArnorm = norm(ww);
-                fprintf('\n Arnorm = %12.4e   True ||Ar|| = %12.4e', Arnorm,trueArnorm)
-            end
-        end % show & prnt
-        
-        % if istop ~= 0, break; end
-        
-    end % main loop
+      end
+      
+    end
+    
+    % Go round again.
+    
+    gmax   = max([gmax gamma]);
+    gmin   = min([gmin gamma]);
+    z      = rhs1/gamma;
+    rhs1   = rhs2 - delta*z;
+    rhs2   =      - epsln*z;
+    
+    % Estimate various norms.
+    
+    Anorm  = sqrt( tnorm2 );
+    ynorm  = norm(x);
+    epsa   = Anorm*eps;
+    epsx   = Anorm*ynorm*eps;
+    epsr   = Anorm*ynorm*rtol;
+    diag   = gbar;
+    if diag==0, diag = epsa; end
+    
+    qrnorm = phibar;
+    rnorm  = qrnorm;
+    test1  = rnorm/(Anorm*ynorm);    %  ||r|| / (||A|| ||x||)
+    test2  = root / Anorm;      % ||Ar{k-1}|| / (||A|| ||r_{k-1}||)
+    
+    % Estimate  cond(A).
+    % In this version we look at the diagonals of  R  in the
+    % factorization of the lower Hessenberg matrix,  Q * H = R,
+    % where H is the tridiagonal matrix from Lanczos with one
+    % extra row, beta(k+1) e_k^T.
+    
+    Acond  = gmax/gmin;
+    
+    % See if any of the stopping criteria are satisfied.
+    % In rare cases, istop is already -1 from above (Abar = const*I).
+    
+    if istop==0
+      t1 = 1 + test1;      % These tests work if rtol < eps
+      t2 = 1 + test2;
+      if t2    <= 1      , istop = 2; end
+      if t1    <= 1      , istop = 1; end
+      
+      if itn   >= itnlim , istop = 6; end
+      if Acond >= 0.1/eps, istop = 4; end
+      if epsx  >= beta1  , istop = 3; end
+      %if rnorm <= epsx   , istop = 2; end
+      %if rnorm <= epsr   , istop = 1; end
+      if test2 <= rtol   , istop = 2; end
+      if test1 <= rtol   , istop = 1; end
+    end
+    
+    % See if it is time to print something.
+    
+    prnt   = false;
+    if n      <= 40       , prnt = true; end
+    if itn    <= 10       , prnt = true; end
+    if itn    >= itnlim-10, prnt = true; end
+    if mod(itn,10)==0     , prnt = true; end
+    if qrnorm <= 10*epsx  , prnt = true; end
+    if qrnorm <= 10*epsr  , prnt = true; end
+    if Acond  <= 1e-2/eps , prnt = true; end
+    if istop  ~=  0       , prnt = true; end
+    
+    if show & prnt
+      if mod(itn,10)==0, disp(' '); end
+      str1 = sprintf('%6g %12.5e %10.3e', itn,x(1),test1);
+      str2 = sprintf(' %10.3e',           test2);
+      str3 = sprintf(' %8.1e %8.1e',      Anorm,Acond);
+      str4 = sprintf(' %8.1e',            gbar/Anorm);
+      str  = [str1 str2 str3 str4];
+      fprintf('\n %s', str)
+      
+      debug = false;  % true;
+      if debug   % Print true Arnorm.
+        % This works only if no preconditioning.
+        vv = b - minresxxxA(A,x)  + shift*x;    % vv = b - (A - shift*I)*x
+        ww =     minresxxxA(A,vv) - shift*vv;   % ww = (A - shift*I)*vv = "Ar"
+        trueArnorm = norm(ww);
+        fprintf('\n Arnorm = %12.4e   True ||Ar|| = %12.4e', Arnorm,trueArnorm)
+      end
+    end % show & prnt
+    
+    % if istop ~= 0, break; end
+    
+  end % main loop
 end % if ~done early
 
 % Display final status.
 
 if show
-    fprintf('\n\n istop   =%3g               itn   =%6g', istop,itn  )
-    fprintf('\n Anorm   =%12.4e      Acond =%12.4e', Anorm,Acond)
-    fprintf('\n rnorm   =%12.4e      ynorm =%12.4e', rnorm,ynorm)
-    fprintf('\n Arnorm  =%12.4e\n', Arnorm)
-    disp(msg(istop+2,:))
+  fprintf('\n\n istop   =%3g               itn   =%6g', istop,itn  )
+  fprintf('\n Anorm   =%12.4e      Acond =%12.4e', Anorm,Acond)
+  fprintf('\n rnorm   =%12.4e      ynorm =%12.4e', rnorm,ynorm)
+  fprintf('\n Arnorm  =%12.4e\n', Arnorm)
+  disp(msg(istop+2,:))
 end
 %-----------------------------------------------------------------------
 % End function pdco.m
@@ -428,11 +428,11 @@ function y = minresxxxA( A,x )
 %
 % 10 May 2009: A is now a matrix or a function handle.
 
-  if isa(A,'double')
-    y = A*x;
-  else
-    y = A(x);
-  end
+if isa(A,'double')
+  y = A*x;
+else
+  y = A(x);
+end
 %-----------------------------------------------------------------------
 % End private function minresxxxA
 %-----------------------------------------------------------------------
@@ -444,11 +444,11 @@ function y = minresxxxM( M,x )
 %
 % 10 May 2009: M is now a matrix or a function handle.
 
-  if isa(M,'double')
-    y = M\x;
-  else
-    y = M(x);
-  end
+if isa(M,'double')
+  y = M\x;
+else
+  y = M(x);
+end
 %-----------------------------------------------------------------------
 % End private function minresxxxM
 %-----------------------------------------------------------------------

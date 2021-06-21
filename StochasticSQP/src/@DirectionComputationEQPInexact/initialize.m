@@ -4,7 +4,7 @@
 %
 % Authors: Frank E. Curtis
 
-% DirectionComputationIEQP: initialize
+% DirectionComputationEQPInexact: initialize
 function initialize(D,options,quantities,reporter)
 
 % Initialize

@@ -4,8 +4,8 @@
 %
 % Authors: Frank E. Curtis
 
-% DirectionComputationIEQP class
-classdef DirectionComputationIEQP < DirectionComputation
+% DirectionComputationEQPInexact class
+classdef DirectionComputationEQPInexact < DirectionComputation
   
   % Properties (private access)
   properties (SetAccess = private, GetAccess = private)
@@ -13,7 +13,7 @@ classdef DirectionComputationIEQP < DirectionComputation
     %%%%%%%%
     % NAME %
     %%%%%%%%
-    n = 'IEQP'
+    n = 'EQPInexact'
     
     %%%%%%%%%%%
     % OPTIONS %
@@ -100,4 +100,4 @@ classdef DirectionComputationIEQP < DirectionComputation
     
   end % methods (public access)
   
-end % DirectionComputationIEQP
+end % DirectionComputationEQPInexact

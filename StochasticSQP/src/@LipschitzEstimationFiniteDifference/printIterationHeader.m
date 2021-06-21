@@ -9,6 +9,6 @@ function printIterationHeader(L,reporter)
 
 % Print iteration header
 reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...
-  '    Lip. Obj.     Lip. Con. ');
+  '   Lip. Obj.     Lip. Con.  ');
 
 end % printIterationHeader
