@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % DirectionComputationEQP: computeDirection
 function err = computeDirection(D,options,quantities,reporter,strategies)
@@ -35,6 +33,9 @@ else
   
   % CG loop
   while 1
+    
+    % Increment counter
+    quantities.incrementCGIterationCounter;
     
     % Check residual
     if rr <= D.cg_residual_tolerance_^2 * max(1, Jc_norm^2)
@@ -104,20 +105,81 @@ if sum(sum(isnan(matrix))) > 0 || sum(sum(isinf(matrix))) > 0 || sum(abs(eig(mat
   
 else
   
-  % Decomposed step?
-  if ~D.decompose_step_
+  % Use iterative solver?
+  if ~D.use_iterative_solver_
     
-    % Compute full direction
-    dy = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'stochastic'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
+    % Decompose step?
+    if ~D.decompose_step_
+      
+      % Compute full direction
+      dy = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'stochastic'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
+      dy = full(dy);
+      
+    else
+      
+      % Compute tangential direction
+      uy = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'stochastic') + matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * quantities.directionPrimal('normal'); zeros(quantities.currentIterate.numberOfConstraintsEqualities,1)];
+      
+      % Compute full direction
+      dy = full(uy);
+      dy(1:quantities.currentIterate.numberOfVariables) = dy(1:quantities.currentIterate.numberOfVariables) + quantities.directionPrimal('normal');
+      
+    end
+    
+    % Set termination test
+    quantities.setTerminationTest(0);
+    
+    % Increment counters
+    quantities.incrementMatrixFactorizationCounter;
+    quantities.incrementTerminationTestCounter(0);
     
   else
     
-    % Compute tangential direction
-    uy = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'stochastic') + matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * quantities.directionPrimal('normal'); zeros(quantities.currentIterate.numberOfConstraintsEqualities,1)];
+    % Grab required data
+    [yE,~] = quantities.currentIterate.multipliers('stochastic');
+    g_prev = quantities.previousIterate.objectiveGradient(quantities,'stochastic');
+    cE_prev = quantities.previousIterate.constraintFunctionEqualities(quantities);
+    JE_prev = quantities.previousIterate.constraintJacobianEqualities(quantities);
     
-    % Compute full direction
-    dy = full(uy);
-    dy(1:quantities.currentIterate.numberOfVariables) = dy(1:quantities.currentIterate.numberOfVariables) + quantities.directionPrimal('normal');
+    
+    
+    [current_multipliers , ~] = quantities.currentIterate.multipliers('stochastic');
+    previousIterateMeasure = norm([quantities.previousIterate.objectiveGradient(quantities,'stochastic') + quantities.previousIterate.constraintJacobianEqualities(quantities)' * current_multipliers ; quantities.previousIterate.constraintFunctionEqualities(quantities)]);
+    currentIterateInfo = [quantities.currentIterate.objectiveGradient(quantities,'stochastic') + quantities.currentIterate.constraintJacobianEqualities(quantities)' * current_multipliers; quantities.currentIterate.constraintFunctionEqualities(quantities)];
+    currentIterateMeasure = norm(currentIterateInfo);
+    c_norm1 = norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1);
+    c_norm2 = norm(quantities.currentIterate.constraintFunctionEqualities(quantities));
+  
+  % Inexact solve by iterative solver
+  [v,TTnum,residual,innerIter] = minres_stanford(matrix, -currentIterateInfo, quantities.currentIterate.numberOfVariables, currentIterateMeasure, previousIterateMeasure, c_norm1, c_norm2, ...
+    D.full_residual_norm_factor_, D.primal_residual_norm_factor_, D.dual_residual_norm_factor_, D.constraint_norm_factor_, D.lagrangian_primal_norm_factor_, ...
+    D.curvature_threshold_, D.model_reduction_factor_, quantities.currentIterate.objectiveGradient(quantities,'stochastic'), quantities.meritParameter, ...
+    quantities.currentIterate.constraintJacobianEqualities(quantities),[],0,false,true,max(size(matrix,1)*100,100),1e-10);
+    
+    % Decompose step?
+    if ~D.decompose_step_
+      
+      % Compute full direction
+%      [dy,tt,iters] = minres(matrix,)
+      dy = full(dy);
+      
+    else
+      
+      % Compute tangential direction
+%      uy = 
+      
+      % Compute full direction
+      dy = full(uy);
+      dy(1:quantities.currentIterate.numberOfVariables) = dy(1:quantities.currentIterate.numberOfVariables) + quantities.directionPrimal('normal');
+      
+    end
+    
+    % Set termination test
+    quantities.setTerminationTest(tt);
+    
+    % Increment counters
+    quantities.incrementMINRESIterationCounter(iters);
+    quantities.incrementTerminationTestCounter(tt);
     
   end
   
@@ -141,6 +203,7 @@ else
       
       % Compute full direction
       dy = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'true'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
+      dy = full(dy);
       
     else
       
@@ -153,9 +216,12 @@ else
       
     end
     
+    % Increment counter
+    quantities.incrementMatrixFactorizationCounter;
+    
     % Set direction
     quantities.setDirectionPrimal(dy(1:quantities.currentIterate.numberOfVariables),'true');
-  
+    
     % Compute residual
     r = matrix * dy + [quantities.currentIterate.objectiveGradient(quantities,'true'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
     
@@ -176,8 +242,9 @@ else
   end
   
   % Set curvature
-  quantities.setCurvature(quantities.directionPrimal('full')' * matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * quantities.directionPrimal('full'));
+  quantities.setCurvature(quantities.directionPrimal('full')' * matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * quantities.directionPrimal('full'),'full');
+  quantities.setCurvature(quantities.directionPrimal('tangential')' * matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * quantities.directionPrimal('tangential'),'tangential');
   
 end
-
+  
 end % computeDirection

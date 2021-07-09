@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % DirectionComputationEQP: getOptions
 function getOptions(D,options,reporter)
@@ -15,5 +13,6 @@ D.compute_true_ = options.getOption(reporter,'DCEQP_compute_true');
 D.curvature_threshold_ = options.getOption(reporter,'DCEQP_curvature_threshold');
 D.decompose_step_ = options.getOption(reporter,'DCEQP_decompose_step');
 D.use_hessian_of_lagrangian_ = options.getOption(reporter,'DCEQP_use_hessian_of_lagrangian');
+D.use_iterative_solver_ = options.getOption(reporter,'DCEQP_use_iterative_solver');
 
 end % getOptions

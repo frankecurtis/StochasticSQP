@@ -1,16 +1,8 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
 %
-% Authors: Frank E. Curtis
-%
 % StochasticSQP
-%
-% Please cite:
-%
-%   A. S. Berahas, F. E. Curtis, D. P. Robinson, and B. Zhou.  "Sequential
-%   Quadratic Optimization for Nonlinear Equality Constrained Stochastic
-%   Optimization." SIAM Journal on Optimization, 31(2):1352-1379, 2021.
 %
 % Constructors:
 %
@@ -97,7 +89,7 @@ classdef StochasticSQP < handle
       infeasibility = S.quantities_.bestIterate.constraintNormInf(S.quantities_);
       kkt_error = S.quantities_.bestIterate.KKTError(S.quantities_,'stochastic');
       
-    end % solution
+    end % bestIterate
     
     % Final iterate
     function [x,yE,yI,infeasibility,kkt_error] = finalIterate(S)

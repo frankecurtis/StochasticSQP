@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % Strategies class
 classdef Strategies < handle
@@ -15,7 +13,7 @@ classdef Strategies < handle
     %%%%%%%%%%%
     direction_computation_
     lipschitz_estimation_
-    merit_parameter_computation_
+    parameter_computation_
     stepsize_computation_
     
   end
@@ -83,13 +81,13 @@ classdef Strategies < handle
       
     end % LipschitzEstimation
     
-    % Merit parameter computation
-    function m = meritParameterComputation(S)
+    % Parameter computation
+    function p = parameterComputation(S)
       
       % Set return value
-      m = S.merit_parameter_computation_;
+      p = S.parameter_computation_;
       
-    end % meritParameterComputation
+    end % parameterComputation
     
     % Stepsize computation
     function s = stepsizeComputation(S)

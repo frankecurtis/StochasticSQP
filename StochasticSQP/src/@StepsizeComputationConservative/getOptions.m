@@ -1,14 +1,11 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % StepsizeComputationConservative: getOptions
 function getOptions(S,options,reporter)
 
 % Get options
-S.diminishing_ = options.getOption(reporter,'SCC_diminishing');
-S.scaling_ = options.getOption(reporter,'SCC_scaling');
+% DO NOTHING
 
 end % getOptions

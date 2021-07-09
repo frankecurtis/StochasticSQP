@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % Quantities class
 classdef Quantities < handle
@@ -13,10 +11,13 @@ classdef Quantities < handle
     %%%%%%%%%%%%%%%%%%%%%%%%
     % ALGORITHM QUANTITIES %
     %%%%%%%%%%%%%%%%%%%%%%%%
-    batch_size_
     best_iterate_
     current_iterate_
     curvature_
+    curvature_tangential_
+    curvature_indicator_
+    curvature_parameter_
+    decomposition_parameter_
     direction_dual_
     direction_primal_
     direction_primal_normal_
@@ -32,24 +33,35 @@ classdef Quantities < handle
     residual_feasibility_true_
     residual_stationarity_
     stepsize_
+    stepsize_scaling_
     termination_test_
     trial_iterate_
+    
+    %%%%%%%%%%%
+    % OPTIONS %
+    %%%%%%%%%%%
+    batch_size_
+    stepsize_diminishing_
+    stepsize_scaling_initial_
     
     %%%%%%%%%%%%
     % COUNTERS %
     %%%%%%%%%%%%
+    cg_iteration_counter_ = 0
     constraint_function_equalities_evaluation_counter_ = 0
     constraint_function_inequalities_evaluation_counter_ = 0
     constraint_Jacobian_equalities_evaluation_counter_ = 0
     constraint_Jacobian_inequalities_evaluation_counter_ = 0
     hessian_of_lagrangian_evaluation_counter_ = 0
     iteration_counter_ = 0
-    iterative_solver_counter_ = 0
-    inner_iteration_counter_ = 0
+    matrix_factorization_counter_ = 0
+    minres_iteration_counter_ = 0
     objective_function_evaluation_counter_ = 0
     objective_gradient_evaluation_counter_ = 0
     objective_gradient_true_evaluation_counter_ = 0
-    diminishing_stepsize_level_counter_ = 0
+    termination_test_exact_counter_ = 0
+    termination_test_1_counter_ = 0
+    termination_test_2_counter_ = 0
     
     %%%%%%%%%%%%%%
     % INDICATORS %
@@ -60,14 +72,16 @@ classdef Quantities < handle
     %%%%%%%%%%%%%%
     % TOLERANCES %
     %%%%%%%%%%%%%%
+    cg_iteration_relative_limit_
     constraint_function_evaluation_limit_
     constraint_Jacobian_evaluation_limit_
     cpu_time_limit_
     feasibility_tolerance_
     hessian_of_lagrangian_evaluation_limit_
-    inner_iteration_relative_limit_
     iteration_limit_
     kkt_error_tolerance_
+    matrix_factorization_limit_
+    minres_iteration_relative_limit_
     objective_function_evaluation_limit_
     objective_gradient_evaluation_limit_
     objective_gradient_true_evaluation_limit_
@@ -158,6 +172,22 @@ classdef Quantities < handle
       
     end % bestIterate
     
+    % CG iteration counter
+    function c = CGIterationCounter(Q)
+      
+      % Set return value
+      c = Q.cg_iteration_counter_;
+      
+    end % CGIterationCounter
+    
+    % CG iteration relative limit
+    function c = CGIterationRelativeLimit(Q)
+      
+      % Set return value
+      c = Q.cg_iteration_relative_limit_;
+      
+    end % CGIterationRelativeLimit
+
     % Compute stationarity true measure?
     function b = computeStationarityTrue(Q)
       
@@ -231,20 +261,42 @@ classdef Quantities < handle
     end % currentIterate
     
     % Curvature
-    function c = curvature(Q)
+    function c = curvature(Q,type)
       
       % Set return value
-      c = Q.curvature_;
+      if strcmp(type,'full')
+        c = Q.curvature_;
+      elseif strcmp(type,'tangential')
+        c = Q.curvature_tangential_;
+      else
+        error('Quantities: Invalid type for curvature.');
+      end
       
     end % curvature
     
-    % Diminishing stepsize level counter
-    function c = diminishingStepsizeLevelCounter(Q)
+    % Curvature indicator
+    function c = curvatureIndicator(Q)
       
       % Set return value
-      c = Q.diminishing_stepsize_level_counter_;
+      c = Q.curvature_indicator_;
       
-    end % diminishingStepsizeLevelCounter
+    end % curvatureIndicator
+    
+    % Curvature parameter
+    function c = curvatureParameter(Q)
+      
+      % Set return value
+      c = Q.curvature_parameter_;
+      
+    end % curvatureParameter
+    
+    % Decomposition parameter
+    function d = decompositionParameter(Q)
+      
+      % Set return value
+      d = Q.decomposition_parameter_;
+      
+    end % decompositionParameter
     
     % Direction, dual
     function d = directionDual(Q)
@@ -262,6 +314,8 @@ classdef Quantities < handle
         d = Q.direction_primal_;
       elseif strcmp(type,'normal')
         d = Q.direction_primal_normal_;
+      elseif strcmp(type,'tangential')
+        d = Q.direction_primal_ - Q.direction_primal_normal_;
       elseif strcmp(type,'true')
         d = Q.direction_primal_true_;
       else
@@ -269,7 +323,7 @@ classdef Quantities < handle
       end
       
     end % directionPrimal
-    
+
     % Feasibility tolerance
     function t = feasibilityTolerance(Q)
       
@@ -277,22 +331,6 @@ classdef Quantities < handle
       t = Q.feasibility_tolerance_;
       
     end % feasibilityTolerance
-    
-    % Inner iteration counter
-    function k = innerIterationCounter(Q)
-      
-      % Set return value
-      k = Q.inner_iteration_counter_;
-      
-    end % innerIterationCounter
-    
-    % Inner iteration relative limit
-    function k_max = innerIterationRelativeLimit(Q)
-      
-      % Set return value
-      k_max = Q.inner_iteration_relative_limit_;
-      
-    end % iterationLimit
     
     % Iteration counter
     function k = iterationCounter(Q)
@@ -318,6 +356,51 @@ classdef Quantities < handle
       
     end % KKTErrorTolerance
     
+    % Exceeded limit, CPU
+    function b = limitExceededCPU(Q)
+      
+      % Check limit
+      b = (Q.CPUTime >= Q.cpu_time_limit_);
+      
+    end % limitExceededCPU
+    
+    % Exceeded limit, evaluations
+    function b = limitExceededEvaluations(Q)
+      
+      % Check limit
+      b = (Q.constraint_function_equalities_evaluation_counter_ > Q.constraint_function_evaluation_limit_ || ...
+        Q.constraint_function_inequalities_evaluation_counter_ > Q.constraint_function_evaluation_limit_ || ...
+        Q.constraint_Jacobian_equalities_evaluation_counter_ > Q.constraint_Jacobian_evaluation_limit_ || ...
+        Q.constraint_Jacobian_inequalities_evaluation_counter_ > Q.constraint_Jacobian_evaluation_limit_ || ...
+        Q.hessian_of_lagrangian_evaluation_counter_ > Q.hessian_of_lagrangian_evaluation_limit_ || ...
+        Q.objective_function_evaluation_counter_ > Q.objective_function_evaluation_limit_ || ...
+        Q.objective_gradient_evaluation_counter_ > Q.objective_gradient_evaluation_limit_ || ...
+        Q.objective_gradient_true_evaluation_counter_ > Q.objective_gradient_true_evaluation_limit_);
+      
+    end % limitExceededEvaluations
+    
+    % Exceeded limit, iterations
+    function b = limitExceededIterations(Q)
+      
+      % Check limit
+      b = (Q.iteration_counter_ > Q.iteration_limit_ || ...
+        Q.matrix_factorization_counter_ > Q.matrix_factorization_limit_ || ...
+        Q.cg_iteration_counter_ > Q.cg_iteration_relative_limit_ * (Q.current_iterate_.numberOfConstraintsEqualities + Q.current_iterate_.numberOfConstraintsInequalities) || ...
+        Q.minres_iteration_counter_ > Q.minres_iteration_relative_limit_ * (Q.current_iterate_.numberOfVariables + Q.current_iterate_.numberOfConstraintsEqualities + Q.current_iterate_.numberOfConstraintsInequalities));
+      
+    end % limitExceededIterations
+    
+    % Exceeded limit, size
+    function b = limitExceededSize(Q)
+      
+      % Check limit
+      b = (Q.current_iterate_.numberOfVariables + ...
+        Q.current_iterate_.numberOfConstraintsEqualities + ...
+        Q.current_iterate_.numberOfConstraintsInequalities > ...
+        Q.size_limit_);
+      
+    end % limitExceededSize
+
     % Lipschitz constant, constraint
     function lipschitz = lipschitzConstraint(Q)
       
@@ -334,6 +417,38 @@ classdef Quantities < handle
       
     end % lipschitzObjective
     
+    % Matrix factorization counter
+    function c = matrixFactorizationCounter(Q)
+      
+      % Set return value
+      c = Q.matrix_factorization_counter_;
+      
+    end % matrixFactorizationCounter
+    
+    % Matrix factorization limit
+    function c_max = matrixFactorizationLimit(Q)
+      
+      % Set return value
+      c_max = Q.matrix_factorization_limit_;
+      
+    end % matrixFactorizationLimit
+
+    % MINRES iteration counter
+    function c = MINRESIterationCounter(Q)
+      
+      % Set return value
+      c = Q.minres_iteration_counter_;
+      
+    end % MINRESIterationCounter
+    
+    % MINRES iteration relative limit
+    function c_max = MINRESIterationRelativeLimit(Q)
+      
+      % Set return value
+      c_max = Q.minres_iteration_relative_limit_;
+      
+    end % MINRESIterationRelativeLimit
+
     % Merit parameter
     function t = meritParameter(Q)
       
@@ -462,6 +577,15 @@ classdef Quantities < handle
       
     end % sizeLimit
     
+    % Stationarity satisfied
+    function b = stationaritySatisfied(Q)
+      
+      % Check condition
+      b = (Q.best_iterate_.constraintNormInf(Q) <= Q.feasibility_tolerance_ && ...
+        Q.best_iterate_.KKTError(Q,'true') <= Q.kkt_error_tolerance_);
+      
+    end % stationaritySatisfied
+    
     % Stepsize
     function a = stepsize(Q)
       
@@ -470,6 +594,17 @@ classdef Quantities < handle
       
     end % stepsize
     
+    % Stepsize scaling
+    function a = stepsizeScaling(Q)
+      
+      % Set return value
+      a = Q.stepsize_scaling_initial_;
+      if Q.stepsize_diminishing_ == true
+        a = a / (Q.iteration_counter_ + 1);
+      end
+      
+    end % stepsizeScaling
+    
     % Termination test
     function termination_test = terminationTest(Q)
       
@@ -477,6 +612,22 @@ classdef Quantities < handle
       termination_test = Q.termination_test_;
       
     end % terminationTest
+    
+    % Termination test
+    function c = terminationTestCounter(Q,i)
+      
+      % Set return value
+      if i == 0
+        c = Q.termination_test_exact_counter_;
+      elseif i == 1
+        c = Q.termination_test_1_counter_;
+      elseif i == 2
+        c = Q.termination_test_2_counter_;
+      else
+        error('Quantities: Invalid index for terminationTestCounter.');
+      end
+      
+    end % terminationTestCounter
     
     % Trial iterate
     function iterate = trialIterate(Q)
@@ -499,12 +650,26 @@ classdef Quantities < handle
     end % setBatchSize
     
     % Set curvature
-    function setCurvature(Q,curvature)
+    function setCurvature(Q,curvature,type)
       
       % Set curvature information
-      Q.curvature_ = curvature;
+      if strcmp(type,'full')
+        Q.curvature_ = curvature;
+      elseif strcmp(type,'tangential')
+        Q.curvature_tangential_ = curvature;
+      else
+        error('Quantities: Invalid type for setCurvature.');
+      end
       
     end % setCurvature
+    
+    % Set curvature indicator
+    function setCurvatureIndicator(Q,indicator)
+      
+      % Set indicator
+      Q.curvature_indicator_ = indicator;
+      
+    end % setCurvatureIndicator
     
     % Set direction, primal
     function setDirectionPrimal(Q,direction,type)
@@ -626,6 +791,14 @@ classdef Quantities < handle
     % INCREMENT METHODS %
     %%%%%%%%%%%%%%%%%%%%%
     
+    % Increment CG iteration counter
+    function incrementCGIterationCounter(Q)
+      
+      % Increment CG iteration counter
+      Q.cg_iteration_counter_ = Q.cg_iteration_counter_ + 1;
+      
+    end % incrementCGIterationCounter
+    
     % Increment constraint function, equalities, evaluation counter
     function incrementConstraintFunctionEqualitiesEvaluationCounter(Q)
       
@@ -666,14 +839,6 @@ classdef Quantities < handle
       
     end % incrementHessianOfLagrangianEvaluationCounter
     
-    % Increment diminishing stepsize level counter
-    function incrementDiminishingStepsizeLevelCounter(Q)
-      
-      % Increment diminishing stepsize level counter
-      Q.diminishing_stepsize_level_counter_ = Q.diminishing_stepsize_level_counter_ + 1;
-      
-    end % incrementDiminishingStepsizeLevelCounter
-    
     % Increment iteration counter
     function incrementIterationCounter(Q)
       
@@ -682,13 +847,21 @@ classdef Quantities < handle
       
     end % incrementIterationCounter
     
-    % Increment inner iteration counter
-    function incrementInnerIterationCounter(Q,iterations)
+    % Increment matrix factorization counter
+    function incrementMatrixFactorizationCounter(Q)
       
-      % Increment inner iteration counter
-      Q.inner_iteration_counter_ = Q.inner_iteration_counter_ + iterations;
+      % Increment matrix factorization counter
+      Q.matrix_factorization_counter_ = Q.matrix_factorization_counter_ + 1;
       
-    end % incrementInnerIterationCounter
+    end % incrementMatrixFactorizationCounter
+    
+    % Increment MINRES iteration counter
+    function incrementMINRESIterationCounter(Q)
+      
+      % Increment MINRES iteration counter counter
+      Q.minres_iteration_counter_ = Q.minres_iteration_counter_ + 1;
+      
+    end % incrementMINRESIterationCounter
     
     % Increment objective function evaluation counter
     function incrementObjectiveFunctionEvaluationCounter(Q)
@@ -713,7 +886,23 @@ classdef Quantities < handle
       Q.objective_gradient_true_evaluation_counter_ = Q.objective_gradient_true_evaluation_counter_ + 1;
       
     end % incrementObjectiveGradientEvaluationCounter
-    
+
+    % Increment termination test counter
+    function incrementTerminationTestCounter(Q,i)
+      
+      % Set return value
+      if i == 0
+        Q.termination_test_exact_counter_ = Q.termination_test_exact_counter_ + 1;
+      elseif i == 1
+        Q.termination_test_1_counter_ = Q.termination_test_1_counter_ + 1;
+      elseif i == 2
+        Q.termination_test_2_counter_ = Q.termination_test_2_counter_ + 1;
+      else
+        error('Quantities: Invalid index for incrementTerminationTestCounter.');
+      end
+      
+    end % incrementTerminationTestCounter
+
   end % methods (public access)
   
 end % Quantities

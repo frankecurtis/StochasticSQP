@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % DirectionComputationEQP class
 classdef DirectionComputationEQP < DirectionComputation
@@ -25,6 +23,7 @@ classdef DirectionComputationEQP < DirectionComputation
     curvature_threshold_
     decompose_step_
     use_hessian_of_lagrangian_
+    use_iterative_solver_
     
   end % properties (private access)
   

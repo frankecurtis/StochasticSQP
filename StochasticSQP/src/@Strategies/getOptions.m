@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % Strategies: getOptions
 function getOptions(S,options,reporter)
@@ -10,7 +8,7 @@ function getOptions(S,options,reporter)
 % Get strategies options
 direction_computation_name = options.getOption(reporter,'direction_computation');
 lipschitz_estimation_name = options.getOption(reporter,'lipschitz_estimation');
-merit_parameter_computation_name = options.getOption(reporter,'merit_parameter_computation');
+parameter_computation_name = options.getOption(reporter,'parameter_computation');
 stepsize_computation_name = options.getOption(reporter,'stepsize_computation');
 
 % Switch on direction computation names
@@ -34,13 +32,13 @@ switch lipschitz_estimation_name
 end
 
 % Switch on merit parameter computation names
-switch merit_parameter_computation_name
+switch parameter_computation_name
   case 'Fixed'
-    S.merit_parameter_computation_ = MeritParameterComputationFixed;
+    S.parameter_computation_ = ParameterComputationFixed;
   case 'ModelReduction'
-    S.merit_parameter_computation_ = MeritParameterComputationModelReduction;
+    S.parameter_computation_ = ParameterComputationModelReduction;
   otherwise
-    S.merit_parameter_computation_ = MeritParameterComputationModelReduction;
+    S.parameter_computation_ = ParameterComputationModelReduction;
 end
 
 % Switch on stepsize computation names
@@ -56,7 +54,7 @@ end
 % Get options
 S.direction_computation_.getOptions(options,reporter);
 S.lipschitz_estimation_.getOptions(options,reporter);
-S.merit_parameter_computation_.getOptions(options,reporter);
+S.parameter_computation_.getOptions(options,reporter);
 S.stepsize_computation_.getOptions(options,reporter);
 
 end % getOptions

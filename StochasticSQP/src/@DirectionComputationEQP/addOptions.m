@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % DirectionComputationEQP: addOptions
 function addOptions(options,reporter)
@@ -11,6 +9,7 @@ function addOptions(options,reporter)
 options.addBoolOption(reporter,'DCEQP_compute_true',false);
 options.addBoolOption(reporter,'DCEQP_decompose_step',true);
 options.addBoolOption(reporter,'DCEQP_use_hessian_of_lagrangian',false);
+options.addBoolOption(reporter,'DCEQP_use_iterative_solver',false);
 
 % Add double options
 options.addDoubleOption(reporter,'DCEQP_cg_iteration_limit',0.99,0,inf);

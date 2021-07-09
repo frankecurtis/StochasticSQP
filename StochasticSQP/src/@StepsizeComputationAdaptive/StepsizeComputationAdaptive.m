@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % StepsizeComputationAdaptive class
 classdef StepsizeComputationAdaptive < StepsizeComputation
@@ -18,12 +16,10 @@ classdef StepsizeComputationAdaptive < StepsizeComputation
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    diminishing_
     direction_norm_tolerance_
     lengthening_
     lengthening_ratio_
     projection_width_
-    scaling_
     sufficient_decrease_
     
   end % properties (private access)

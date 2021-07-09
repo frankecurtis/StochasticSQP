@@ -1,11 +1,9 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
-% MeritParameterComputation class
-classdef (Abstract) MeritParameterComputation < Strategy
+% ParameterComputation class
+classdef (Abstract) ParameterComputation < Strategy
   
   % Methods (abstract, static)
   methods (Abstract, Static)
@@ -33,9 +31,9 @@ classdef (Abstract) MeritParameterComputation < Strategy
     % Name
     n = name(S)
     
-    % Compute merit parameter
-    computeMeritParameter(S,options,quantities,reporter,strategies)
+    % Compute parameter
+    computeParameters(S,options,quantities,reporter,strategies)
     
   end % methods (abstract)
   
-end % MeritParameterComputation
+end % ParameterComputation

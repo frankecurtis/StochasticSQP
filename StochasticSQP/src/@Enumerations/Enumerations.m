@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % Enumerations class
 classdef Enumerations < uint8
@@ -28,13 +26,11 @@ classdef Enumerations < uint8
     %%%%%%%%%%%%%%%%%%%
     S_UNSET (0)
     S_SUCCESS (1)
-    S_SIZE_LIMIT (2)
-    S_ITERATION_LIMIT (3)
-    S_INNER_ITERATION_LIMIT (4)
-    S_DIRECTION_COMPUTATION_FAILURE (5)
-    S_CPU_TIME_LIMIT (6)
-    S_OPTIMALITY_PROGRESS_FAILURE (7)
-    S_FEASIBILITY_PROGRESS_FAILURE (8)
+    S_CPU_TIME_LIMIT (2)
+    S_SIZE_LIMIT (3)
+    S_ITERATION_LIMIT (4)
+    S_EVALUATION_LIMIT (5)
+    S_DIRECTION_COMPUTATION_FAILURE (6)
     
   end % enumeration
   

@@ -1,16 +1,11 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % StepsizeComputationConservative: addOptions
 function addOptions(options,reporter)
 
-% Add bool options
-options.addBoolOption(reporter,'SCC_diminishing',false);
-
-% Add double options
-options.addDoubleOption(reporter,'SCC_scaling',1e+00,0,inf);
+% Add options
+% DO NOTHING
 
 end % addOptions

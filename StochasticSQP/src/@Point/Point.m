@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % Point class
 classdef Point < handle
@@ -245,8 +243,16 @@ classdef Point < handle
         error('Point: Scale factors have not been set!');
       end
       
+      % Check if any constraints
+      if P.mE == 0
+        
+        % Set null values
+        P.cE_unscaled = [];
+        P.cE = [];
+        P.cE_evaluated = true;
+        
       % Check if already evaluated
-      if ~P.cE_evaluated
+      elseif ~P.cE_evaluated
         
         % Evaluate
         [P.cE_unscaled,err] = P.p.evaluateConstraintFunctionEqualities(P.x);
@@ -280,8 +286,16 @@ classdef Point < handle
         error('Point: Scale factors have not been set!');
       end
       
+      % Check if any constraints
+      if P.mI == 0
+        
+        % Set null values
+        P.cI_unscaled = [];
+        P.cI = [];
+        P.cI_evaluated = true;
+        
       % Check if already evaluated
-      if ~P.cI_evaluated
+      elseif ~P.cI_evaluated
         
         % Evaluate
         [P.cI_unscaled,err] = P.p.evaluateConstraintFunctionInequalities(P.x);
@@ -315,8 +329,15 @@ classdef Point < handle
         error('Point: Scale factors have not been set!');
       end
       
+      % Check if any constraints
+      if P.mE == 0
+        
+        % Set null values
+        P.JE = zeros(0,P.n);
+        P.JE_evaluated = true;
+      
       % Check if already evaluated
-      if ~P.JE_evaluated
+      elseif ~P.JE_evaluated
         
         % Evaluate
         [P.JE,err] = P.p.evaluateConstraintJacobianEqualities(P.x);
@@ -350,8 +371,15 @@ classdef Point < handle
         error('Point: Scale factors have not been set!');
       end
       
+      % Check if any constraints
+      if P.mI == 0
+        
+        % Set null values
+        P.JI = zeros(0,P.n);
+        P.JI_evaluated = true;
+      
       % Check if already evaluated
-      if ~P.JI_evaluated
+      elseif ~P.JI_evaluated
         
         % Evaluate
         [P.JI,err] = P.p.evaluateConstraintJacobianInequalities(P.x);

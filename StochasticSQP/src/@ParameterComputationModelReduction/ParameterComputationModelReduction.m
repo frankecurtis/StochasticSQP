@@ -1,11 +1,9 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
-% MeritParameterComputationModelReduction class
-classdef MeritParameterComputationModelReduction < MeritParameterComputation
+% ParameterComputationModelReduction class
+classdef ParameterComputationModelReduction < ParameterComputation
   
   % Properties (private access)
   properties (SetAccess = private, GetAccess = private)
@@ -19,6 +17,7 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     % OPTIONS %
     %%%%%%%%%%%
     curvature_threshold_
+    model_increase_factor_
     model_reduction_factor_
     parameter_reduction_factor_
     quadratic_model_for_merit_update_
@@ -46,7 +45,7 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%%%%%%%%
     
     % Constructor
-    function M = MeritParameterComputationModelReduction
+    function P = ParameterComputationModelReduction
       
       % DO NOTHING
       
@@ -57,34 +56,34 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     %%%%%%%%%%%%%%%%%
     
     % Print iteration header
-    printIterationHeader(M,reporter)
+    printIterationHeader(P,reporter)
     
     % Print iteration values
-    printIterationValues(M,quantities,reporter)
+    printIterationValues(P,quantities,reporter)
     
     %%%%%%%%%%%%%%%%%%%
     % OPTIONS METHODS %
     %%%%%%%%%%%%%%%%%%%
     
     % Get options
-    getOptions(M,options,reporter)
+    getOptions(P,options,reporter)
     
     %%%%%%%%%%%%%%%%%%%%%%
     % INITIALIZE METHODS %
     %%%%%%%%%%%%%%%%%%%%%%
     
     % Initialize
-    initialize(M,options,quantities,reporter)
+    initialize(P,options,quantities,reporter)
     
     %%%%%%%%%%%%%%%
     % GET METHODS %
     %%%%%%%%%%%%%%%
     
     % Name
-    function n = name(M)
+    function n = name(P)
       
       % Set return value
-      n = M.n;
+      n = P.n;
       
     end % name
     
@@ -92,9 +91,9 @@ classdef MeritParameterComputationModelReduction < MeritParameterComputation
     % COMPUTE METHODS %
     %%%%%%%%%%%%%%%%%%%
     
-    % Compute stepsize
-    computeMeritParameter(M,options,quantities,reporter,strategies)
+    % Compute parameters
+    computeParameters(P,options,quantities,reporter,strategies)
     
   end % methods (public access)
   
-end % MeritParameterComputationModelReduction
+end % ParameterComputationModelReduction

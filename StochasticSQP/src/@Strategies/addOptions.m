@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % Strategies: addOptions
 function addOptions(options,reporter)
@@ -10,7 +8,7 @@ function addOptions(options,reporter)
 % Add options
 options.addStringOption(reporter,'direction_computation','EQP');
 options.addStringOption(reporter,'lipschitz_estimation','FiniteDifference');
-options.addStringOption(reporter,'merit_parameter_computation','ModelReduction');
+options.addStringOption(reporter,'parameter_computation','ModelReduction');
 options.addStringOption(reporter,'stepsize_computation','Adaptive');
 
 % Add direction computation options
@@ -18,17 +16,15 @@ d = DirectionComputationEQP;
 d.addOptions(options,reporter);
 d = DirectionComputationSubgradient;
 d.addOptions(options,reporter);
-d = DirectionComputationEQPInexact;
-d.addOptions(options,reporter);
 
 % Add Lipschitz estimation options
 l = LipschitzEstimationFiniteDifference;
 l.addOptions(options,reporter);
 
-% Add merit parameter computation options
-m = MeritParameterComputationFixed;
+% Add parameter computation options
+m = ParameterComputationFixed;
 m.addOptions(options,reporter);
-m = MeritParameterComputationModelReduction;
+m = ParameterComputationModelReduction;
 m.addOptions(options,reporter);
 
 % Add stepsize computation options

@@ -1,10 +1,13 @@
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
+%
+% All Rights Reserved.
+
 function test_StochasticSQP
 
 % Add source code to path
 addpath('../problems/');
 addpath('../src/');
-addpath('/usr/local/opt/cutest/libexec/src/matlab');
-addpath('/Users/frankecurtis/Dropbox/git/StochasticSQP/StochasticSQP/external');
+addpath('../external');
 
 % Declare algorithm
 S = StochasticSQP;

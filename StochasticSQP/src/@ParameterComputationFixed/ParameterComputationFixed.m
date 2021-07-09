@@ -1,11 +1,9 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
-% DirectionComputationEQPInexact class
-classdef DirectionComputationEQPInexact < DirectionComputation
+% ParameterComputationFixed class
+classdef ParameterComputationFixed < ParameterComputation
   
   % Properties (private access)
   properties (SetAccess = private, GetAccess = private)
@@ -13,20 +11,13 @@ classdef DirectionComputationEQPInexact < DirectionComputation
     %%%%%%%%
     % NAME %
     %%%%%%%%
-    n = 'EQPInexact'
-    
+    n = 'Fixed'
+
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    use_hessian_of_lagrangian_
-    full_residual_norm_factor_
-    primal_residual_norm_factor_
-    dual_residual_norm_factor_
-    constraint_norm_factor_
-    lagrangian_primal_norm_factor_
-    curvature_threshold_
-    model_reduction_factor_
-    
+    quadratic_model_
+
   end % properties (private access)
   
   % Methods (static)
@@ -49,7 +40,7 @@ classdef DirectionComputationEQPInexact < DirectionComputation
     %%%%%%%%%%%%%%%
     
     % Constructor
-    function D = DirectionComputationIEQP
+    function P = ParameterComputationFixed
       
       % DO NOTHING
       
@@ -60,34 +51,34 @@ classdef DirectionComputationEQPInexact < DirectionComputation
     %%%%%%%%%%%%%%%%%
     
     % Print iteration header
-    printIterationHeader(D,reporter)
+    printIterationHeader(P,reporter)
     
     % Print iteration values
-    printIterationValues(D,quantities,reporter)
+    printIterationValues(P,quantities,reporter)
     
     %%%%%%%%%%%%%%%%%%%
     % OPTIONS METHODS %
     %%%%%%%%%%%%%%%%%%%
     
     % Get options
-    getOptions(D,options,reporter)
+    getOptions(P,options,reporter)
     
     %%%%%%%%%%%%%%%%%%%%%%
     % INITIALIZE METHODS %
     %%%%%%%%%%%%%%%%%%%%%%
     
     % Initialize
-    initialize(D,options,quantities,reporter)
+    initialize(P,options,quantities,reporter)
     
     %%%%%%%%%%%%%%%
     % GET METHODS %
     %%%%%%%%%%%%%%%
     
     % Name
-    function n = name(D)
+    function n = name(P)
       
       % Set return value
-      n = D.n;
+      n = P.n;
       
     end % name
     
@@ -95,9 +86,9 @@ classdef DirectionComputationEQPInexact < DirectionComputation
     % COMPUTE METHODS %
     %%%%%%%%%%%%%%%%%%%
     
-    % Compute direction
-    err = computeDirection(D,options,quantities,reporter,strategies)
+    % Compute parameters
+    computeParameter(P,options,quantities,reporter,strategies)
     
   end % methods (public access)
   
-end % DirectionComputationEQPInexact
+end % ParameterComputationFixed

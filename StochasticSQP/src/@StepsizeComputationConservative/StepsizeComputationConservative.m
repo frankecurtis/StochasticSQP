@@ -1,8 +1,6 @@
-% Copyright (C) 2020 Frank E. Curtis
+% Copyright (C) 2020 Albert S. Berahas, Frank E. Curtis, Daniel P. Robinson, Baoyu Zhou
 %
 % All Rights Reserved.
-%
-% Authors: Frank E. Curtis
 
 % StepsizeComputationConservative class
 classdef StepsizeComputationConservative < StepsizeComputation
@@ -18,8 +16,7 @@ classdef StepsizeComputationConservative < StepsizeComputation
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    diminishing_
-    scaling_
+    % NONE
     
   end % properties (private access)
   
