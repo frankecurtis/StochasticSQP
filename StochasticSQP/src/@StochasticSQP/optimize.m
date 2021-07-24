@@ -44,6 +44,9 @@ while true
   % Check for termination on evaluation limit
   if S.quantities_.limitExceededEvaluations, S.status_ = Enumerations.S_EVALUATION_LIMIT; break; end
   
+  % Check whether to check derivatives
+  if S.quantities_.checkDerivatives, S.quantities_.currentIterate.checkDerivatives(S.quantities_); end
+  
   % Compute search direction (sets direction)
   err = S.strategies_.directionComputation.computeDirection(S.options_,S.quantities_,S.reporter_,S.strategies_);
   

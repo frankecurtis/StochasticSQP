@@ -1,7 +1,5 @@
-function [ x, TTnum, residual, itn ] = ...
-  minres_stanford( A, b, size_primal, CIM, PIM, c_norm1, c_norm2, kappa, mu_2, mu_1, theta_1, theta_2, ...
-  kappa_u, sigma, obj_grad, tau, Jacobian, M, shift, show, check, itnlim, rtol )
-
+function [ x, istop, itn, rnorm, Arnorm, Anorm, Acond, ynorm, SS_out ] = ...
+  minres( A, b, M, shift, show, check, itnlim, rtol, SS_in )
 
 %        [ x, istop, itn, rnorm, Arnorm, Anorm, Acond, ynorm ] = ...
 %          minres( A, b, M, shift, show, check, itnlim, rtol )
@@ -110,7 +108,7 @@ end
 
 istop = 0;   itn   = 0;   Anorm = 0;    Acond = 0;
 rnorm = 0;   ynorm = 0;   done  = false;
-x     = sparse(zeros(n,1));   TTnum = -1;
+x     = zeros(n,1);
 
 %---------------------------------------------------------------------
 % Decode A.
@@ -118,13 +116,13 @@ x     = sparse(zeros(n,1));   TTnum = -1;
 if isa(A,'double')         % A is an explicit matrix A.
   if issparse(A)
     nnzA = nnz(A);
-    % fprintf('\n A is an explicit sparse matrix')
-    % fprintf('\n nnz(A) =%8g', nnzA)
+%    fprintf('\n A is an explicit sparse matrix')
+%    fprintf('\n nnz(A) =%8g', nnzA)
   else
-    fprintf('\n A is an explicit dense matrix' )
+%    fprintf('\n A is an explicit dense matrix' )
   end
 elseif isa(A,'function_handle')
-  disp(['The matrix A is defined by function_handle ' func2str(A)])
+%  disp(['The matrix A is defined by function_handle ' func2str(A)])
 else
   error('minres','A must be a matrix or a function handle')
 end
@@ -132,21 +130,21 @@ end
 %---------------------------------------------------------------------
 % Decode M.
 %---------------------------------------------------------------------
-% if precon
-%   if isa(M,'double')       % M is an explicit matrix M.
-%     if issparse(M)
-%       nnzM = nnz(M);
-%       fprintf('\n The matrix M is an explicit sparse matrix')
-%       fprintf('\n nnz(M) =%8g', nnzM)
-%     else
-%       fprintf('\n The matrix M is an explicit dense matrix' )
-%     end
-%   elseif isa(M,'function_handle')
-%     disp(['The matrix M is defined by function_handle ' func2str(M)])
-%   else
-%     error('minres','M must be a matrix or a function handle')
-%   end
-% end
+if precon
+  if isa(M,'double')       % M is an explicit matrix M.
+    if issparse(M)
+      nnzM = nnz(M);
+%      fprintf('\n The matrix M is an explicit sparse matrix')
+%      fprintf('\n nnz(M) =%8g', nnzM)
+    else
+%      fprintf('\n The matrix M is an explicit dense matrix' )
+    end
+  elseif isa(M,'function_handle')
+%    disp(['The matrix M is defined by function_handle ' func2str(M)])
+  else
+    error('minres','M must be a matrix or a function handle')
+  end
+end
 
 %------------------------------------------------------------------
 % Set up y and v for the first Lanczos vector v1.
@@ -206,9 +204,6 @@ if show
   fprintf('\n\n   Itn     x(1)     Compatible    LS       norm(A)  cond(A)')
   fprintf(' gbar/|A|\n')   %%%%%% Check gbar
 end
-
-% Compute norm b
-normb = norm(b,inf);
 
 %---------------------------------------------------------------------
 % Main iteration loop.
@@ -282,46 +277,9 @@ if ~done                              % k = itn = 1 first time through
     w     = (v - oldeps*w1 - delta*w2)*denom;
     x     = x + phi*w;
     
-    % Compute residual
-    residual = A*x - b;
-    
-    %         if itn == itnlim
-    %             keyboard;
-    %         end
-    
-    if norm(residual,inf) <= max(kappa * normb, 1e-12)
-      
-      % Set updates
-      primal_update = x(1:size_primal);
-      dual_update = x(size_primal+1:end);
-      primal_residual = residual(1:size_primal);
-      dual_residual = residual(size_primal+1:end);
-      
-      % Check whether model reduction condition holds...
-      Delta_q = -tau*(obj_grad'*primal_update + 0.5*max(primal_update'*A(1:size_primal,1:size_primal)*primal_update,kappa_u*norm(primal_update)^2)) + c_norm1 - norm(dual_residual,1);
-      
-      if Delta_q >= 0.5*tau*sigma*max(primal_update'*A(1:size_primal,1:size_primal)*primal_update,kappa_u*norm(primal_update)^2) + sigma*max(c_norm1 , norm(dual_residual,1) - c_norm1)
-        if norm(residual) <= kappa*min(CIM,PIM)
-          TTnum = 'TT1';
-          return;
-        end
-      end
-      
-      if norm(dual_residual,1) <= mu_1 * c_norm1 && norm(primal_residual,1) <= mu_2 * c_norm1
-        TTnum = 'TT2';
-        return;
-      end
-      
-      if c_norm2 <= theta_1 * norm(-b(1:size_primal) + Jacobian'*dual_update)
-        if norm(-b(1:size_primal) + Jacobian'*dual_update) <= min(theta_2*norm(b(1:size_primal)) , kappa*PIM)
-          TTnum = 'TT3';
-          x(1:size_primal) = zeros(size_primal,1);
-          residual = A*x - b;
-          return;
-        end
-      end
-      
-    end
+    % Check for termination test or Hessian modification
+    SS_out = SS_in.directionComputation.terminationTests(A,b,itn,x,SS_in.quantities);
+    if SS_out.flag == 1, return; end
     
     % Go round again.
     

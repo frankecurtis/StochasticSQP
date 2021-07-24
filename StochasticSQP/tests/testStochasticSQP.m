@@ -2,12 +2,13 @@
 %
 % All Rights Reserved.
 
-function test_StochasticSQP
+function testStochasticSQP
 
 % Add source code to path
 addpath('../problems/');
 addpath('../src/');
-addpath('../external');
+addpath('/usr/local/opt/cutest/libexec/src/matlab');
+addpath('../../external');
 
 % Declare algorithm
 S = StochasticSQP;

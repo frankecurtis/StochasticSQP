@@ -20,6 +20,10 @@ classdef LipschitzEstimationFiniteDifference < LipschitzEstimation
     displacement_
     estimate_always_until_
     estimate_frequency_
+    lipschitz_constraint_initial_
+    lipschitz_constraint_minimum_
+    lipschitz_objective_initial_
+    lipschitz_objective_minimum_
     random_direction_
     seed_ = 0
     use_true_gradient_

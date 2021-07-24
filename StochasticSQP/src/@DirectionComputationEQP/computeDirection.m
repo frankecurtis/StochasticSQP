@@ -30,17 +30,20 @@ else
   r = Jc;
   p = -r;
   rr = r'*r;
+  k = 0;
   
   % CG loop
   while 1
     
     % Increment counter
+    k = k + 1;
     quantities.incrementCGIterationCounter;
     
     % Check residual
-    if rr <= D.cg_residual_tolerance_^2 * max(1, Jc_norm^2)
-      break;
-    end
+    if rr <= D.cg_residual_tolerance_^2 * max(1, Jc_norm^2), break; end
+    
+    % Check iteration limit
+    if k > max(1,D.cg_iteration_relative_limit_ * quantities.currentIterate.numberOfConstraintsEqualities), break; end
     
     % Compute products
     JJp = ((quantities.currentIterate.constraintJacobianEqualities(quantities)*p)'*quantities.currentIterate.constraintJacobianEqualities(quantities))';
@@ -75,29 +78,27 @@ else
 end
 
 % Set matrix
+matrix_set = false;
 if D.use_hessian_of_lagrangian_
   matrix = [quantities.currentIterate.hessianOfLagrangian(quantities) quantities.currentIterate.constraintJacobianEqualities(quantities)';
     quantities.currentIterate.constraintJacobianEqualities(quantities) sparse(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
-  factor = D.curvature_threshold_;
-  while 1
-    if sum(sum(isnan(matrix))) > 0 || sum(sum(isinf(matrix))) > 0 || sum(eig(matrix) >= D.curvature_threshold_) >= quantities.currentIterate.numberOfVariables, break; end
-    matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) = ...
-      matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) + factor * speye(quantities.currentIterate.numberOfVariables,quantities.currentIterate.numberOfVariables);
-    factor = factor * 10;
+  if sum(sum(isnan(matrix))) == 0 && sum(sum(isinf(matrix))) == 0
+    matrix_set = true;
   end
-else
+end
+if ~matrix_set
   matrix = [speye(quantities.currentIterate.numberOfVariables) quantities.currentIterate.constraintJacobianEqualities(quantities)';
     quantities.currentIterate.constraintJacobianEqualities(quantities) sparse(quantities.currentIterate.numberOfConstraintsEqualities,quantities.currentIterate.numberOfConstraintsEqualities)];
 end
 
-% Check for nonsingularity
-if sum(sum(isnan(matrix))) > 0 || sum(sum(isinf(matrix))) > 0 || sum(abs(eig(matrix)) >= D.curvature_threshold_) < quantities.currentIterate.numberOfVariables + quantities.currentIterate.numberOfConstraintsEqualities
+% Check for Nan or inf
+if sum(sum(isnan(matrix))) > 0 || sum(sum(isinf(matrix))) > 0
   
-  % Indicate error (violation of LICQ or second-order sufficiency)
+  % Indicate error
   err = true;
   
   % Set null direction
-  quantities.setDirectionPrimal(quantities.directionPrimalNormal,'full');
+  quantities.setDirectionPrimal(quantities.directionPrimal('normal'),'full');
   
   % Set null multipliers
   quantities.currentIterate.setMultipliers(zeros(quantities.currentIterate.numberOfConstraintsEqualities,1),[],'stochastic');
@@ -108,87 +109,153 @@ else
   % Use iterative solver?
   if ~D.use_iterative_solver_
     
-    % Decompose step?
-    if ~D.decompose_step_
+    % Initialize counter
+    counter = 0;
+    
+    % Loop until Hessian modification not required
+    while 1
       
-      % Compute full direction
-      dy = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'stochastic'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
-      dy = full(dy);
+      % Decompose step?
+      if ~D.decompose_step_
+        
+        % Compute full direction
+        rhs = -[quantities.currentIterate.objectiveGradient(quantities,'stochastic'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
+        dy = matrix \ rhs;
+        dy = full(dy);
+        
+      else
+        
+        % Compute tangential direction
+        rhs = -[quantities.currentIterate.objectiveGradient(quantities,'stochastic') + matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * quantities.directionPrimal('normal'); zeros(quantities.currentIterate.numberOfConstraintsEqualities,1)]; 
+        dy = matrix \ rhs;
+        dy = full(dy);
+        
+        % Compute full direction
+        dy(1:quantities.currentIterate.numberOfVariables) = dy(1:quantities.currentIterate.numberOfVariables) + quantities.directionPrimal('normal');
+        
+      end
       
-    else
+      % Increment counter
+      quantities.incrementMatrixFactorizationCounter;
       
-      % Compute tangential direction
-      uy = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'stochastic') + matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * quantities.directionPrimal('normal'); zeros(quantities.currentIterate.numberOfConstraintsEqualities,1)];
+      % Set direction
+      quantities.setDirectionPrimal(dy(1:quantities.currentIterate.numberOfVariables),'full');
       
-      % Compute full direction
-      dy = full(uy);
-      dy(1:quantities.currentIterate.numberOfVariables) = dy(1:quantities.currentIterate.numberOfVariables) + quantities.directionPrimal('normal');
+      % Check if modification not required
+      if sum(isnan(dy)) == 0 && sum(isinf(dy)) == 0 && ...
+          (norm(quantities.directionPrimal('tangential')) <= D.decomposition_threshold_ * norm(quantities.directionPrimal('normal')) || ...
+          quantities.directionPrimal('tangential')' * matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * quantities.directionPrimal('tangential') >= D.curvature_threshold_ * norm(quantities.directionPrimal('tangential'))^2)
+        break;
+      end
       
-    end
+      % Increment counter
+      counter = counter + 1;
+      
+      % Perform modification or break
+      if counter < D.modification_limit_
+        matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) = D.modification_factor_ * matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) + (1 - D.modification_factor_) * speye(quantities.currentIterate.numberOfVariables);
+      elseif counter == D.modification_limit_
+        matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) = speye(quantities.currentIterate.numberOfVariables);
+        matrix(quantities.currentIterate.numberOfVariables+1:end,quantities.currentIterate.numberOfVariables+1:end) = -D.constraint_regularization_ * speye(quantities.currentIterate.numberOfConstraintsEqualities);
+      else
+        if sum(isnan(dy)) > 0 || sum(isinf(dy)) > 0
+          err = true;
+          quantities.setDirectionPrimal(quantities.directionPrimal('normal'),'full');
+          quantities.currentIterate.setMultipliers(zeros(quantities.currentIterate.numberOfConstraintsEqualities,1),[],'stochastic');
+          quantities.currentIterate.setMultipliers(zeros(quantities.currentIterate.numberOfConstraintsEqualities,1),[],'true');
+        end
+        break;
+      end
+      
+    end % while
     
     % Set termination test
     quantities.setTerminationTest(0);
     
     % Increment counters
-    quantities.incrementMatrixFactorizationCounter;
     quantities.incrementTerminationTestCounter(0);
     
   else
     
     % Grab required data
-    [yE,~] = quantities.currentIterate.multipliers('stochastic');
-    g_prev = quantities.previousIterate.objectiveGradient(quantities,'stochastic');
-    cE_prev = quantities.previousIterate.constraintFunctionEqualities(quantities);
-    JE_prev = quantities.previousIterate.constraintJacobianEqualities(quantities);
+    SS_in.quantities = quantities;
+    SS_in.directionComputation = D;
     
+    % Initialize counter
+    counter = 0;
     
-    
-    [current_multipliers , ~] = quantities.currentIterate.multipliers('stochastic');
-    previousIterateMeasure = norm([quantities.previousIterate.objectiveGradient(quantities,'stochastic') + quantities.previousIterate.constraintJacobianEqualities(quantities)' * current_multipliers ; quantities.previousIterate.constraintFunctionEqualities(quantities)]);
-    currentIterateInfo = [quantities.currentIterate.objectiveGradient(quantities,'stochastic') + quantities.currentIterate.constraintJacobianEqualities(quantities)' * current_multipliers; quantities.currentIterate.constraintFunctionEqualities(quantities)];
-    currentIterateMeasure = norm(currentIterateInfo);
-    c_norm1 = norm(quantities.currentIterate.constraintFunctionEqualities(quantities),1);
-    c_norm2 = norm(quantities.currentIterate.constraintFunctionEqualities(quantities));
-  
-  % Inexact solve by iterative solver
-  [v,TTnum,residual,innerIter] = minres_stanford(matrix, -currentIterateInfo, quantities.currentIterate.numberOfVariables, currentIterateMeasure, previousIterateMeasure, c_norm1, c_norm2, ...
-    D.full_residual_norm_factor_, D.primal_residual_norm_factor_, D.dual_residual_norm_factor_, D.constraint_norm_factor_, D.lagrangian_primal_norm_factor_, ...
-    D.curvature_threshold_, D.model_reduction_factor_, quantities.currentIterate.objectiveGradient(quantities,'stochastic'), quantities.meritParameter, ...
-    quantities.currentIterate.constraintJacobianEqualities(quantities),[],0,false,true,max(size(matrix,1)*100,100),1e-10);
-    
-    % Decompose step?
-    if ~D.decompose_step_
+    % Loop until Hessian modification not required
+    while 1
       
-      % Compute full direction
-%      [dy,tt,iters] = minres(matrix,)
-      dy = full(dy);
+      % Decompose step?
+      if ~D.decompose_step_
+
+        % Compute full direction
+        rhs = -[quantities.currentIterate.objectiveGradient(quantities,'stochastic'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
+        [dy,~,iters,~,~,~,~,~,SS_out] = minres(matrix,rhs,[],0,false,false,2*length(rhs),1e-12,SS_in);
+        dy = full(dy);
+        
+      else
+        
+        % Compute tangential direction
+        rhs = -[quantities.currentIterate.objectiveGradient(quantities,'stochastic') + matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * quantities.directionPrimal('normal'); zeros(quantities.currentIterate.numberOfConstraintsEqualities,1)];
+        [dy,~,iters,~,~,~,~,~,SS_out] = minres(matrix,rhs,[],0,false,false,2*length(rhs),1e-12,SS_in);
+        dy = full(dy);
+        
+        % Compute full direction
+        dy(1:quantities.currentIterate.numberOfVariables) = dy(1:quantities.currentIterate.numberOfVariables) + quantities.directionPrimal('normal');
+        
+      end
       
-    else
+      % Increment counter
+      quantities.incrementMINRESIterationCounter(iters);
+
+      % Set direction
+      quantities.setDirectionPrimal(dy(1:quantities.currentIterate.numberOfVariables),'full');
       
-      % Compute tangential direction
-%      uy = 
+      % Check if modification not required
+      if sum(isnan(dy)) == 0 && sum(isinf(dy)) == 0 && SS_out.tt > 0
+        if SS_out.tt == 3
+          dy(1:quantities.currentIterate.numberOfVariables) = 0;
+        end
+        break;
+      end
       
-      % Compute full direction
-      dy = full(uy);
-      dy(1:quantities.currentIterate.numberOfVariables) = dy(1:quantities.currentIterate.numberOfVariables) + quantities.directionPrimal('normal');
+      % Increment counter
+      counter = counter + 1;
       
-    end
+      % Perform modification or break
+      if counter < D.modification_limit_
+        matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) = D.modification_factor_ * matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) + (1 - D.modification_factor_) * speye(quantities.currentIterate.numberOfVariables);
+      elseif counter == D.modification_limit_
+        matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) = speye(quantities.currentIterate.numberOfVariables);
+        matrix(quantities.currentIterate.numberOfVariables+1:end,quantities.currentIterate.numberOfVariables+1:end) = -D.constraint_regularization_ * speye(quantities.currentIterate.numberOfConstraintsEqualities);
+      else
+        if sum(isnan(dy)) > 0 || sum(isinf(dy)) > 0
+          err = true;
+          quantities.setDirectionPrimal(quantities.directionPrimal('normal'),'full');
+          quantities.currentIterate.setMultipliers(zeros(quantities.currentIterate.numberOfConstraintsEqualities,1),[],'stochastic');
+          quantities.currentIterate.setMultipliers(zeros(quantities.currentIterate.numberOfConstraintsEqualities,1),[],'true');
+        end
+        break;
+      end
+      
+    end % while
     
     % Set termination test
-    quantities.setTerminationTest(tt);
+    quantities.setTerminationTest(SS_out.tt);
     
     % Increment counters
-    quantities.incrementMINRESIterationCounter(iters);
-    quantities.incrementTerminationTestCounter(tt);
+    quantities.incrementTerminationTestCounter(SS_out.tt);
     
   end
   
-  % Set direction
-  quantities.setDirectionPrimal(dy(1:quantities.currentIterate.numberOfVariables),'full');
-  
   % Compute residual
   r = matrix * dy + [quantities.currentIterate.objectiveGradient(quantities,'stochastic'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
-  
+
+  % Set linear system residual norm
+  quantities.setLinearSystemResidualNorm(norm(r,inf));
+    
   % Set multiplier
   quantities.currentIterate.setMultipliers(dy(quantities.currentIterate.numberOfVariables+1:end),[],'stochastic');
   
@@ -202,31 +269,34 @@ else
     if ~D.decompose_step_
       
       % Compute full direction
-      dy = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'true'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
-      dy = full(dy);
+      dy_true = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'true'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
+      dy_true = full(dy_true);
       
     else
       
-      % Compute direction
-      uy = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'true') + matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * quantities.directionPrimal('normal'); zeros(quantities.currentIterate.numberOfConstraintsEqualities,1)];
+      % Compute tangential direction
+      dy_true = -matrix \ [quantities.currentIterate.objectiveGradient(quantities,'true') + matrix(1:quantities.currentIterate.numberOfVariables,1:quantities.currentIterate.numberOfVariables) * quantities.directionPrimal('normal'); zeros(quantities.currentIterate.numberOfConstraintsEqualities,1)];
+      dy_true = full(dy_true);
       
       % Compute full direction
-      dy = full(uy);
-      dy(1:quantities.currentIterate.numberOfVariables) = dy(1:quantities.currentIterate.numberOfVariables) + quantities.directionPrimal('normal');
+      dy_true(1:quantities.currentIterate.numberOfVariables) = dy_true(1:quantities.currentIterate.numberOfVariables) + quantities.directionPrimal('normal');
       
     end
     
     % Increment counter
     quantities.incrementMatrixFactorizationCounter;
     
+    % Set to stochastic direction if any issues
+    if sum(isnan(dy_true)) > 0 || sum(isinf(dy_true)) > 0, dy_true = dy; end
+    
     % Set direction
-    quantities.setDirectionPrimal(dy(1:quantities.currentIterate.numberOfVariables),'true');
+    quantities.setDirectionPrimal(dy_true(1:quantities.currentIterate.numberOfVariables),'true');
     
     % Compute residual
-    r = matrix * dy + [quantities.currentIterate.objectiveGradient(quantities,'true'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
+    r = matrix * dy_true + [quantities.currentIterate.objectiveGradient(quantities,'true'); quantities.currentIterate.constraintFunctionEqualities(quantities)];
     
     % Set multiplier
-    quantities.currentIterate.setMultipliers(dy(quantities.currentIterate.numberOfVariables+1:end),[],'true');
+    quantities.currentIterate.setMultipliers(dy_true(quantities.currentIterate.numberOfVariables+1:end),[],'true');
     
     % Set residual
     quantities.setResidualFeasibility(r(quantities.currentIterate.numberOfVariables+1:end),'true');

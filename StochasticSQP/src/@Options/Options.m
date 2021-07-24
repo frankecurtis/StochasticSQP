@@ -231,7 +231,7 @@ classdef Options < handle
                 'Options: Attempted to modify double option (%s), but value has wrong type.\n',name);
             end
           elseif strcmp(O.list{i}.type,'integer')
-            if length(size(value)) == 2 && size(value,1) == 1 && size(value,2) == 1 && isinteger(value)
+            if length(size(value)) == 2 && size(value,1) == 1 && size(value,2) == 1 && round(value) == value
               if O.list{i}.lower <= value && value <= O.list{i}.upper
                 O.list{i}.value = value;
                 reporter.printf(Enumerations.R_SOLVER,Enumerations.R_DETAILED,...

@@ -29,7 +29,7 @@ classdef ProblemCUTEst < Problem
     mcl % number of constraints, inequalities, lower bounded
     mcu % number of constraints, inequalities, upper bounded
     s % name
-    seed = 1 % random seed
+    seed % seed for random number generator
     
   end % properties (private access)
   
@@ -41,20 +41,20 @@ classdef ProblemCUTEst < Problem
     %%%%%%%%%%%%%%%
     
     % Constructor
-    function P = ProblemCUTEst
+    function P = ProblemCUTEst(seed)
       
       % Initialize CUTEst
       prob = cutest_setup();
       
       % Get initial point
-      P.x = sparse(prob.x);
+      P.x = prob.x;
       
       % Set number of variables
       P.n = prob.n;
       
       % Get variable bounds
-      P.xl = sparse(prob.bl);
-      P.xu = sparse(prob.bu);
+      P.xl = prob.bl;
+      P.xu = prob.bu;
       
       % Set indices of variable bounds (that are finite)
       P.ixl = find(P.xl > -1e+18);
@@ -70,10 +70,10 @@ classdef ProblemCUTEst < Problem
       P.m = prob.m;
       
       % Get constraint lower bounds
-      P.cl = sparse(prob.cl);
+      P.cl = prob.cl;
       
       % Get constraint upper bounds
-      P.cu = sparse(prob.cu);
+      P.cu = prob.cu;
       
       % Set indices of constraint types
       P.ice = find(P.cl == P.cu);
@@ -91,6 +91,9 @@ classdef ProblemCUTEst < Problem
       % Set name
       P.s = prob.name;
       
+      % Set random number generator seed
+      P.seed = seed;
+      
     end % Constructor
     
     %%%%%%%%%%
@@ -105,6 +108,27 @@ classdef ProblemCUTEst < Problem
       
     end % destructor
     
+    % Check for constant objective function
+    function err = constantObjective(P)
+      
+      % Initialize error
+      err = true;
+      
+      % Evaluate objective at random points
+      try
+        f = cutest_obj(P.x);
+        for i = 1:10
+          f_other = cutest_obj(P.x + randn(length(P.x),1));
+          if abs(f - f_other) > 0
+            err = false;
+          end
+        end
+      catch
+        warning('ProblemCUTEst: Function evaluation error in constantObjective.');
+      end
+      
+    end % checkForConstantObjective
+    
     % Constraint function, equalities
     function [cE,err] = evaluateConstraintFunctionEqualities(P,x)
       
@@ -113,7 +137,7 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate constraint function, equalities
       try
-        c = sparse(cutest_cons(x));
+        c = cutest_cons(x);
         cE = c(P.ice) - P.cu(P.ice);
         if isempty(cE), cE = []; end
         if max(isnan(cE)), err = true; end
@@ -132,11 +156,8 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate constraint function, inequalities
       try
-        c = sparse(cutest_cons(x));
-        cI = [P.cl(P.icl) - c(P.icl);
-          c(P.icu) - P.cu(P.icu);
-          P.xl(P.ixl) - x(P.ixl);
-          x(P.ixu) - P.xu(P.ixu)];
+        c = cutest_cons(x);
+        cI = [P.cl(P.icl) - c(P.icl); c(P.icu) - P.cu(P.icu); P.xl(P.ixl) - x(P.ixl); x(P.ixu) - P.xu(P.ixu)];
         if isempty(cI), cI = []; end
         if max(isnan(cI)), err = true; end
       catch
@@ -157,6 +178,7 @@ classdef ProblemCUTEst < Problem
         [~,J] = cutest_cons(x);
         JE = sparse(J(P.ice,:));
         if isempty(JE), JE = []; end
+        if max(max(isnan(JE))), err = true; end
       catch
         JE = [];
         err = true;
@@ -174,11 +196,11 @@ classdef ProblemCUTEst < Problem
       try
         [~,J] = cutest_cons(x);
         JI = sparse(P.mcl+P.mcu+P.nxl+P.nxu,P.n);
-        JI(1:P.mcl+P.mcu,1:P.n) = [-J(P.icl,:);
-          J(P.icu,:)];
+        JI(1:P.mcl+P.mcu,1:P.n) = [-J(P.icl,:); J(P.icu,:)];
         JI(P.mcl+P.mcu+1:P.mcl+P.mcu+P.nxl,P.ixl) = -speye(P.nxl,P.nxl);
-        JI(P.mcl+P.mcu+P.nxl+1:P.mcl+P.mcu+P.nxl+P.nxu) = speye(P.nxu,P.nxu);
+        JI(P.mcl+P.mcu+P.nxl+1:P.mcl+P.mcu+P.nxl+P.nxu,P.ixu) = speye(P.nxu,P.nxu);
         if isempty(JI), JI = []; end
+        if max(max(isnan(JI))), err = true; end
       catch
         JI = [];
         err = true;
@@ -194,9 +216,9 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate Hessian of Lagrangian
       try
-        yEorig = sparse(P.m,1);
-        yLorig = sparse(P.m,1);
-        yUorig = sparse(P.m,1);
+        yEorig = zeros(P.m,1);
+        yLorig = zeros(P.m,1);
+        yUorig = zeros(P.m,1);
         yEorig(P.ice) =  yE;
         yLorig(P.icl) = -yI(1:P.mcl);
         yUorig(P.icu) =  yI(P.mcl+1:P.mcl+P.mcu);
@@ -233,21 +255,15 @@ classdef ProblemCUTEst < Problem
       % Evaluate objective gradient
       try
         
+        % Check type
         if strcmp(type,'stochastic')
           rng(P.seed);
-          g = sparse(cutest_grad(x));
-          noise = sparse(P.n,1);
-          for i = 1:factor
-            noise = noise + sprandn(P.n,1,1);
-          end
-          noise = noise/factor;
-          g = sparse(g + noise * (1e-2/sqrt(P.n))); % noise_level ... {1e-4,-2,-1}
+          g = cutest_grad(x) + (10^(-factor)/sqrt(P.n)) * randn(P.n,1);
           P.seed = rng;
         elseif strcmp(type,'true')
-          g = sparse(cutest_grad(x));
+          g = cutest_grad(x);
         else
-          err = true;
-          error('Point: Incorrect type of inputs to Problem.evaluateObjectiveGradient.');
+          error('ProblemCUTEst: Invalid type for evaluateObjectiveGradient.');
         end
       catch
         g = [];
@@ -260,7 +276,7 @@ classdef ProblemCUTEst < Problem
     function x = initialPoint(P)
       
       % Set initial point
-      x = sparse(P.x);
+      x = P.x;
       
     end % initialPoint
     

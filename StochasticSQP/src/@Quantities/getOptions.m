@@ -8,7 +8,7 @@ function getOptions(Q,options,reporter)
 % Get options
 Q.batch_size_ = options.getOption(reporter,'batch_size');
 Q.cg_iteration_relative_limit_ = options.getOption(reporter,'cg_iteration_relative_limit');
-Q.compute_stationarity_true_ = options.getOption(reporter,'compute_stationarity_true');
+Q.check_derivatives_ = options.getOption(reporter,'check_derivatives');
 Q.constraint_function_evaluation_limit_ = options.getOption(reporter,'constraint_function_evaluation_limit');
 Q.constraint_Jacobian_evaluation_limit_ = options.getOption(reporter,'constraint_Jacobian_evaluation_limit');
 Q.cpu_time_limit_ = options.getOption(reporter,'cpu_time_limit');

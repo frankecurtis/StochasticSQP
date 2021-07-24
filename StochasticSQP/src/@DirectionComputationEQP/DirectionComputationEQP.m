@@ -16,12 +16,28 @@ classdef DirectionComputationEQP < DirectionComputation
     %%%%%%%%%%%
     % OPTIONS %
     %%%%%%%%%%%
-    cg_iteration_limit_
+    cg_iteration_relative_limit_
     cg_residual_tolerance_
     cg_trust_region_factor_
     compute_true_
+    constraint_reduction_tolerance_
+    constraint_regularization_
     curvature_threshold_
     decompose_step_
+    decomposition_threshold_
+    model_reduction_tolerance_constraints_
+    model_reduction_tolerance_objective_
+    modification_factor_
+    modification_limit_
+    residual_dual_tolerance_
+    residual_tolerance_factor_
+    residual_tolerance_minimum_
+    stationarity_imbalance_tolerance_
+    stepsize_residual_dual_tolerance_
+    stepsize_residual_primal_tolerance_
+    tangential_objective_tolerance_
+    termination_test_iteration_frequency_
+    termination_test_iteration_minimum_
     use_hessian_of_lagrangian_
     use_iterative_solver_
     

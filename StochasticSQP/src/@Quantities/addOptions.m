@@ -6,7 +6,7 @@
 function addOptions(options,reporter)
 
 % Add bool options
-options.addBoolOption(reporter,'compute_stationarity_true',true);
+options.addBoolOption(reporter,'check_derivatives',false);
 options.addBoolOption(reporter,'scale_problem',true);
 options.addBoolOption(reporter,'stepsize_diminishing',false);
 
@@ -20,7 +20,7 @@ options.addIntegerOption(reporter,'matrix_factorization_limit',1e+04,0,inf);
 options.addIntegerOption(reporter,'objective_function_evaluation_limit',1e+04,0,inf);
 options.addIntegerOption(reporter,'objective_gradient_evaluation_limit',1e+04,0,inf);
 options.addIntegerOption(reporter,'objective_gradient_true_evaluation_limit',1e+04,0,inf);
-options.addIntegerOption(reporter,'size_limit',1e+04,0,inf);
+options.addIntegerOption(reporter,'size_limit',1e+06,0,inf);
 
 % Add double options
 options.addDoubleOption(reporter,'cg_iteration_relative_limit',1e+04,0,inf);

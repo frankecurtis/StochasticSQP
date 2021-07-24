@@ -8,4 +8,7 @@ function initialize(L,options,quantities,reporter)
 % Initialize random number generator
 rng(L.seed_);
 
+% Initialize lipschitz constants
+quantities.setLipschitz(L.lipschitz_constraint_initial_,L.lipschitz_objective_initial_);
+
 end % initialize

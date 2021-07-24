@@ -22,6 +22,7 @@ classdef Quantities < handle
     direction_primal_
     direction_primal_normal_
     direction_primal_true_
+    linear_system_residual_norm_
     lipschitz_constraint_
     lipschitz_objective_
     merit_parameter_
@@ -41,6 +42,7 @@ classdef Quantities < handle
     % OPTIONS %
     %%%%%%%%%%%
     batch_size_
+    check_derivatives_
     stepsize_diminishing_
     stepsize_scaling_initial_
     
@@ -66,7 +68,6 @@ classdef Quantities < handle
     %%%%%%%%%%%%%%
     % INDICATORS %
     %%%%%%%%%%%%%%
-    compute_stationarity_true_
     scale_problem_
     
     %%%%%%%%%%%%%%
@@ -188,13 +189,13 @@ classdef Quantities < handle
       
     end % CGIterationRelativeLimit
 
-    % Compute stationarity true measure?
-    function b = computeStationarityTrue(Q)
+    % Check derivatives
+    function b = checkDerivatives(Q)
       
       % Set return value
-      b = Q.compute_stationarity_true_;
+      b = Q.check_derivatives_;
       
-    end % computeStationarityTrue
+    end % checkDerivatives
     
     % Constraint function, equalities, evaluation counter
     function c = constraintFunctionEqualitiesEvaluationCounter(Q)
@@ -400,6 +401,14 @@ classdef Quantities < handle
         Q.size_limit_);
       
     end % limitExceededSize
+    
+    % Linear system residual norm
+    function v = linearSystemResidualNorm(Q)
+      
+      % Set return value
+      v = Q.linear_system_residual_norm_;
+      
+    end % linearSystemResidualNorm
 
     % Lipschitz constant, constraint
     function lipschitz = lipschitzConstraint(Q)
@@ -671,6 +680,22 @@ classdef Quantities < handle
       
     end % setCurvatureIndicator
     
+    % Set curvature parameter
+    function setCurvatureParameter(Q,value)
+      
+      % Set parameter
+      Q.curvature_parameter_ = value;
+      
+    end % setCurvatureParameter
+    
+    % Set decomposition parameter
+    function setDecompositionParameter(Q,value)
+      
+      % Set parameter
+      Q.decomposition_parameter_ = value;
+      
+    end % setDecompositionParameter
+    
     % Set direction, primal
     function setDirectionPrimal(Q,direction,type)
       
@@ -686,6 +711,14 @@ classdef Quantities < handle
       end
       
     end % setDirectionPrimal
+    
+    % Set linear system residual norm
+    function setLinearSystemResidualNorm(Q,value)
+      
+      % Set linear system residual norm
+      Q.linear_system_residual_norm_ = value;
+      
+    end % setLinearSystemResidualNorm
     
     % Set Lipschitz
     function setLipschitz(Q,lipschitz_constraint,lipschitz_objective)
@@ -856,10 +889,10 @@ classdef Quantities < handle
     end % incrementMatrixFactorizationCounter
     
     % Increment MINRES iteration counter
-    function incrementMINRESIterationCounter(Q)
+    function incrementMINRESIterationCounter(Q,iterations)
       
       % Increment MINRES iteration counter counter
-      Q.minres_iteration_counter_ = Q.minres_iteration_counter_ + 1;
+      Q.minres_iteration_counter_ = Q.minres_iteration_counter_ + iterations;
       
     end % incrementMINRESIterationCounter
     

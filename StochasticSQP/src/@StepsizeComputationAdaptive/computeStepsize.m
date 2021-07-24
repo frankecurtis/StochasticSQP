@@ -19,47 +19,57 @@ else
   % Compute stepsize for "sufficient decrease"
   alpha_suff = min(1, 2*(1 - S.sufficient_decrease_) * quantities.stepsizeScaling * quantities.modelReduction / denominator);
   
-  % Compute lower and upper bounds
-  if quantities.curvatureIndicator
-    alpha_min = 2*(1 - S.sufficient_decrease_) * quantities.stepsizeScaling * quantities.ratioParameter * quantities.meritParameter / (quantities.meritParameter * quantities.lipschitzObjective + quantities.lipschitzConstraint);
-  else
-    alpha_min = 2*(1 - S.sufficient_decrease_) * quantities.stepsizeScaling * quantities.ratioParameter / (quantities.meritParameter * quantities.lipschitzObjective + quantities.lipschitzConstraint);
-  end
-  alpha_max = alpha_min + S.projection_width_ * quantities.stepsizeScaling^2;
-  
-  % Compute stepsize
-  alpha = min(alpha_suff, alpha_min);
-  
-  % Check whether to lengthen
-  if S.lengthening_
+  % Sanity check for modelReduction
+  if quantities.modelReduction <= 0.0
     
-    % Loop while less than 1
-    while alpha < alpha_max
+    % Set null stepsize
+    alpha = 0.0;
+    
+  else
+    
+    % Compute lower and upper bounds
+    if quantities.curvatureIndicator
+      alpha_min = 2*(1 - S.sufficient_decrease_) * quantities.stepsizeScaling * quantities.ratioParameter * quantities.meritParameter / (quantities.meritParameter * quantities.lipschitzObjective + quantities.lipschitzConstraint);
+    else
+      alpha_min = 2*(1 - S.sufficient_decrease_) * quantities.stepsizeScaling * quantities.ratioParameter / (quantities.meritParameter * quantities.lipschitzObjective + quantities.lipschitzConstraint);
+    end
+    alpha_max = alpha_min + S.projection_width_ * quantities.stepsizeScaling^2;
+    
+    % Compute stepsize
+    alpha = min(alpha_suff, alpha_min);
+    
+    % Check whether to lengthen
+    if S.lengthening_
       
-      % Set trial stepsize
-      alpha_trial = min(alpha_max, S.lengthening_ratio_ * alpha);
-      
-      % Evaluate reduction value
-      reduction = alpha_trial * (S.sufficient_decrease_ - 1) * quantities.stepsizeScaling * quantities.modelReduction ...
-        + norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + alpha_trial * quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.directionPrimal('full'),1) ...
-        - quantities.currentIterate.constraintNorm1(quantities) ...
-        + alpha_trial * (quantities.currentIterate.constraintNorm1(quantities) - norm(quantities.residualFeasibility('full'),1)) ...
-        + 0.5 * alpha_trial^2 * denominator;
-      
-      % Check reduction
-      if reduction > 0
-        break;
-      else
-        alpha = alpha_trial;
-        if alpha >= alpha_max
+      % Loop while less than 1
+      while alpha < alpha_max
+        
+        % Set trial stepsize
+        alpha_trial = min(alpha_max, S.lengthening_ratio_ * alpha);
+        
+        % Evaluate reduction value
+        reduction = alpha_trial * (S.sufficient_decrease_ - 1) * quantities.stepsizeScaling * quantities.modelReduction ...
+          + norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + alpha_trial * quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.directionPrimal('full'),1) ...
+          - quantities.currentIterate.constraintNorm1(quantities) ...
+          + alpha_trial * (quantities.currentIterate.constraintNorm1(quantities) - norm(quantities.residualFeasibility('full'),1)) ...
+          + 0.5 * alpha_trial^2 * denominator;
+        
+        % Check reduction
+        if reduction > 0
           break;
+        else
+          alpha = alpha_trial;
+          if alpha >= alpha_max
+            break;
+          end
         end
+        
       end
       
+      % Project stepsize
+      alpha = max(alpha_min,min(alpha,alpha_max));
+      
     end
-    
-    % Project stepsize
-    alpha = max(alpha_min,min(alpha,alpha_max));
     
   end
   

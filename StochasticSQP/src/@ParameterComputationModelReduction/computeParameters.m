@@ -41,7 +41,7 @@ if quantities.currentIterate.constraintNorm1 > 0.0
   if quantities.meritParameter > merit_parameter_trial
     
     % Set merit parameter
-    quantities.setMeritParameter(min((1 - P.parameter_reduction_factor_) * quantities.meritParameter, merit_parameter_trial));
+    quantities.setMeritParameter(max(P.parameter_minimum_,min((1 - P.parameter_reduction_factor_) * quantities.meritParameter, merit_parameter_trial)));
     
   end
   
@@ -57,7 +57,7 @@ if norm(quantities.directionPrimal('tangential'))^2 >= quantities.decompositionP
   
   % Set parameters
   quantities.setDecompositionParameter((1 + P.parameter_increase_factor_) * quantities.decompositionParameter);
-  quantities.setCurvatureParameter((1 - P.parameter_reduction_factor_) * quantities.curvatureParameter);
+  quantities.setCurvatureParameter(max(P.parameter_minimum_,(1 - P.parameter_reduction_factor_) * quantities.curvatureParameter));
   
 end
 
@@ -86,17 +86,21 @@ end
 %%%%%%%%%%%%%%%%%%%
 
 % Initialize trial value
-if quantities.curvatureIndicator
-  ratio_parameter_trial = quantities.modelReduction / (quantities.meritParameter * norm(quantities.directionPrimal('full'))^2);
+if quantities.modelReduction > 0
+  if quantities.curvatureIndicator
+    ratio_parameter_trial = quantities.modelReduction / (quantities.meritParameter * norm(quantities.directionPrimal('full'))^2);
+  else
+    ratio_parameter_trial = quantities.modelReduction / norm(quantities.directionPrimal('full'))^2;
+  end
 else
-  ratio_parameter_trial = quantities.modelReduction / norm(quantities.directionPrimal('full'))^2;
+  ratio_parameter_trial = P.parameter_minimum_;
 end
 
 % Check trial value
 if quantities.ratioParameter > ratio_parameter_trial
   
   % Set ratio parameter
-  quantities.setRatioParameter(min((1 - P.parameter_reduction_factor_) * quantities.ratioParameter, ratio_parameter_trial));
+  quantities.setRatioParameter(max(P.parameter_minimum_,min((1 - P.parameter_reduction_factor_) * quantities.ratioParameter, ratio_parameter_trial)));
   
 end
 

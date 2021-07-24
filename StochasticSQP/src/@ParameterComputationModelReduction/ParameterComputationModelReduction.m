@@ -19,6 +19,8 @@ classdef ParameterComputationModelReduction < ParameterComputation
     curvature_threshold_
     model_increase_factor_
     model_reduction_factor_
+    parameter_increase_factor_
+    parameter_minimum_
     parameter_reduction_factor_
     quadratic_model_for_merit_update_
     quadratic_model_for_stepsize_

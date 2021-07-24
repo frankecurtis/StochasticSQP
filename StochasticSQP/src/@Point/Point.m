@@ -231,6 +231,67 @@ classdef Point < handle
       
     end % scaleFactors
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % CHECK DERIVATIVE METHOD %
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % Check derivatives
+    function checkDerivatives(P,quantities)
+      
+      % Set parameters
+      epsilon   = 1e-08;
+      tolerance = 1e-04;
+      
+      % Evaluate objective quantities
+      f = P.objectiveFunction(quantities);
+      g = P.objectiveGradient(quantities,'true');
+      
+      % Loop over coordinate directions
+      for j = 1:P.n
+        
+        % Set perturbation
+        perturbation = zeros(P.n,1); perturbation(j) = epsilon;
+        
+        % Set trial point
+        temp = Point(quantities.currentIterate,quantities.currentIterate.primalPoint + perturbation);
+        
+        % Set trial objective value
+        f_temp = temp.objectiveFunction(quantities);
+        
+        % Check derivative
+        if abs((f_temp - f)/epsilon - g(j)) >= tolerance
+          warning('g[%8d] = %+e != %e',j,g(j),(f_temp - f)/epsilon);
+        end
+        
+      end
+      
+      % Evaluate constraint quantities
+      cE = P.constraintFunctionEqualities(quantities);
+      JE = P.constraintJacobianEqualities(quantities);
+      
+      % Loop over coordinate directions
+      for j = 1:P.n
+        
+        % Set perturbation
+        perturbation = zeros(P.n,1); perturbation(j) = epsilon;
+        
+        % Set trial point
+        temp = Point(quantities.currentIterate,quantities.currentIterate.primalPoint + perturbation);
+        
+        % Set trial objective value
+        cE_temp = temp.constraintFunctionEqualities(quantities);
+        
+        % Check derivatives
+        for i = 1:P.mE
+          if abs((cE_temp(i) - cE(i))/epsilon - JE(i,j)) >= tolerance
+            warning('JE[%8d,%8d] = %+e != %e',i,j,JE(i,j),(cE_temp(i) - cE(i))/epsilon);
+          end
+        end
+        
+      end
+      
+    end % checkDerivatives
+    
     %%%%%%%%%%%%%%%%%%%%%%
     % EVALUATION METHODS %
     %%%%%%%%%%%%%%%%%%%%%%
