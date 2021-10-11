@@ -29,13 +29,13 @@ if quantities.currentIterate.constraintNorm1 > 0.0
   % Initialize trial value
   merit_parameter_trial = inf;
   
-  % Check sign of objective model value
-  if objective_model_value + quadratic_term > 0.0 && (quantities.terminationTest == 0 || quantities.terminationTest == 2)
-    
-    % Update trial value
-    merit_parameter_trial = (1 - P.model_reduction_factor_) * constraint_model_reduction / (objective_model_value + quadratic_term);
-    
-  end
+%   % Check sign of objective model value
+%   if objective_model_value + quadratic_term > 0.0 && (quantities.terminationTest == 0 || quantities.terminationTest == 2)
+%     
+%     % Update trial value
+%     merit_parameter_trial = (1 - P.model_reduction_factor_) * constraint_model_reduction / (objective_model_value + quadratic_term);
+%     
+%   end
   
   % Check trial value
   if quantities.meritParameter > merit_parameter_trial

@@ -25,15 +25,16 @@ v = quantities.meritParameter * quantities.currentIterate.objectiveGradient(quan
 if quantities.currentIterate.numberOfConstraintsEqualities > 0
   v = v + (ones(length(cE_P),1)'*JE(cE_P,:))' - (ones(length(cE_N),1)'*JE(cE_N,:))';
 end
-if quantities.currentIterate.numberOfConstraintsInequalities > 0
-  v = v + (ones(length(cI_P),1)'*JI(cI_P,:))';
-end
+% if quantities.currentIterate.numberOfConstraintsInequalities > 0
+%   v = v + (ones(length(cI_P),1)'*JI(cI_P,:))';
+% end
 
 % Set direction
 quantities.setDirectionPrimal(-v,'full');
+quantities.setDirectionPrimal(-v,'normal');
 
 % Set curvature
-quantities.setCurvature(v'*v);
+quantities.setCurvature(v'*v,'full');
 
 % Compute true direction?
 if D.compute_true_
