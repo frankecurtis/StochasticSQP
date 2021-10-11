@@ -12,6 +12,7 @@ classdef ProblemCUTEst < Problem
     % MEMBERS %
     %%%%%%%%%%%
     x % initial point
+
     n % number of variables
     xl % lower variable bounds
     xu % upper variable bounds
@@ -28,6 +29,8 @@ classdef ProblemCUTEst < Problem
     mce % number of constraints, equalities
     mcl % number of constraints, inequalities, lower bounded
     mcu % number of constraints, inequalities, upper bounded
+    mclu
+    n_extend
     s % name
     seed % seed for random number generator
     
@@ -87,6 +90,8 @@ classdef ProblemCUTEst < Problem
       P.mce = length(P.ice);
       P.mcl = length(P.icl);
       P.mcu = length(P.icu);
+      P.mclu = P.mcl+P.mcu;
+      P.n_extend=P.n+P.mclu;
       
       % Set name
       P.s = prob.name;
@@ -129,6 +134,25 @@ classdef ProblemCUTEst < Problem
       
     end % checkForConstantObjective
     
+%     % Constraint function, equalities
+%     function [cE,err] = evaluateConstraintFunctionEqualities(P,x)
+%       
+%       % Initialize error
+%       err = false;
+%       
+%       % Evaluate constraint function, equalities
+%       try
+%         c = cutest_cons(x);
+%         cE = c(P.ice) - P.cu(P.ice);
+%         if isempty(cE), cE = []; end
+%         if max(isnan(cE)), err = true; end
+%       catch
+%         cE = [];
+%         err = true;
+%       end
+%       
+%     end % evaluateConstraintFunctionEqualities
+
     % Constraint function, equalities
     function [cE,err] = evaluateConstraintFunctionEqualities(P,x)
       
@@ -137,8 +161,8 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate constraint function, equalities
       try
-        c = cutest_cons(x);
-        cE = c(P.ice) - P.cu(P.ice);
+        c = cutest_cons(x(1:P.n));
+        cE=[c(P.ice);-c(P.icl);c(P.icu)] + [zeros(P.mce,1);x(P.n+1:P.n_extend)] - [P.cu(P.ice);-P.cl(P.icl);P.cu(P.icu)];
         if isempty(cE), cE = []; end
         if max(isnan(cE)), err = true; end
       catch
@@ -156,8 +180,8 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate constraint function, inequalities
       try
-        c = cutest_cons(x);
-        cI = [P.cl(P.icl) - c(P.icl); c(P.icu) - P.cu(P.icu); P.xl(P.ixl) - x(P.ixl); x(P.ixu) - P.xu(P.ixu)];
+        %c = cutest_cons(x);
+        cI = [P.xl(P.ixl) - x(P.ixl); x(P.ixu) - P.xu(P.ixu);-x(P.n+1:P.n_extend)];
         if isempty(cI), cI = []; end
         if max(isnan(cI)), err = true; end
       catch
@@ -168,17 +192,40 @@ classdef ProblemCUTEst < Problem
     end % evaluateConstraintFunctionInequalities
     
     % Constraint Jacobian, equalities
+%     function [JE,err] = evaluateConstraintJacobianEqualities(P,x)
+%       
+%       % Initialize error
+%       err = false;
+%       
+%       % Evaluate constraint Jacobian, equalities
+%       try
+%         [~,J] = cutest_cons(x);
+%         JE = sparse(J(P.ice,:));
+%         if isempty(JE), JE = []; end
+%         if max(max(isnan(JE))), err = true; end
+%       catch
+%         JE = [];
+%         err = true;
+%       end
+%       
+%     end % evaluateConstraintJacobianEqualities
+
+    % Constraint Jacobian, equalities
     function [JE,err] = evaluateConstraintJacobianEqualities(P,x)
       
       % Initialize error
       err = false;
-      
-      % Evaluate constraint Jacobian, equalities
+
       try
-        [~,J] = cutest_cons(x);
-        JE = sparse(J(P.ice,:));
+        [~,J] = cutest_cons(x(1:P.n));
+        JE = sparse(P.mce+P.mcl+P.mcu,P.n_extend);
+        JE(1:P.mce,1:P.n) = J(P.ice,:);
+        JE(P.mce+1:P.mce+P.mcl+P.mcu,1:P.n) = [-J(P.icl,:);
+                                    J(P.icu,:)];
+        JE(P.mce+1:P.mce+P.mcl+P.mcu,P.n+1:P.n_extend) = speye(P.mclu,P.mclu);
         if isempty(JE), JE = []; end
         if max(max(isnan(JE))), err = true; end
+
       catch
         JE = [];
         err = true;
@@ -193,18 +240,20 @@ classdef ProblemCUTEst < Problem
       err = false;
       
       % Evaluate constraint Jacobian, inequalities
-      try
-        [~,J] = cutest_cons(x);
-        JI = sparse(P.mcl+P.mcu+P.nxl+P.nxu,P.n);
-        JI(1:P.mcl+P.mcu,1:P.n) = [-J(P.icl,:); J(P.icu,:)];
-        JI(P.mcl+P.mcu+1:P.mcl+P.mcu+P.nxl,P.ixl) = -speye(P.nxl,P.nxl);
-        JI(P.mcl+P.mcu+P.nxl+1:P.mcl+P.mcu+P.nxl+P.nxu,P.ixu) = speye(P.nxu,P.nxu);
+       try
+          
+        [~,J] = cutest_cons(x(1:P.n));
+        JI_I = speye(P.n_extend);
+        JI = sparse(P.nxl+P.nxu+P.mcl+P.mcu,P.n_extend);
+        JI(1:P.nxl,:) = -JI_I(P.ixl,:);
+        JI(P.nxl+1:P.nxl+P.nxu,:) = JI_I(P.ixu,:);
+        JI(P.nxl+P.nxu+1:P.mcl+P.mcu+P.nxl+P.nxu,:) = -JI_I(P.n+1:P.n_extend,:);    
         if isempty(JI), JI = []; end
         if max(max(isnan(JI))), err = true; end
       catch
         JI = [];
         err = true;
-      end
+      end      
       
     end % evaluateConstraintJacobianInequalities
     
@@ -222,7 +271,7 @@ classdef ProblemCUTEst < Problem
         yEorig(P.ice) =  yE;
         yLorig(P.icl) = -yI(1:P.mcl);
         yUorig(P.icu) =  yI(P.mcl+1:P.mcl+P.mcu);
-        H = sparse(cutest_hess(x,yEorig + yLorig + yUorig));
+        H = sparse(cutest_hess(x(1:P.n),yEorig + yLorig + yUorig));
       catch
         H = [];
         err = true;
@@ -238,7 +287,7 @@ classdef ProblemCUTEst < Problem
       
       % Evaluate objective function
       try
-        f = cutest_obj(x);
+        f = cutest_obj(x(1:P.n));
       catch
         f = [];
         err = true;
@@ -258,10 +307,12 @@ classdef ProblemCUTEst < Problem
         % Check type
         if strcmp(type,'stochastic')
           rng(P.seed);
-          g = cutest_grad(x) + (10^(-factor)/sqrt(P.n)) * randn(P.n,1);
+          g = cutest_grad(x(1:P.n)) + (10^(-factor)/sqrt(P.n)) * randn(P.n,1);
+          g = [g;zeros(P.mclu,1)];
           P.seed = rng;
         elseif strcmp(type,'true')
-          g = cutest_grad(x);
+          g = cutest_grad(x(1:P.n));
+          g = [g;zeros(P.mclu,1)];
         else
           error('ProblemCUTEst: Invalid type for evaluateObjectiveGradient.');
         end
@@ -272,12 +323,35 @@ classdef ProblemCUTEst < Problem
       
     end % evaluateObjectiveGradient
     
-    % Initial point
-    function x = initialPoint(P)
+    
+    function [xl,xu] = bounds(P)
+        xl=P.xl;
+        xu=P.xu;
+    end
+    
+%     % Initial point
+%     function x = initialPoint(P)
+%       
+%       % Set initial point
+%       x = P.x;
+%       
+%     end % initialPoint
+
+    % Initial point, x in bounds and append the non-neg slack variable s
+    function x_extend = initialPoint(P)
       
       % Set initial point
-      x = P.x;
+      x_cur=P.x;
+        
+      % modify if x(i) not in range (l(i), u(i))
+      xLTl = find(x_cur<P.xl);
+      xGTu = find(x_cur>P.xu);
+
+      x_cur(xLTl) = min(P.xu(xLTl)/2+P.xl(xLTl)/2,P.xl(xLTl));
+      x_cur(xGTu) = max(P.xu(xGTu)/2+P.xl(xGTu)/2, P.xu(xGTu));
       
+      x_extend=[x_cur;zeros(P.mclu,1)];
+            
     end % initialPoint
     
     % Name
@@ -292,7 +366,7 @@ classdef ProblemCUTEst < Problem
     function mE = numberOfConstraintsEqualities(P)
       
       % Set number of constraints, equalities
-      mE = P.mce;
+      mE = P.mce+P.mclu;
       
     end % numberOfConstraintsEqualities
     
@@ -308,7 +382,7 @@ classdef ProblemCUTEst < Problem
     function n = numberOfVariables(P)
       
       % Set number of variables
-      n = P.n;
+      n = P.n_extend;
       
     end % numberOfVariables
     

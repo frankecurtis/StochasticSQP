@@ -181,6 +181,24 @@ classdef Point < handle
       
     end % multipliers
     
+    
+    % variable bounds
+    function [xl,xu] = bounds(P)
+        [xl,xu] = P.p.bounds;
+    end % variable bounds
+    
+    
+    function projectToBounds(P)
+        [xl,xu] = P.p.bounds;
+        [n_small,~] = size(xl);
+        ix_smallerThanBounds = find(P.x(1:n_small)<xl);
+        ix_largerThanBounds = find(P.x(1:n_small)>xu);
+        is_smallerThanBounds = find(P.x(n_small+1:P.n)<0)+n_small;
+        P.x(ix_smallerThanBounds) = xl(ix_smallerThanBounds);
+        P.x(ix_largerThanBounds) = xu(ix_largerThanBounds);
+        P.x(is_smallerThanBounds) = 0;
+    end
+    
     % Number of constraints, equalities
     function mE = numberOfConstraintsEqualities(P)
       
@@ -367,7 +385,9 @@ classdef Point < handle
         end
         
         % Scale
-        P.cI = P.cI_scale .* P.cI_unscaled;
+
+%         P.cI = P.cI_scale .* P.cI_unscaled;
+        P.cI =  P.cI_unscaled;
         
         % Set indicator
         P.cI_evaluated = true;
@@ -703,22 +723,22 @@ classdef Point < handle
             vec = vec + (P.yE_true' * P.constraintJacobianEqualities(quantities))';
           end
         end
-        if P.mI > 0
-          if strcmp(type,'stochastic')
-            vec = vec + (P.yI' * P.constraintJacobianInequalities(quantities))';
-          else % strcmp(type,'true')
-            vec = vec + (P.yI_true' * P.constraintJacobianInequalities(quantities))';
-          end
-        end
+%         if P.mI > 0
+%           if strcmp(type,'stochastic')
+%             vec = vec + (P.yI' * P.constraintJacobianInequalities(quantities))';
+%           else % strcmp(type,'true')
+%             vec = vec + (P.yI_true' * P.constraintJacobianInequalities(quantities))';
+%           end
+%         end
         v = norm(vec,inf);
-        if P.mI > 0
-          if strcmp(type,'stochastic')
-            v = max(v,norm([min(P.yI,0); P.yI .* P.constraintFunctionInequalities(quantities)],inf));
-          else % strcmp(type,'true')
-            v = max(v,norm([min(P.yI_true,0); P.yI_true .* P.constraintFunctionInequalities(quantities)],inf));
-          end
-        end
-        v = max(v,P.constraintNormInf(quantities));
+%         if P.mI > 0
+%           if strcmp(type,'stochastic')
+%             v = max(v,norm([min(P.yI,0); P.yI .* P.constraintFunctionInequalities(quantities)],inf));
+%           else % strcmp(type,'true')
+%             v = max(v,norm([min(P.yI_true,0); P.yI_true .* P.constraintFunctionInequalities(quantities)],inf));
+%           end
+%         end
+%         v = max(v,P.constraintNormInf(quantities));
       end
       
     end % KKTError
