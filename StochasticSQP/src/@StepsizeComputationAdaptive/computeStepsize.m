@@ -5,6 +5,7 @@
 % StepsizeComputationAdaptive: computeStepsize
 function computeStepsize(S,options,quantities,reporter,strategies)
 
+
 % Check for small step
 if norm(quantities.directionPrimal('full'),inf) < S.direction_norm_tolerance_
   
@@ -12,13 +13,12 @@ if norm(quantities.directionPrimal('full'),inf) < S.direction_norm_tolerance_
   alpha = 1;
   
 else
-  
-  % Compute stepsize denominator
+ 
   denominator = (quantities.meritParameter * quantities.lipschitzObjective + quantities.lipschitzConstraint) * norm(quantities.directionPrimal('full'))^2;
   
   % Compute stepsize for "sufficient decrease"
   alpha_suff = min(1, 2*(1 - S.sufficient_decrease_) * quantities.stepsizeScaling * quantities.modelReduction / denominator);
-  
+
   % Sanity check for modelReduction
   if quantities.modelReduction <= 0.0
     
@@ -37,7 +37,7 @@ else
     
     % Compute stepsize
     alpha = min(alpha_suff, alpha_min);
-    
+
     % Check whether to lengthen
     if S.lengthening_
       
@@ -47,14 +47,34 @@ else
         % Set trial stepsize
         alpha_trial = min(alpha_max, S.lengthening_ratio_ * alpha);
         
-        % Evaluate reduction value
-        reduction = alpha_trial * (S.sufficient_decrease_ - 1) * quantities.stepsizeScaling * quantities.modelReduction ...
-          + norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + alpha_trial * quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.directionPrimal('full'),1) ...
-          - quantities.currentIterate.constraintNorm1(quantities) ...
-          + alpha_trial * (quantities.currentIterate.constraintNorm1(quantities) - norm(quantities.residualFeasibility('full'),1)) ...
-          + 0.5 * alpha_trial^2 * denominator;
+
+        if quantities.currentIterate.numberOfConstraintsEqualities ~=0
+            temp_Equality_alpha = norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + alpha_trial * quantities.currentIterate.constraintJacobianEqualities(quantities) * quantities.directionPrimal('full'),1);
+            temp_Equality = norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + quantities.currentIterate.constraintJacobianEqualities(quantities)*quantities.directionPrimal('full'),1);
+        else
+            temp_Equality_alpha = 0;
+            temp_Equality = 0;
+        end
         
-        % Check reduction
+ 
+        if quantities.currentIterate.numberOfConstraintsInequalities ~=0
+            temp_Inequality_alpha = norm( max(quantities.currentIterate.constraintFunctionInequalities(quantities) + alpha_trial * quantities.currentIterate.constraintJacobianInequalities(quantities) * quantities.directionPrimal('full'),0),1 );
+            temp_Inequality = norm(max( quantities.currentIterate.constraintFunctionInequalities(quantities) + quantities.currentIterate.constraintJacobianInequalities(quantities)*quantities.directionPrimal('full')  ,0),1);
+        else
+            temp_Inequality_alpha = 0;
+            temp_Inequality = 0;
+        end
+        
+
+        reduction = alpha_trial * (S.sufficient_decrease_ - 1) * quantities.stepsizeScaling * quantities.modelReduction ...
+          + temp_Equality_alpha ...
+          - quantities.currentIterate.constraintNorm1(quantities) ...
+          + temp_Inequality_alpha...
+          + alpha_trial * (quantities.currentIterate.constraintNorm1(quantities) - temp_Equality...
+            -  temp_Inequality ) ...
+          + 0.5 * alpha_trial^2 * denominator;
+    
+        % Check reductions
         if reduction > 0
           break;
         else
@@ -68,6 +88,7 @@ else
       
       % Project stepsize
       alpha = max(alpha_min,min(alpha,alpha_max));
+      %alpha = min(alpha, 1);
       
     end
     
@@ -75,6 +96,7 @@ else
   
 end
 
+alpha = min(alpha, 1);
 % Set stepsize
 quantities.setStepsize(alpha);
 

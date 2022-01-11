@@ -102,6 +102,17 @@ classdef StochasticSQP < handle
       
     end % finalIterate
     
+    
+    function [x,yE,yI,infeasibility,kkt_error,objective] = solution(S)
+      % Set return values
+      x = S.quantities_.bestIterate.primalPoint;
+      [yE,yI] = S.quantities_.bestIterate.multipliers('true');
+      infeasibility = S.quantities_.bestIterate.constraintNormInf(S.quantities_);
+      kkt_error = S.quantities_.bestIterate.KKTError(S.quantities_,'true');
+      objective = S.quantities_.bestIterate.objectiveFunction(S.quantities_);
+    end
+    
+    
     % Options
     function o = options(S)
       

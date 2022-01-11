@@ -187,6 +187,11 @@ classdef Point < handle
         [xl,xu] = P.p.bounds;
     end % variable bounds
     
+    % index sets of finite lower and upper bounds
+    function [ixl,ixu] = indicesOfBounds(P)
+        [ixl,ixu] = P.p.indicesOfBounds;     
+    end % index sets of finite lower and upper bounds
+    
     
     function projectToBounds(P)
         [xl,xu] = P.p.bounds;
@@ -222,6 +227,16 @@ classdef Point < handle
       n = P.n;
       
     end % numberOfVariables
+    
+     % Number of variables
+    function n = numberOfOriginalVariables(P)
+      
+      % Set number of variables
+      n = P.p.numberOfOriginalVariables;
+      
+    end % numberOfVariables
+    
+    
     
     % Primal point
     function x = primalPoint(P)
@@ -385,8 +400,7 @@ classdef Point < handle
         end
         
         % Scale
-
-%         P.cI = P.cI_scale .* P.cI_unscaled;
+        P.cI = P.cI_scale .* P.cI_unscaled;
         P.cI =  P.cI_unscaled;
         
         % Set indicator
@@ -583,9 +597,9 @@ classdef Point < handle
     end % end constraintNormInfUnscaled
     
     % Determine scale factors
-    function determineScaleFactors(P,quantities,type)
-      
+    function determineScaleFactors(P,quantities,type)      
       % Check whether to scale
+      
       if quantities.scaleProblem
         
         % Evaluate objective gradient
@@ -644,7 +658,6 @@ classdef Point < handle
           
           % Set constraint scale factor
           P.cI_scale = quantities.scaleFactorGradientLimit./max(quantities.scaleFactorGradientLimit,vecnorm(Jacobian,inf,2));
-          
           % Evaluate
           P.JI = P.cI_scale .* Jacobian;
           
@@ -723,22 +736,22 @@ classdef Point < handle
             vec = vec + (P.yE_true' * P.constraintJacobianEqualities(quantities))';
           end
         end
-%         if P.mI > 0
-%           if strcmp(type,'stochastic')
-%             vec = vec + (P.yI' * P.constraintJacobianInequalities(quantities))';
-%           else % strcmp(type,'true')
-%             vec = vec + (P.yI_true' * P.constraintJacobianInequalities(quantities))';
-%           end
-%         end
+        if P.mI > 0
+          if strcmp(type,'stochastic')
+            vec = vec + (P.yI' * P.constraintJacobianInequalities(quantities))';
+          else % strcmp(type,'true')
+            vec = vec + (P.yI_true' * P.constraintJacobianInequalities(quantities))';
+          end
+        end
         v = norm(vec,inf);
-%         if P.mI > 0
-%           if strcmp(type,'stochastic')
-%             v = max(v,norm([min(P.yI,0); P.yI .* P.constraintFunctionInequalities(quantities)],inf));
-%           else % strcmp(type,'true')
-%             v = max(v,norm([min(P.yI_true,0); P.yI_true .* P.constraintFunctionInequalities(quantities)],inf));
-%           end
-%         end
-%         v = max(v,P.constraintNormInf(quantities));
+        if P.mI > 0
+          if strcmp(type,'stochastic')
+            v = max(v,norm([min(P.yI,0); P.yI .* P.constraintFunctionInequalities(quantities)],inf));
+          else % strcmp(type,'true')
+            v = max(v,norm([min(P.yI_true,0); P.yI_true .* P.constraintFunctionInequalities(quantities)],inf));
+          end
+        end
+        v = max(v,P.constraintNormInf(quantities));
       end
       
     end % KKTError

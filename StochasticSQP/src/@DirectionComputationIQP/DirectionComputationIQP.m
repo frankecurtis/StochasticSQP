@@ -40,6 +40,8 @@ classdef DirectionComputationIQP < DirectionComputation
     termination_test_iteration_minimum_
     use_hessian_of_lagrangian_
     use_iterative_solver_
+    trust_region_feasibility_factor_
+    trust_region_optimality_factor_
     
   end % properties (private access)
   

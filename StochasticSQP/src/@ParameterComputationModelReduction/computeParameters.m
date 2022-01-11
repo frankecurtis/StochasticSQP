@@ -7,17 +7,23 @@ function computeParameters(P,options,quantities,reporter,strategies)
 
 % Compute linear objective model value
 objective_model_value = quantities.currentIterate.objectiveGradient(quantities,'stochastic')'*quantities.directionPrimal('full');
+true_inner = quantities.currentIterate.objectiveGradient(quantities,'true')'*quantities.directionPrimal('true');
 
 % Compute quadratic term
 if P.quadratic_model_for_merit_update_
-  quadratic_term = max(P.curvature_threshold_ * norm(quantities.directionPrimal('tangential'))^2, quantities.curvature('tangential'));
+  %quadratic_term = max(P.curvature_threshold_ * norm(quantities.directionPrimal('tangential'))^2, quantities.curvature('tangential'));
+  quadratic_term = norm(quantities.directionPrimal('full'))^2;
 else
   quadratic_term = 0;
 end
 
+
+constraint_model_reduction_I = norm(max( quantities.currentIterate.constraintFunctionInequalities(quantities) + quantities.currentIterate.constraintJacobianInequalities(quantities)*quantities.directionPrimal('full')  ,0),1);
 % Compute linear constraint reduction
 constraint_model_reduction = quantities.currentIterate.constraintNorm1 - ...
-  norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + quantities.currentIterate.constraintJacobianEqualities(quantities)*quantities.directionPrimal('full'),1);
+  norm(quantities.currentIterate.constraintFunctionEqualities(quantities) + quantities.currentIterate.constraintJacobianEqualities(quantities)*quantities.directionPrimal('full'),1)- ...
+  constraint_model_reduction_I;
+
 
 %%%%%%%%%%%%%%%%%%%
 % MERIT PARAMETER %
@@ -29,20 +35,23 @@ if quantities.currentIterate.constraintNorm1 > 0.0
   % Initialize trial value
   merit_parameter_trial = inf;
   
-%   % Check sign of objective model value
-%   if objective_model_value + quadratic_term > 0.0 && (quantities.terminationTest == 0 || quantities.terminationTest == 2)
-%     
-%     % Update trial value
-%     merit_parameter_trial = (1 - P.model_reduction_factor_) * constraint_model_reduction / (objective_model_value + quadratic_term);
-%     
-%   end
+  % Check sign of objective model value
+
+  if objective_model_value + quadratic_term > 0.0 %&& (quantities.terminationTest == 0 || quantities.terminationTest == 2)
+    
+    % Update trial value
+    merit_parameter_trial = (1 - P.model_reduction_factor_) * constraint_model_reduction / (objective_model_value + quadratic_term);
+    
+    %fprintf("\n reduction: %e, inner : %e, quad: %e, trial: %e=============================\n",constraint_model_reduction, objective_model_value, quadratic_term, merit_parameter_trial);
+    
+  end
   
   % Check trial value
   if quantities.meritParameter > merit_parameter_trial
     
     % Set merit parameter
     quantities.setMeritParameter(max(P.parameter_minimum_,min((1 - P.parameter_reduction_factor_) * quantities.meritParameter, merit_parameter_trial)));
-    
+    %quantities.setMeritParameter(0.1);
   end
   
 end
@@ -73,7 +82,6 @@ if P.quadratic_model_for_stepsize_
   
   % Set model reduction
   quantities.setModelReduction(-quantities.meritParameter * (objective_model_value + (1/2)*quadratic_term) + constraint_model_reduction);
-  
 else
   
   % Set model reduction

@@ -19,7 +19,7 @@ end
 
 % Print full stochastic step information
 reporter.printf(Enumerations.R_SOLVER,Enumerations.R_PER_ITERATION,...
-  '  |Sys. Res.|   |Direction|   |Multiplier|   KKT Error     Lin. Inf.  ');
+  '  |Direction|   |Multiplier|   KKT Error     Lin. Inf.  ');
 
 % Print iteration header
 if D.compute_true_

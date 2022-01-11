@@ -116,7 +116,7 @@ classdef ProblemCUTEst < Problem
     % Check for constant objective function
     function err = constantObjective(P)
       
-      % Initialize error
+      % Initialize errorf
       err = true;
       
       % Evaluate objective at random points
@@ -217,7 +217,11 @@ classdef ProblemCUTEst < Problem
       err = false;
 
       try
-        [~,J] = cutest_cons(x(1:P.n));
+          if  P.mce+P.mcl+P.mcu >0
+            [~,J] = cutest_cons(x(1:P.n));
+          else
+              J = [];
+          end
         JE = sparse(P.mce+P.mcl+P.mcu,P.n_extend);
         JE(1:P.mce,1:P.n) = J(P.ice,:);
         JE(P.mce+1:P.mce+P.mcl+P.mcu,1:P.n) = [-J(P.icl,:);
@@ -242,7 +246,6 @@ classdef ProblemCUTEst < Problem
       % Evaluate constraint Jacobian, inequalities
        try
           
-        [~,J] = cutest_cons(x(1:P.n));
         JI_I = speye(P.n_extend);
         JI = sparse(P.nxl+P.nxu+P.mcl+P.mcu,P.n_extend);
         JI(1:P.nxl,:) = -JI_I(P.ixl,:);
@@ -307,7 +310,7 @@ classdef ProblemCUTEst < Problem
         % Check type
         if strcmp(type,'stochastic')
           rng(P.seed);
-          g = cutest_grad(x(1:P.n)) + (10^(-factor)/sqrt(P.n)) * randn(P.n,1);
+          g = cutest_grad(x(1:P.n));% + (10^(-factor)/sqrt(P.n)) * randn(P.n,1);
           g = [g;zeros(P.mclu,1)];
           P.seed = rng;
         elseif strcmp(type,'true')
@@ -350,7 +353,10 @@ classdef ProblemCUTEst < Problem
       x_cur(xLTl) = min(P.xu(xLTl)/2+P.xl(xLTl)/2,P.xl(xLTl));
       x_cur(xGTu) = max(P.xu(xGTu)/2+P.xl(xGTu)/2, P.xu(xGTu));
       
-      x_extend=[x_cur;zeros(P.mclu,1)];
+      c = cutest_cons(P.x);
+      CE_I= [-c(P.icl);c(P.icu)]  - [-P.cl(P.icl);P.cu(P.icu)];
+      x_extend=[x_cur;max(-CE_I,0)];
+      %x_extend=[x_cur;zeros(P.mclu,1)];
             
     end % initialPoint
     
@@ -366,6 +372,7 @@ classdef ProblemCUTEst < Problem
     function mE = numberOfConstraintsEqualities(P)
       
       % Set number of constraints, equalities
+
       mE = P.mce+P.mclu;
       
     end % numberOfConstraintsEqualities
@@ -385,6 +392,23 @@ classdef ProblemCUTEst < Problem
       n = P.n_extend;
       
     end % numberOfVariables
+    
+    % Number of variables
+    function n = numberOfOriginalVariables(P)
+      
+      % Set number of variables
+      n = P.n;
+      
+    end % numberOfVariables
+    
+    % index sets of finite lower and upper bounds
+    function [ixl,ixu] = indicesOfBounds(P)
+        
+      % Set the index sets of lower and upper bounds
+      ixl = P.ixl;
+      ixu = P.ixu;
+      
+    end % index set of finite lower and upper bounds
     
   end % methods (public access)
   
