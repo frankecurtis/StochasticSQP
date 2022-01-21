@@ -14,7 +14,7 @@ addpath('../../external');
 S = StochasticSQP;
 
 % Declare problem
-P = ProblemSimple;
+P = ProblemCUTEst;
 
 % Optimize
 S.optimize(P);

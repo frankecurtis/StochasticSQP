@@ -16,6 +16,8 @@ d = DirectionComputationEQP;
 d.addOptions(options,reporter);
 d = DirectionComputationSubgradient;
 d.addOptions(options,reporter);
+d = DirectionComputationIQP;
+d.addOptions(options,reporter);
 
 % Add Lipschitz estimation options
 l = LipschitzEstimationFiniteDifference;

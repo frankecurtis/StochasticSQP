@@ -317,6 +317,7 @@ classdef Quantities < handle
         d = Q.direction_primal_normal_;
       elseif strcmp(type,'tangential')
         d = Q.direction_primal_ - Q.direction_primal_normal_;
+%             d = Q.direction_primal_;
       elseif strcmp(type,'true')
         d = Q.direction_primal_true_;
       else
@@ -795,9 +796,11 @@ classdef Quantities < handle
     
     % Set trial iterate
     function setTrialIterate(Q,iterate)
+        
       
       % Set trial iterate
       Q.trial_iterate_ = iterate;
+      Q.trial_iterate_.projectToBounds();
       
     end % setTrialIterate
     
@@ -807,7 +810,7 @@ classdef Quantities < handle
       % Update best iterate
       if (Q.best_iterate_.constraintNormInf(Q) > Q.feasibilityTolerance && ...
           Q.current_iterate_.constraintNormInf(Q) < Q.best_iterate_.constraintNormInf(Q)) || ...
-          (Q.best_iterate_.constraintNormInf(Q) <= Q.feasibilityTolerance && ...
+          (Q.current_iterate_.constraintNormInf(Q) <= Q.feasibilityTolerance && ...
           Q.current_iterate_.KKTError(Q,'true') <= Q.best_iterate_.KKTError(Q,'true'))
         Q.best_iterate_ = Q.current_iterate_;
       end

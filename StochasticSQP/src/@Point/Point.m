@@ -181,6 +181,29 @@ classdef Point < handle
       
     end % multipliers
     
+    
+    % variable bounds
+    function [xl,xu] = bounds(P)
+        [xl,xu] = P.p.bounds;
+    end % variable bounds
+    
+    % index sets of finite lower and upper bounds
+    function [ixl,ixu] = indicesOfBounds(P)
+        [ixl,ixu] = P.p.indicesOfBounds;     
+    end % index sets of finite lower and upper bounds
+    
+    
+    function projectToBounds(P)
+        [xl,xu] = P.p.bounds;
+        [n_small,~] = size(xl);
+        ix_smallerThanBounds = find(P.x(1:n_small)<xl);
+        ix_largerThanBounds = find(P.x(1:n_small)>xu);
+        is_smallerThanBounds = find(P.x(n_small+1:P.n)<0)+n_small;
+        P.x(ix_smallerThanBounds) = xl(ix_smallerThanBounds);
+        P.x(ix_largerThanBounds) = xu(ix_largerThanBounds);
+        P.x(is_smallerThanBounds) = 0;
+    end
+    
     % Number of constraints, equalities
     function mE = numberOfConstraintsEqualities(P)
       
@@ -204,6 +227,16 @@ classdef Point < handle
       n = P.n;
       
     end % numberOfVariables
+    
+     % Number of variables
+    function n = numberOfOriginalVariables(P)
+      
+      % Set number of variables
+      n = P.p.numberOfOriginalVariables;
+      
+    end % numberOfVariables
+    
+    
     
     % Primal point
     function x = primalPoint(P)
@@ -368,6 +401,7 @@ classdef Point < handle
         
         % Scale
         P.cI = P.cI_scale .* P.cI_unscaled;
+        P.cI =  P.cI_unscaled;
         
         % Set indicator
         P.cI_evaluated = true;
@@ -563,9 +597,9 @@ classdef Point < handle
     end % end constraintNormInfUnscaled
     
     % Determine scale factors
-    function determineScaleFactors(P,quantities,type)
-      
+    function determineScaleFactors(P,quantities,type)      
       % Check whether to scale
+      
       if quantities.scaleProblem
         
         % Evaluate objective gradient
@@ -624,7 +658,6 @@ classdef Point < handle
           
           % Set constraint scale factor
           P.cI_scale = quantities.scaleFactorGradientLimit./max(quantities.scaleFactorGradientLimit,vecnorm(Jacobian,inf,2));
-          
           % Evaluate
           P.JI = P.cI_scale .* Jacobian;
           

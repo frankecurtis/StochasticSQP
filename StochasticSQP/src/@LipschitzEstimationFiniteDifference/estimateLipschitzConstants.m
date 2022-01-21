@@ -37,7 +37,6 @@ if quantities.iterationCounter <= L.estimate_always_until_ || mod(quantities.ite
   % Ensure estimates are nonzero!
   if lipschitz_constraint <= 0, lipschitz_constraint = L.lipschitz_constraint_minimum_; end
   if lipschitz_objective <= 0, lipschitz_objective = L.lipschitz_objective_minimum_; end
-  
   % Set Lipschitz constant estimates
   quantities.setLipschitz(lipschitz_constraint,lipschitz_objective);
   
@@ -52,10 +51,15 @@ function [lip_con,lip_obj] = computeEstimates(quantities,samplePoint,use_true,ba
 [f_scale,cE_scale,~] = quantities.currentIterate.scaleFactors;
 
 % Evaluate constraint Jacobian at sample point
-sampleJacobian = cE_scale .* quantities.currentIterate.problem.evaluateConstraintJacobianEqualities(samplePoint);
+sampleJacobian = repmat(cE_scale,1,quantities.currentIterate.numberOfVariables) .* quantities.currentIterate.problem.evaluateConstraintJacobianEqualities(samplePoint);
 
 % Estimate constraint Jacobian Lipschitz constant
-lip_con = normest(quantities.currentIterate.constraintJacobianEqualities(quantities) - sampleJacobian) / norm(quantities.currentIterate.primalPoint - samplePoint);
+if isempty(quantities.currentIterate.constraintJacobianEqualities(quantities))
+    JacobianEqualities_temp = [];
+else
+    JacobianEqualities_temp = quantities.currentIterate.constraintJacobianEqualities(quantities);
+end
+lip_con = normest(JacobianEqualities_temp - sampleJacobian) / norm(quantities.currentIterate.primalPoint - samplePoint);
 
 % Evaluate objective gradient at sample point
 if use_true
